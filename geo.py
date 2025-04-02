@@ -599,21 +599,115 @@ world_model = WorldModel(state_dim, action_dim).to(device)
 optimizer_wm = optim.Adam(world_model.parameters(), lr=0.001)
 
 
-def plan_actions(state, model, steps=3):
+def plan_actions(state_tensor, model, current_shape, target, task, world, steps=3):
     best_sequence = []
     best_reward = -float("inf")
+
+    # Convert state_tensor to numpy for easier manipulation
+    state = state_tensor.squeeze(0).cpu().numpy()  # Remove batch dimension
+
     for _ in range(10):  # Try 10 random sequences
         sequence = [np.random.randint(action_dim) for _ in range(steps)]
-        sim_state = state.clone()
+        sim_state = state.copy()
+        sim_shape = current_shape.copy()  # Simulate shape updates
         total_reward = 0
+
         for action in sequence:
-            action_tensor = torch.tensor([action], dtype=torch.float).to(device)
-            sim_state = model(sim_state, action_tensor)
-            # Simulate reward (simplified)
-            total_reward += -torch.norm(sim_state).item()  # Placeholder
+            # Simulate the effect of the action on the shape
+            if task == TASK_LINE:
+                curvature = 0
+                if action == 0:
+                    curvature = -1
+                elif action == 1:
+                    curvature = 1
+                if sim_shape:  # Ensure sim_shape is not empty
+                    next_segment = draw_line_segment(
+                        sim_shape[-1], target, curvature, world
+                    )
+                    sim_shape.extend(next_segment[1:])
+            elif task == TASK_TRIANGLE:
+                angle_adjust = 0
+                if action == 2:
+                    angle_adjust = -10
+                elif action == 3:
+                    angle_adjust = 10
+                sim_shape = draw_triangle(sim_shape, angle_adjust, world)
+            elif task == TASK_CIRCLE:
+                radius_adjust = 0
+                if action == 4:
+                    radius_adjust = 5
+                sim_shape, sim_radius = draw_circle(
+                    target[0], target[1], radius_adjust, world
+                )
+                target = (target[0], sim_radius)  # Update target radius
+            elif task == TASK_PENTAGON:
+                angle_adjust = 0
+                if action == 2:
+                    angle_adjust = -10
+                elif action == 3:
+                    angle_adjust = 10
+                sim_shape = draw_pentagon(sim_shape, angle_adjust, world)
+            elif task == TASK_TESSELLATION:
+                if action == 5:
+                    sim_shape = draw_tessellation(sim_shape, world)
+
+            # Update simulated state based on the new shape
+            shape_progress = (
+                len(sim_shape) / 5 if task != TASK_TESSELLATION else len(sim_shape)
+            )
+            num_vertices = (
+                len(sim_shape)
+                if task != TASK_TESSELLATION
+                else sum(len(t) for t in sim_shape)
+            )
+            angle = 0
+            dist_to_close = 0
+            if task == TASK_LINE:
+                next_pos = sim_shape[-1] if sim_shape else (0, 0)
+                dx = target[0] - next_pos[0]
+                dy = target[1] - next_pos[1]
+            else:
+                next_pos = (0, 0)
+                dx = dy = 0
+                if task == TASK_TRIANGLE and len(sim_shape) == 3:
+                    angle = calculate_triangle_angle(sim_shape)
+                elif task == TASK_PENTAGON and len(sim_shape) >= 2:
+                    dist_to_close = calculate_dist_to_close(sim_shape)
+                elif task == TASK_TESSELLATION and sim_shape:
+                    angle = calculate_triangle_angle(sim_shape[0])
+            task_id = tasks.index(task)
+            world_id = worlds.index(world)
+            sim_state = np.array(
+                [
+                    next_pos[0],
+                    next_pos[1],
+                    dx,
+                    dy,
+                    task_id,
+                    world_id,
+                    shape_progress,
+                    num_vertices,
+                    angle,
+                    dist_to_close,
+                ]
+            )
+
+            # Compute reward for the simulated state
+            reward = calculate_reward(sim_shape, target, task, world)
+            total_reward += reward
+
+            # Update sim_state for the next action
+            sim_state_tensor = torch.FloatTensor(sim_state).unsqueeze(0).to(device)
+            action_tensor = (
+                torch.tensor([action], dtype=torch.float).unsqueeze(0).to(device)
+            )
+            sim_state_tensor = model(sim_state_tensor, action_tensor)
+            sim_state = sim_state_tensor.squeeze(0).cpu().numpy()
+
         if total_reward > best_reward:
             best_reward = total_reward
             best_sequence = sequence
+
     return best_sequence
 
 
@@ -771,6 +865,7 @@ def store_transition(transition):
     )  # Initial priority
     n_step_buffer.pop(0)
 
+
 # Main Game Loop
 clock = pygame.time.Clock()
 running = True
@@ -859,7 +954,8 @@ while running:
                 dist_to_close,
             ]
         )
-        state_tensor = torch.FloatTensor(state).to(device)
+        # Add batch dimension to state_tensor
+        state_tensor = torch.FloatTensor(state).unsqueeze(0).to(device)
 
         # Update epsilon for exploration
         epsilon = epsilon_end + (epsilon_start - epsilon_end) * np.exp(
@@ -993,9 +1089,11 @@ while running:
             )
 
             # Add intrinsic reward from curiosity
-            action_tensor = torch.tensor([action], dtype=torch.float).to(device)
+            action_tensor = (
+                torch.tensor([action], dtype=torch.float).unsqueeze(0).to(device)
+            )
             predicted_next_state = forward_model(state_tensor, action_tensor)
-            next_state_tensor = torch.FloatTensor(next_state).to(device)
+            next_state_tensor = torch.FloatTensor(next_state).unsqueeze(0).to(device)
             intrinsic_reward = torch.norm(
                 predicted_next_state - next_state_tensor
             ).item()
@@ -1050,7 +1148,7 @@ while running:
                 target_net.load_state_dict(policy_net.state_dict())
 
             state = next_state
-            state_tensor = torch.FloatTensor(state).to(device)
+            state_tensor = torch.FloatTensor(state).unsqueeze(0).to(device)
 
     # Drawing the Screen
     screen.fill(BLACK)
@@ -1167,4 +1265,3 @@ while running:
     clock.tick(30)
 
 pygame.quit()
-# End of the script

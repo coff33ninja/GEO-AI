@@ -264,7 +264,7 @@
         "kind": 2,
         "importPath": "geo",
         "description": "geo",
-        "peekOfCode": "def plan_actions(state, model, steps=3):\n    best_sequence = []\n    best_reward = -float(\"inf\")\n    for _ in range(10):  # Try 10 random sequences\n        sequence = [np.random.randint(action_dim) for _ in range(steps)]\n        sim_state = state.clone()\n        total_reward = 0\n        for action in sequence:\n            action_tensor = torch.tensor([action], dtype=torch.float).to(device)\n            sim_state = model(sim_state, action_tensor)",
+        "peekOfCode": "def plan_actions(state_tensor, model, current_shape, target, task, world, steps=3):\n    best_sequence = []\n    best_reward = -float(\"inf\")\n    # Convert state_tensor to numpy for easier manipulation\n    state = state_tensor.squeeze(0).cpu().numpy()  # Remove batch dimension\n    for _ in range(10):  # Try 10 random sequences\n        sequence = [np.random.randint(action_dim) for _ in range(steps)]\n        sim_state = state.copy()\n        sim_shape = current_shape.copy()  # Simulate shape updates\n        total_reward = 0",
         "detail": "geo",
         "documentation": {}
     },
@@ -921,7 +921,7 @@
         "kind": 5,
         "importPath": "geo",
         "description": "geo",
-        "peekOfCode": "world_model = WorldModel(state_dim, action_dim).to(device)\noptimizer_wm = optim.Adam(world_model.parameters(), lr=0.001)\ndef plan_actions(state, model, steps=3):\n    best_sequence = []\n    best_reward = -float(\"inf\")\n    for _ in range(10):  # Try 10 random sequences\n        sequence = [np.random.randint(action_dim) for _ in range(steps)]\n        sim_state = state.clone()\n        total_reward = 0\n        for action in sequence:",
+        "peekOfCode": "world_model = WorldModel(state_dim, action_dim).to(device)\noptimizer_wm = optim.Adam(world_model.parameters(), lr=0.001)\ndef plan_actions(state_tensor, model, current_shape, target, task, world, steps=3):\n    best_sequence = []\n    best_reward = -float(\"inf\")\n    # Convert state_tensor to numpy for easier manipulation\n    state = state_tensor.squeeze(0).cpu().numpy()  # Remove batch dimension\n    for _ in range(10):  # Try 10 random sequences\n        sequence = [np.random.randint(action_dim) for _ in range(steps)]\n        sim_state = state.copy()",
         "detail": "geo",
         "documentation": {}
     },
@@ -930,7 +930,7 @@
         "kind": 5,
         "importPath": "geo",
         "description": "geo",
-        "peekOfCode": "optimizer_wm = optim.Adam(world_model.parameters(), lr=0.001)\ndef plan_actions(state, model, steps=3):\n    best_sequence = []\n    best_reward = -float(\"inf\")\n    for _ in range(10):  # Try 10 random sequences\n        sequence = [np.random.randint(action_dim) for _ in range(steps)]\n        sim_state = state.clone()\n        total_reward = 0\n        for action in sequence:\n            action_tensor = torch.tensor([action], dtype=torch.float).to(device)",
+        "peekOfCode": "optimizer_wm = optim.Adam(world_model.parameters(), lr=0.001)\ndef plan_actions(state_tensor, model, current_shape, target, task, world, steps=3):\n    best_sequence = []\n    best_reward = -float(\"inf\")\n    # Convert state_tensor to numpy for easier manipulation\n    state = state_tensor.squeeze(0).cpu().numpy()  # Remove batch dimension\n    for _ in range(10):  # Try 10 random sequences\n        sequence = [np.random.randint(action_dim) for _ in range(steps)]\n        sim_state = state.copy()\n        sim_shape = current_shape.copy()  # Simulate shape updates",
         "detail": "geo",
         "documentation": {}
     },
