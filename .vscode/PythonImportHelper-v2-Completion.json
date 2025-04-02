@@ -1,0 +1,964 @@
+[
+    {
+        "label": "deque",
+        "importPath": "collections",
+        "description": "collections",
+        "isExtraImport": true,
+        "detail": "collections",
+        "documentation": {}
+    },
+    {
+        "label": "pygame",
+        "kind": 6,
+        "isExtraImport": true,
+        "importPath": "pygame",
+        "description": "pygame",
+        "detail": "pygame",
+        "documentation": {}
+    },
+    {
+        "label": "numpy",
+        "kind": 6,
+        "isExtraImport": true,
+        "importPath": "numpy",
+        "description": "numpy",
+        "detail": "numpy",
+        "documentation": {}
+    },
+    {
+        "label": "random",
+        "kind": 6,
+        "isExtraImport": true,
+        "importPath": "random",
+        "description": "random",
+        "detail": "random",
+        "documentation": {}
+    },
+    {
+        "label": "torch",
+        "kind": 6,
+        "isExtraImport": true,
+        "importPath": "torch",
+        "description": "torch",
+        "detail": "torch",
+        "documentation": {}
+    },
+    {
+        "label": "torch.nn",
+        "kind": 6,
+        "isExtraImport": true,
+        "importPath": "torch.nn",
+        "description": "torch.nn",
+        "detail": "torch.nn",
+        "documentation": {}
+    },
+    {
+        "label": "torch.optim",
+        "kind": 6,
+        "isExtraImport": true,
+        "importPath": "torch.optim",
+        "description": "torch.optim",
+        "detail": "torch.optim",
+        "documentation": {}
+    },
+    {
+        "label": "csv",
+        "kind": 6,
+        "isExtraImport": true,
+        "importPath": "csv",
+        "description": "csv",
+        "detail": "csv",
+        "documentation": {}
+    },
+    {
+        "label": "os",
+        "kind": 6,
+        "isExtraImport": true,
+        "importPath": "os",
+        "description": "os",
+        "detail": "os",
+        "documentation": {}
+    },
+    {
+        "label": "SumTree",
+        "kind": 6,
+        "importPath": "geo",
+        "description": "geo",
+        "peekOfCode": "class SumTree:\n    def __init__(self, capacity):\n        self.capacity = capacity\n        self.tree = np.zeros(2 * capacity - 1)\n        self.data = np.zeros(capacity, dtype=object)\n        self.write = 0\n        self.n_entries = 0\n    def add(self, priority, data):\n        idx = self.write + self.capacity - 1\n        self.data[self.write] = data",
+        "detail": "geo",
+        "documentation": {}
+    },
+    {
+        "label": "DQN",
+        "kind": 6,
+        "importPath": "geo",
+        "description": "geo",
+        "peekOfCode": "class DQN(nn.Module):\n    def __init__(self, input_dim, output_dim):\n        super(DQN, self).__init__()\n        self.fc1 = nn.Linear(input_dim, 128)\n        self.fc2 = nn.Linear(128, 64)\n        self.fc3 = nn.Linear(64, output_dim)\n    def forward(self, x):\n        x = torch.relu(self.fc1(x))\n        x = torch.relu(self.fc2(x))\n        return self.fc3(x)",
+        "detail": "geo",
+        "documentation": {}
+    },
+    {
+        "label": "ForwardModel",
+        "kind": 6,
+        "importPath": "geo",
+        "description": "geo",
+        "peekOfCode": "class ForwardModel(nn.Module):\n    def __init__(self, state_dim, action_dim):\n        super().__init__()\n        self.fc1 = nn.Linear(state_dim + 1, 128)  # Action is a scalar\n        self.fc2 = nn.Linear(128, state_dim)\n    def forward(self, state, action):\n        # Debug: Check input shapes\n        if state.dim() != 2 or action.dim() != 2:\n            raise ValueError(\n                f\"Expected 2D tensors, got state shape {state.shape}, action shape {action.shape}\"",
+        "detail": "geo",
+        "documentation": {}
+    },
+    {
+        "label": "WorldModel",
+        "kind": 6,
+        "importPath": "geo",
+        "description": "geo",
+        "peekOfCode": "class WorldModel(nn.Module):\n    def __init__(self, state_dim, action_dim):\n        super().__init__()\n        self.fc1 = nn.Linear(state_dim + 1, 128)\n        self.fc2 = nn.Linear(128, state_dim)\n    def forward(self, state, action):\n        action = action.view(-1, 1)\n        x = torch.cat([state, action], dim=1)\n        x = torch.relu(self.fc1(x))\n        return self.fc2(x)",
+        "detail": "geo",
+        "documentation": {}
+    },
+    {
+        "label": "to_int_point",
+        "kind": 2,
+        "importPath": "geo",
+        "description": "geo",
+        "peekOfCode": "def to_int_point(point):\n    if (\n        not isinstance(point, (tuple, list))\n        or len(point) != 2\n        or not all(isinstance(coord, (int, float)) for coord in point)\n    ):\n        print(f\"Invalid point detected: {point}\")\n        return (0, 0)  # Default to origin to avoid crashing\n    return (int(point[0]), int(point[1]))\n# Geometric Worlds",
+        "detail": "geo",
+        "documentation": {}
+    },
+    {
+        "label": "stereographic_projection",
+        "kind": 2,
+        "importPath": "geo",
+        "description": "geo",
+        "peekOfCode": "def stereographic_projection(point, R=100):\n    x, y, z = point\n    if z == 2 * R:\n        return None\n    factor = 2 * R / (2 * R - z)\n    proj_x = factor * x + WIDTH / 2\n    proj_y = factor * y + HEIGHT / 2\n    return (proj_x, proj_y)\ndef poincare_disk_projection(point, R=100):\n    x, y = point",
+        "detail": "geo",
+        "documentation": {}
+    },
+    {
+        "label": "poincare_disk_projection",
+        "kind": 2,
+        "importPath": "geo",
+        "description": "geo",
+        "peekOfCode": "def poincare_disk_projection(point, R=100):\n    x, y = point\n    dist = np.sqrt(x**2 + y**2)\n    if dist >= R:\n        return None\n    factor = R * np.tanh(dist / R)\n    angle = np.arctan2(y, x)\n    proj_x = factor * np.cos(angle) + WIDTH / 2\n    proj_y = factor * np.sin(angle) + HEIGHT / 2\n    return (proj_x, proj_y)",
+        "detail": "geo",
+        "documentation": {}
+    },
+    {
+        "label": "elliptical_projection",
+        "kind": 2,
+        "importPath": "geo",
+        "description": "geo",
+        "peekOfCode": "def elliptical_projection(point, a=150, b=100):\n    x, y = point\n    proj_x = (x / a) * (WIDTH / 2) + WIDTH / 2\n    proj_y = (y / b) * (HEIGHT / 2) + HEIGHT / 2\n    return (proj_x, proj_y)\ndef projective_projection(point, fov=90, near=1):\n    x, y = point\n    z = 100  # Fixed z for simplicity\n    if z <= 0:\n        return None",
+        "detail": "geo",
+        "documentation": {}
+    },
+    {
+        "label": "projective_projection",
+        "kind": 2,
+        "importPath": "geo",
+        "description": "geo",
+        "peekOfCode": "def projective_projection(point, fov=90, near=1):\n    x, y = point\n    z = 100  # Fixed z for simplicity\n    if z <= 0:\n        return None\n    proj_x = (x * near / z) * (WIDTH / 2) + WIDTH / 2\n    proj_y = (y * near / z) * (HEIGHT / 2) + HEIGHT / 2\n    return (proj_x, proj_y)\ndef fractal_projection(point, iterations=3):\n    x, y = point",
+        "detail": "geo",
+        "documentation": {}
+    },
+    {
+        "label": "fractal_projection",
+        "kind": 2,
+        "importPath": "geo",
+        "description": "geo",
+        "peekOfCode": "def fractal_projection(point, iterations=3):\n    x, y = point\n    x, y = x / WIDTH, y / HEIGHT  # Normalize to [0, 1]\n    for _ in range(iterations):\n        r = np.random.randint(3)\n        if r == 0:\n            x, y = x / 2, y / 2\n        elif r == 1:\n            x, y = (x + 1) / 2, y / 2\n        else:",
+        "detail": "geo",
+        "documentation": {}
+    },
+    {
+        "label": "project_point",
+        "kind": 2,
+        "importPath": "geo",
+        "description": "geo",
+        "peekOfCode": "def project_point(point, world):\n    x, y = point\n    if world == WORLD_EUCLIDEAN:\n        return (x + WIDTH / 2, y + HEIGHT / 2)\n    elif world == WORLD_SPHERICAL:\n        z = np.sqrt(max(0, 100**2 - x**2 - y**2))\n        return stereographic_projection((x, y, z))\n    elif world == WORLD_HYPERBOLIC:\n        return poincare_disk_projection((x - WIDTH / 2, y - HEIGHT / 2))\n    elif world == WORLD_ELLIPTICAL:",
+        "detail": "geo",
+        "documentation": {}
+    },
+    {
+        "label": "hyperbolic_geodesic",
+        "kind": 2,
+        "importPath": "geo",
+        "description": "geo",
+        "peekOfCode": "def hyperbolic_geodesic(start, end, R=100):\n    start = (start[0] - WIDTH / 2, start[1] - HEIGHT / 2)\n    end = (end[0] - WIDTH / 2, end[1] - HEIGHT / 2)\n    start_r = np.sqrt(start[0] ** 2 + start[1] ** 2)\n    end_r = np.sqrt(end[0] ** 2 + end[1] ** 2)\n    if start_r >= R or end_r >= R:\n        return []\n    start_angle = np.arctan2(start[1], start[0])\n    end_angle = np.arctan2(end[1], end[0])\n    points = []",
+        "detail": "geo",
+        "documentation": {}
+    },
+    {
+        "label": "draw_wireframe",
+        "kind": 2,
+        "importPath": "geo",
+        "description": "geo",
+        "peekOfCode": "def draw_wireframe(world):\n    global animation_time\n    animation_time += 0.05\n    pulse = 0.5 + 0.5 * np.sin(animation_time)\n    def gradient_color(t):\n        r = int(0 * (1 - t) + 0 * t)\n        g = int(0 * (1 - t) + 255 * t)\n        b = int(255 * (1 - t) + 255 * t)\n        return (r, g, b)\n    if world == WORLD_EUCLIDEAN:",
+        "detail": "geo",
+        "documentation": {}
+    },
+    {
+        "label": "draw_line_segment",
+        "kind": 2,
+        "importPath": "geo",
+        "description": "geo",
+        "peekOfCode": "def draw_line_segment(start, end, curvature, world):\n    if world == WORLD_HYPERBOLIC:\n        return hyperbolic_geodesic(start, end)\n    points = []\n    num_points = 10\n    for i in range(num_points + 1):\n        t = i / num_points\n        x = (1 - t) * start[0] + t * end[0]\n        y = (1 - t) * start[1] + t * end[1]\n        offset = curvature * 50 * np.sin(np.pi * t)",
+        "detail": "geo",
+        "documentation": {}
+    },
+    {
+        "label": "draw_triangle",
+        "kind": 2,
+        "importPath": "geo",
+        "description": "geo",
+        "peekOfCode": "def draw_triangle(points, angle_adjust, world):\n    if len(points) < 3:\n        return points\n    new_points = points.copy()\n    p1, p2, p3 = points\n    dx = p3[0] - p2[0]\n    dy = p3[1] - p2[1]\n    angle = np.arctan2(dy, dx) + angle_adjust * np.pi / 180\n    length = np.sqrt(dx**2 + dy**2)\n    new_x = p2[0] + length * np.cos(angle)",
+        "detail": "geo",
+        "documentation": {}
+    },
+    {
+        "label": "draw_circle",
+        "kind": 2,
+        "importPath": "geo",
+        "description": "geo",
+        "peekOfCode": "def draw_circle(center, radius, radius_adjust, world):\n    radius = max(10, radius + radius_adjust)\n    points = []\n    for theta in np.linspace(0, 2 * np.pi, 20):\n        x = center[0] + radius * np.cos(theta)\n        y = center[1] + radius * np.sin(theta)\n        proj = project_point((x - WIDTH / 2, y - HEIGHT / 2), world)\n        if proj:\n            points.append(proj)\n    return points, radius",
+        "detail": "geo",
+        "documentation": {}
+    },
+    {
+        "label": "draw_pentagon",
+        "kind": 2,
+        "importPath": "geo",
+        "description": "geo",
+        "peekOfCode": "def draw_pentagon(points, angle_adjust, world):\n    if len(points) < 5:\n        return points\n    new_points = points.copy()\n    for i in range(2, 5):\n        p1 = new_points[i - 1]\n        p2 = new_points[i]\n        dx = p2[0] - p1[0]\n        dy = p2[1] - p1[1]\n        angle = np.arctan2(dy, dx) + angle_adjust * np.pi / 180",
+        "detail": "geo",
+        "documentation": {}
+    },
+    {
+        "label": "draw_tessellation",
+        "kind": 2,
+        "importPath": "geo",
+        "description": "geo",
+        "peekOfCode": "def draw_tessellation(points, world):\n    if len(points) < 3:\n        return points\n    base_triangle = points[:3]\n    tessellation = [base_triangle]\n    center_x = sum(p[0] for p in base_triangle) / 3\n    center_y = sum(p[1] for p in base_triangle) / 3\n    for i in range(3):\n        p1 = base_triangle[i]\n        p2 = base_triangle[(i + 1) % 3]",
+        "detail": "geo",
+        "documentation": {}
+    },
+    {
+        "label": "macro_action_draw_triangle",
+        "kind": 2,
+        "importPath": "geo",
+        "description": "geo",
+        "peekOfCode": "def macro_action_draw_triangle(current_shape, world):\n    actions = []\n    if len(current_shape) < 3:\n        for _ in range(3 - len(current_shape)):\n            actions.append(3)  # angle_adjust_right to simulate drawing a side\n    return actions\ndef macro_action_draw_circle(center, radius, world):\n    actions = []\n    for _ in range(3):  # Simulate drawing a circle in 3 steps\n        actions.append(4)  # radius_adjust",
+        "detail": "geo",
+        "documentation": {}
+    },
+    {
+        "label": "macro_action_draw_circle",
+        "kind": 2,
+        "importPath": "geo",
+        "description": "geo",
+        "peekOfCode": "def macro_action_draw_circle(center, radius, world):\n    actions = []\n    for _ in range(3):  # Simulate drawing a circle in 3 steps\n        actions.append(4)  # radius_adjust\n    return actions\n# Model-Based Planning\nclass WorldModel(nn.Module):\n    def __init__(self, state_dim, action_dim):\n        super().__init__()\n        self.fc1 = nn.Linear(state_dim + 1, 128)",
+        "detail": "geo",
+        "documentation": {}
+    },
+    {
+        "label": "plan_actions",
+        "kind": 2,
+        "importPath": "geo",
+        "description": "geo",
+        "peekOfCode": "def plan_actions(state, model, steps=3):\n    best_sequence = []\n    best_reward = -float(\"inf\")\n    for _ in range(10):  # Try 10 random sequences\n        sequence = [np.random.randint(action_dim) for _ in range(steps)]\n        sim_state = state.clone()\n        total_reward = 0\n        for action in sequence:\n            action_tensor = torch.tensor([action], dtype=torch.float).to(device)\n            sim_state = model(sim_state, action_tensor)",
+        "detail": "geo",
+        "documentation": {}
+    },
+    {
+        "label": "calculate_triangle_angle",
+        "kind": 2,
+        "importPath": "geo",
+        "description": "geo",
+        "peekOfCode": "def calculate_triangle_angle(points):\n    if len(points) < 3:\n        return 0\n    p1, p2, p3 = points\n    v1 = np.array([p2[0] - p1[0], p2[1] - p1[1]])\n    v2 = np.array([p3[0] - p2[0], p3[1] - p2[1]])\n    if np.linalg.norm(v1) == 0 or np.linalg.norm(v2) == 0:\n        return 0\n    angle = (\n        np.arccos(np.dot(v1, v2) / (np.linalg.norm(v1) * np.linalg.norm(v2)))",
+        "detail": "geo",
+        "documentation": {}
+    },
+    {
+        "label": "calculate_dist_to_close",
+        "kind": 2,
+        "importPath": "geo",
+        "description": "geo",
+        "peekOfCode": "def calculate_dist_to_close(points):\n    if len(points) < 2:\n        return 0\n    p1, p_last = points[0], points[-1]\n    return np.sqrt((p1[0] - p_last[0]) ** 2 + (p1[1] - p_last[1]) ** 2)\n# Reward Function\ndef calculate_reward(shape, target, task, world):\n    reward = 0\n    if task == TASK_LINE:\n        current_pos = shape[-1] if shape else (0, 0)",
+        "detail": "geo",
+        "documentation": {}
+    },
+    {
+        "label": "calculate_reward",
+        "kind": 2,
+        "importPath": "geo",
+        "description": "geo",
+        "peekOfCode": "def calculate_reward(shape, target, task, world):\n    reward = 0\n    if task == TASK_LINE:\n        current_pos = shape[-1] if shape else (0, 0)\n        dx = target[0] - current_pos[0]\n        dy = target[1] - current_pos[1]\n        distance = np.sqrt(dx**2 + dy**2)\n        reward = -distance / 100.0\n        if distance < 10:\n            reward += 50",
+        "detail": "geo",
+        "documentation": {}
+    },
+    {
+        "label": "optimize_model",
+        "kind": 2,
+        "importPath": "geo",
+        "description": "geo",
+        "peekOfCode": "def optimize_model():\n    if memory.n_entries < batch_size:\n        return\n    # Sample transitions based on priority\n    total_priority = memory.tree[0]\n    batch = []\n    idxs = []\n    priorities = []\n    segment = total_priority / batch_size\n    for i in range(batch_size):",
+        "detail": "geo",
+        "documentation": {}
+    },
+    {
+        "label": "store_transition",
+        "kind": 2,
+        "importPath": "geo",
+        "description": "geo",
+        "peekOfCode": "def store_transition(transition):\n    n_step_buffer.append(transition)\n    if len(n_step_buffer) < n_step:\n        return\n    cumulative_reward = sum([(gamma**i) * t[2] for i, t in enumerate(n_step_buffer)])\n    state, action = n_step_buffer[0][0], n_step_buffer[0][1]\n    next_state, done = n_step_buffer[-1][3], n_step_buffer[-1][4]\n    memory.add(\n        1.0, (state, action, cumulative_reward, next_state, done)\n    )  # Initial priority",
+        "detail": "geo",
+        "documentation": {}
+    },
+    {
+        "label": "WIDTH",
+        "kind": 5,
+        "importPath": "geo",
+        "description": "geo",
+        "peekOfCode": "WIDTH = 800\nHEIGHT = 600\nscreen = pygame.display.set_mode((WIDTH, HEIGHT))\npygame.display.set_caption(\"GeoMaster AI Challenge\")\n# Colors\nBLACK = (0, 0, 0)\nWHITE = (255, 255, 255)\nRED = (255, 0, 0)\nBLUE = (0, 0, 255)\nCYAN = (0, 255, 255)",
+        "detail": "geo",
+        "documentation": {}
+    },
+    {
+        "label": "HEIGHT",
+        "kind": 5,
+        "importPath": "geo",
+        "description": "geo",
+        "peekOfCode": "HEIGHT = 600\nscreen = pygame.display.set_mode((WIDTH, HEIGHT))\npygame.display.set_caption(\"GeoMaster AI Challenge\")\n# Colors\nBLACK = (0, 0, 0)\nWHITE = (255, 255, 255)\nRED = (255, 0, 0)\nBLUE = (0, 0, 255)\nCYAN = (0, 255, 255)\nGREEN = (0, 255, 0)",
+        "detail": "geo",
+        "documentation": {}
+    },
+    {
+        "label": "screen",
+        "kind": 5,
+        "importPath": "geo",
+        "description": "geo",
+        "peekOfCode": "screen = pygame.display.set_mode((WIDTH, HEIGHT))\npygame.display.set_caption(\"GeoMaster AI Challenge\")\n# Colors\nBLACK = (0, 0, 0)\nWHITE = (255, 255, 255)\nRED = (255, 0, 0)\nBLUE = (0, 0, 255)\nCYAN = (0, 255, 255)\nGREEN = (0, 255, 0)\n# Font for text",
+        "detail": "geo",
+        "documentation": {}
+    },
+    {
+        "label": "BLACK",
+        "kind": 5,
+        "importPath": "geo",
+        "description": "geo",
+        "peekOfCode": "BLACK = (0, 0, 0)\nWHITE = (255, 255, 255)\nRED = (255, 0, 0)\nBLUE = (0, 0, 255)\nCYAN = (0, 255, 255)\nGREEN = (0, 255, 0)\n# Font for text\nfont = pygame.font.SysFont(\"monospace\", 20)\n# Helper function: ensure point coordinates are integers for Pygame drawing\ndef to_int_point(point):",
+        "detail": "geo",
+        "documentation": {}
+    },
+    {
+        "label": "WHITE",
+        "kind": 5,
+        "importPath": "geo",
+        "description": "geo",
+        "peekOfCode": "WHITE = (255, 255, 255)\nRED = (255, 0, 0)\nBLUE = (0, 0, 255)\nCYAN = (0, 255, 255)\nGREEN = (0, 255, 0)\n# Font for text\nfont = pygame.font.SysFont(\"monospace\", 20)\n# Helper function: ensure point coordinates are integers for Pygame drawing\ndef to_int_point(point):\n    if (",
+        "detail": "geo",
+        "documentation": {}
+    },
+    {
+        "label": "RED",
+        "kind": 5,
+        "importPath": "geo",
+        "description": "geo",
+        "peekOfCode": "RED = (255, 0, 0)\nBLUE = (0, 0, 255)\nCYAN = (0, 255, 255)\nGREEN = (0, 255, 0)\n# Font for text\nfont = pygame.font.SysFont(\"monospace\", 20)\n# Helper function: ensure point coordinates are integers for Pygame drawing\ndef to_int_point(point):\n    if (\n        not isinstance(point, (tuple, list))",
+        "detail": "geo",
+        "documentation": {}
+    },
+    {
+        "label": "BLUE",
+        "kind": 5,
+        "importPath": "geo",
+        "description": "geo",
+        "peekOfCode": "BLUE = (0, 0, 255)\nCYAN = (0, 255, 255)\nGREEN = (0, 255, 0)\n# Font for text\nfont = pygame.font.SysFont(\"monospace\", 20)\n# Helper function: ensure point coordinates are integers for Pygame drawing\ndef to_int_point(point):\n    if (\n        not isinstance(point, (tuple, list))\n        or len(point) != 2",
+        "detail": "geo",
+        "documentation": {}
+    },
+    {
+        "label": "CYAN",
+        "kind": 5,
+        "importPath": "geo",
+        "description": "geo",
+        "peekOfCode": "CYAN = (0, 255, 255)\nGREEN = (0, 255, 0)\n# Font for text\nfont = pygame.font.SysFont(\"monospace\", 20)\n# Helper function: ensure point coordinates are integers for Pygame drawing\ndef to_int_point(point):\n    if (\n        not isinstance(point, (tuple, list))\n        or len(point) != 2\n        or not all(isinstance(coord, (int, float)) for coord in point)",
+        "detail": "geo",
+        "documentation": {}
+    },
+    {
+        "label": "GREEN",
+        "kind": 5,
+        "importPath": "geo",
+        "description": "geo",
+        "peekOfCode": "GREEN = (0, 255, 0)\n# Font for text\nfont = pygame.font.SysFont(\"monospace\", 20)\n# Helper function: ensure point coordinates are integers for Pygame drawing\ndef to_int_point(point):\n    if (\n        not isinstance(point, (tuple, list))\n        or len(point) != 2\n        or not all(isinstance(coord, (int, float)) for coord in point)\n    ):",
+        "detail": "geo",
+        "documentation": {}
+    },
+    {
+        "label": "font",
+        "kind": 5,
+        "importPath": "geo",
+        "description": "geo",
+        "peekOfCode": "font = pygame.font.SysFont(\"monospace\", 20)\n# Helper function: ensure point coordinates are integers for Pygame drawing\ndef to_int_point(point):\n    if (\n        not isinstance(point, (tuple, list))\n        or len(point) != 2\n        or not all(isinstance(coord, (int, float)) for coord in point)\n    ):\n        print(f\"Invalid point detected: {point}\")\n        return (0, 0)  # Default to origin to avoid crashing",
+        "detail": "geo",
+        "documentation": {}
+    },
+    {
+        "label": "WORLD_EUCLIDEAN",
+        "kind": 5,
+        "importPath": "geo",
+        "description": "geo",
+        "peekOfCode": "WORLD_EUCLIDEAN = \"Euclidean\"\nWORLD_SPHERICAL = \"Spherical\"\nWORLD_HYPERBOLIC = \"Hyperbolic\"\nWORLD_ELLIPTICAL = \"Elliptical\"\nWORLD_PROJECTIVE = \"Projective\"\nWORLD_FRACTAL = \"Fractal\"\nworlds = [\n    WORLD_EUCLIDEAN,\n    WORLD_SPHERICAL,\n    WORLD_HYPERBOLIC,",
+        "detail": "geo",
+        "documentation": {}
+    },
+    {
+        "label": "WORLD_SPHERICAL",
+        "kind": 5,
+        "importPath": "geo",
+        "description": "geo",
+        "peekOfCode": "WORLD_SPHERICAL = \"Spherical\"\nWORLD_HYPERBOLIC = \"Hyperbolic\"\nWORLD_ELLIPTICAL = \"Elliptical\"\nWORLD_PROJECTIVE = \"Projective\"\nWORLD_FRACTAL = \"Fractal\"\nworlds = [\n    WORLD_EUCLIDEAN,\n    WORLD_SPHERICAL,\n    WORLD_HYPERBOLIC,\n    WORLD_ELLIPTICAL,",
+        "detail": "geo",
+        "documentation": {}
+    },
+    {
+        "label": "WORLD_HYPERBOLIC",
+        "kind": 5,
+        "importPath": "geo",
+        "description": "geo",
+        "peekOfCode": "WORLD_HYPERBOLIC = \"Hyperbolic\"\nWORLD_ELLIPTICAL = \"Elliptical\"\nWORLD_PROJECTIVE = \"Projective\"\nWORLD_FRACTAL = \"Fractal\"\nworlds = [\n    WORLD_EUCLIDEAN,\n    WORLD_SPHERICAL,\n    WORLD_HYPERBOLIC,\n    WORLD_ELLIPTICAL,\n    WORLD_PROJECTIVE,",
+        "detail": "geo",
+        "documentation": {}
+    },
+    {
+        "label": "WORLD_ELLIPTICAL",
+        "kind": 5,
+        "importPath": "geo",
+        "description": "geo",
+        "peekOfCode": "WORLD_ELLIPTICAL = \"Elliptical\"\nWORLD_PROJECTIVE = \"Projective\"\nWORLD_FRACTAL = \"Fractal\"\nworlds = [\n    WORLD_EUCLIDEAN,\n    WORLD_SPHERICAL,\n    WORLD_HYPERBOLIC,\n    WORLD_ELLIPTICAL,\n    WORLD_PROJECTIVE,\n    WORLD_FRACTAL,",
+        "detail": "geo",
+        "documentation": {}
+    },
+    {
+        "label": "WORLD_PROJECTIVE",
+        "kind": 5,
+        "importPath": "geo",
+        "description": "geo",
+        "peekOfCode": "WORLD_PROJECTIVE = \"Projective\"\nWORLD_FRACTAL = \"Fractal\"\nworlds = [\n    WORLD_EUCLIDEAN,\n    WORLD_SPHERICAL,\n    WORLD_HYPERBOLIC,\n    WORLD_ELLIPTICAL,\n    WORLD_PROJECTIVE,\n    WORLD_FRACTAL,\n]",
+        "detail": "geo",
+        "documentation": {}
+    },
+    {
+        "label": "WORLD_FRACTAL",
+        "kind": 5,
+        "importPath": "geo",
+        "description": "geo",
+        "peekOfCode": "WORLD_FRACTAL = \"Fractal\"\nworlds = [\n    WORLD_EUCLIDEAN,\n    WORLD_SPHERICAL,\n    WORLD_HYPERBOLIC,\n    WORLD_ELLIPTICAL,\n    WORLD_PROJECTIVE,\n    WORLD_FRACTAL,\n]\ncurrent_world = WORLD_EUCLIDEAN",
+        "detail": "geo",
+        "documentation": {}
+    },
+    {
+        "label": "worlds",
+        "kind": 5,
+        "importPath": "geo",
+        "description": "geo",
+        "peekOfCode": "worlds = [\n    WORLD_EUCLIDEAN,\n    WORLD_SPHERICAL,\n    WORLD_HYPERBOLIC,\n    WORLD_ELLIPTICAL,\n    WORLD_PROJECTIVE,\n    WORLD_FRACTAL,\n]\ncurrent_world = WORLD_EUCLIDEAN\n# Game Modes",
+        "detail": "geo",
+        "documentation": {}
+    },
+    {
+        "label": "current_world",
+        "kind": 5,
+        "importPath": "geo",
+        "description": "geo",
+        "peekOfCode": "current_world = WORLD_EUCLIDEAN\n# Game Modes\nMODE_AUTONOMOUS = \"Autonomous\"\nMODE_GUIDANCE = \"Guidance\"\ncurrent_mode = MODE_AUTONOMOUS\n# Task Types\nTASK_LINE = \"Draw Line\"\nTASK_TRIANGLE = \"Draw Triangle\"\nTASK_CIRCLE = \"Draw Circle\"\nTASK_PENTAGON = \"Draw Pentagon\"",
+        "detail": "geo",
+        "documentation": {}
+    },
+    {
+        "label": "MODE_AUTONOMOUS",
+        "kind": 5,
+        "importPath": "geo",
+        "description": "geo",
+        "peekOfCode": "MODE_AUTONOMOUS = \"Autonomous\"\nMODE_GUIDANCE = \"Guidance\"\ncurrent_mode = MODE_AUTONOMOUS\n# Task Types\nTASK_LINE = \"Draw Line\"\nTASK_TRIANGLE = \"Draw Triangle\"\nTASK_CIRCLE = \"Draw Circle\"\nTASK_PENTAGON = \"Draw Pentagon\"\nTASK_TESSELLATION = \"Draw Tessellation\"\ntasks = [TASK_LINE, TASK_TRIANGLE, TASK_CIRCLE, TASK_PENTAGON, TASK_TESSELLATION]",
+        "detail": "geo",
+        "documentation": {}
+    },
+    {
+        "label": "MODE_GUIDANCE",
+        "kind": 5,
+        "importPath": "geo",
+        "description": "geo",
+        "peekOfCode": "MODE_GUIDANCE = \"Guidance\"\ncurrent_mode = MODE_AUTONOMOUS\n# Task Types\nTASK_LINE = \"Draw Line\"\nTASK_TRIANGLE = \"Draw Triangle\"\nTASK_CIRCLE = \"Draw Circle\"\nTASK_PENTAGON = \"Draw Pentagon\"\nTASK_TESSELLATION = \"Draw Tessellation\"\ntasks = [TASK_LINE, TASK_TRIANGLE, TASK_CIRCLE, TASK_PENTAGON, TASK_TESSELLATION]\ncurrent_task = TASK_LINE",
+        "detail": "geo",
+        "documentation": {}
+    },
+    {
+        "label": "current_mode",
+        "kind": 5,
+        "importPath": "geo",
+        "description": "geo",
+        "peekOfCode": "current_mode = MODE_AUTONOMOUS\n# Task Types\nTASK_LINE = \"Draw Line\"\nTASK_TRIANGLE = \"Draw Triangle\"\nTASK_CIRCLE = \"Draw Circle\"\nTASK_PENTAGON = \"Draw Pentagon\"\nTASK_TESSELLATION = \"Draw Tessellation\"\ntasks = [TASK_LINE, TASK_TRIANGLE, TASK_CIRCLE, TASK_PENTAGON, TASK_TESSELLATION]\ncurrent_task = TASK_LINE\n# --- Prioritized Experience Replay with SumTree ---",
+        "detail": "geo",
+        "documentation": {}
+    },
+    {
+        "label": "TASK_LINE",
+        "kind": 5,
+        "importPath": "geo",
+        "description": "geo",
+        "peekOfCode": "TASK_LINE = \"Draw Line\"\nTASK_TRIANGLE = \"Draw Triangle\"\nTASK_CIRCLE = \"Draw Circle\"\nTASK_PENTAGON = \"Draw Pentagon\"\nTASK_TESSELLATION = \"Draw Tessellation\"\ntasks = [TASK_LINE, TASK_TRIANGLE, TASK_CIRCLE, TASK_PENTAGON, TASK_TESSELLATION]\ncurrent_task = TASK_LINE\n# --- Prioritized Experience Replay with SumTree ---\nclass SumTree:\n    def __init__(self, capacity):",
+        "detail": "geo",
+        "documentation": {}
+    },
+    {
+        "label": "TASK_TRIANGLE",
+        "kind": 5,
+        "importPath": "geo",
+        "description": "geo",
+        "peekOfCode": "TASK_TRIANGLE = \"Draw Triangle\"\nTASK_CIRCLE = \"Draw Circle\"\nTASK_PENTAGON = \"Draw Pentagon\"\nTASK_TESSELLATION = \"Draw Tessellation\"\ntasks = [TASK_LINE, TASK_TRIANGLE, TASK_CIRCLE, TASK_PENTAGON, TASK_TESSELLATION]\ncurrent_task = TASK_LINE\n# --- Prioritized Experience Replay with SumTree ---\nclass SumTree:\n    def __init__(self, capacity):\n        self.capacity = capacity",
+        "detail": "geo",
+        "documentation": {}
+    },
+    {
+        "label": "TASK_CIRCLE",
+        "kind": 5,
+        "importPath": "geo",
+        "description": "geo",
+        "peekOfCode": "TASK_CIRCLE = \"Draw Circle\"\nTASK_PENTAGON = \"Draw Pentagon\"\nTASK_TESSELLATION = \"Draw Tessellation\"\ntasks = [TASK_LINE, TASK_TRIANGLE, TASK_CIRCLE, TASK_PENTAGON, TASK_TESSELLATION]\ncurrent_task = TASK_LINE\n# --- Prioritized Experience Replay with SumTree ---\nclass SumTree:\n    def __init__(self, capacity):\n        self.capacity = capacity\n        self.tree = np.zeros(2 * capacity - 1)",
+        "detail": "geo",
+        "documentation": {}
+    },
+    {
+        "label": "TASK_PENTAGON",
+        "kind": 5,
+        "importPath": "geo",
+        "description": "geo",
+        "peekOfCode": "TASK_PENTAGON = \"Draw Pentagon\"\nTASK_TESSELLATION = \"Draw Tessellation\"\ntasks = [TASK_LINE, TASK_TRIANGLE, TASK_CIRCLE, TASK_PENTAGON, TASK_TESSELLATION]\ncurrent_task = TASK_LINE\n# --- Prioritized Experience Replay with SumTree ---\nclass SumTree:\n    def __init__(self, capacity):\n        self.capacity = capacity\n        self.tree = np.zeros(2 * capacity - 1)\n        self.data = np.zeros(capacity, dtype=object)",
+        "detail": "geo",
+        "documentation": {}
+    },
+    {
+        "label": "TASK_TESSELLATION",
+        "kind": 5,
+        "importPath": "geo",
+        "description": "geo",
+        "peekOfCode": "TASK_TESSELLATION = \"Draw Tessellation\"\ntasks = [TASK_LINE, TASK_TRIANGLE, TASK_CIRCLE, TASK_PENTAGON, TASK_TESSELLATION]\ncurrent_task = TASK_LINE\n# --- Prioritized Experience Replay with SumTree ---\nclass SumTree:\n    def __init__(self, capacity):\n        self.capacity = capacity\n        self.tree = np.zeros(2 * capacity - 1)\n        self.data = np.zeros(capacity, dtype=object)\n        self.write = 0",
+        "detail": "geo",
+        "documentation": {}
+    },
+    {
+        "label": "tasks",
+        "kind": 5,
+        "importPath": "geo",
+        "description": "geo",
+        "peekOfCode": "tasks = [TASK_LINE, TASK_TRIANGLE, TASK_CIRCLE, TASK_PENTAGON, TASK_TESSELLATION]\ncurrent_task = TASK_LINE\n# --- Prioritized Experience Replay with SumTree ---\nclass SumTree:\n    def __init__(self, capacity):\n        self.capacity = capacity\n        self.tree = np.zeros(2 * capacity - 1)\n        self.data = np.zeros(capacity, dtype=object)\n        self.write = 0\n        self.n_entries = 0",
+        "detail": "geo",
+        "documentation": {}
+    },
+    {
+        "label": "current_task",
+        "kind": 5,
+        "importPath": "geo",
+        "description": "geo",
+        "peekOfCode": "current_task = TASK_LINE\n# --- Prioritized Experience Replay with SumTree ---\nclass SumTree:\n    def __init__(self, capacity):\n        self.capacity = capacity\n        self.tree = np.zeros(2 * capacity - 1)\n        self.data = np.zeros(capacity, dtype=object)\n        self.write = 0\n        self.n_entries = 0\n    def add(self, priority, data):",
+        "detail": "geo",
+        "documentation": {}
+    },
+    {
+        "label": "state_dim",
+        "kind": 5,
+        "importPath": "geo",
+        "description": "geo",
+        "peekOfCode": "state_dim = 10  # [x, y, dx, dy, task_id, world_id, shape_progress, num_vertices, angle, dist_to_close]\naction_dim = 6  # [curvature_left, curvature_right, angle_adjust_left, angle_adjust_right, radius_adjust, add_vertex]\ngamma = 0.99\nepsilon_start = 1.0\nepsilon_end = 0.01\nepsilon_decay = 1000\nepsilon = epsilon_start\nbatch_size = 64\nmemory_size = 10000\ntarget_update = 10",
+        "detail": "geo",
+        "documentation": {}
+    },
+    {
+        "label": "action_dim",
+        "kind": 5,
+        "importPath": "geo",
+        "description": "geo",
+        "peekOfCode": "action_dim = 6  # [curvature_left, curvature_right, angle_adjust_left, angle_adjust_right, radius_adjust, add_vertex]\ngamma = 0.99\nepsilon_start = 1.0\nepsilon_end = 0.01\nepsilon_decay = 1000\nepsilon = epsilon_start\nbatch_size = 64\nmemory_size = 10000\ntarget_update = 10\nn_step = 3  # For N-Step Returns",
+        "detail": "geo",
+        "documentation": {}
+    },
+    {
+        "label": "gamma",
+        "kind": 5,
+        "importPath": "geo",
+        "description": "geo",
+        "peekOfCode": "gamma = 0.99\nepsilon_start = 1.0\nepsilon_end = 0.01\nepsilon_decay = 1000\nepsilon = epsilon_start\nbatch_size = 64\nmemory_size = 10000\ntarget_update = 10\nn_step = 3  # For N-Step Returns\nalpha = 0.6  # Prioritization exponent",
+        "detail": "geo",
+        "documentation": {}
+    },
+    {
+        "label": "epsilon_start",
+        "kind": 5,
+        "importPath": "geo",
+        "description": "geo",
+        "peekOfCode": "epsilon_start = 1.0\nepsilon_end = 0.01\nepsilon_decay = 1000\nepsilon = epsilon_start\nbatch_size = 64\nmemory_size = 10000\ntarget_update = 10\nn_step = 3  # For N-Step Returns\nalpha = 0.6  # Prioritization exponent\nbeta = 0.4  # Importance sampling weight",
+        "detail": "geo",
+        "documentation": {}
+    },
+    {
+        "label": "epsilon_end",
+        "kind": 5,
+        "importPath": "geo",
+        "description": "geo",
+        "peekOfCode": "epsilon_end = 0.01\nepsilon_decay = 1000\nepsilon = epsilon_start\nbatch_size = 64\nmemory_size = 10000\ntarget_update = 10\nn_step = 3  # For N-Step Returns\nalpha = 0.6  # Prioritization exponent\nbeta = 0.4  # Importance sampling weight\n# Initialize DQN and Forward Model",
+        "detail": "geo",
+        "documentation": {}
+    },
+    {
+        "label": "epsilon_decay",
+        "kind": 5,
+        "importPath": "geo",
+        "description": "geo",
+        "peekOfCode": "epsilon_decay = 1000\nepsilon = epsilon_start\nbatch_size = 64\nmemory_size = 10000\ntarget_update = 10\nn_step = 3  # For N-Step Returns\nalpha = 0.6  # Prioritization exponent\nbeta = 0.4  # Importance sampling weight\n# Initialize DQN and Forward Model\ndevice = torch.device(\"cuda\" if torch.cuda.is_available() else \"cpu\")",
+        "detail": "geo",
+        "documentation": {}
+    },
+    {
+        "label": "epsilon",
+        "kind": 5,
+        "importPath": "geo",
+        "description": "geo",
+        "peekOfCode": "epsilon = epsilon_start\nbatch_size = 64\nmemory_size = 10000\ntarget_update = 10\nn_step = 3  # For N-Step Returns\nalpha = 0.6  # Prioritization exponent\nbeta = 0.4  # Importance sampling weight\n# Initialize DQN and Forward Model\ndevice = torch.device(\"cuda\" if torch.cuda.is_available() else \"cpu\")\npolicy_net = DQN(state_dim, action_dim).to(device)",
+        "detail": "geo",
+        "documentation": {}
+    },
+    {
+        "label": "batch_size",
+        "kind": 5,
+        "importPath": "geo",
+        "description": "geo",
+        "peekOfCode": "batch_size = 64\nmemory_size = 10000\ntarget_update = 10\nn_step = 3  # For N-Step Returns\nalpha = 0.6  # Prioritization exponent\nbeta = 0.4  # Importance sampling weight\n# Initialize DQN and Forward Model\ndevice = torch.device(\"cuda\" if torch.cuda.is_available() else \"cpu\")\npolicy_net = DQN(state_dim, action_dim).to(device)\ntarget_net = DQN(state_dim, action_dim).to(device)",
+        "detail": "geo",
+        "documentation": {}
+    },
+    {
+        "label": "memory_size",
+        "kind": 5,
+        "importPath": "geo",
+        "description": "geo",
+        "peekOfCode": "memory_size = 10000\ntarget_update = 10\nn_step = 3  # For N-Step Returns\nalpha = 0.6  # Prioritization exponent\nbeta = 0.4  # Importance sampling weight\n# Initialize DQN and Forward Model\ndevice = torch.device(\"cuda\" if torch.cuda.is_available() else \"cpu\")\npolicy_net = DQN(state_dim, action_dim).to(device)\ntarget_net = DQN(state_dim, action_dim).to(device)\ntarget_net.load_state_dict(policy_net.state_dict())",
+        "detail": "geo",
+        "documentation": {}
+    },
+    {
+        "label": "target_update",
+        "kind": 5,
+        "importPath": "geo",
+        "description": "geo",
+        "peekOfCode": "target_update = 10\nn_step = 3  # For N-Step Returns\nalpha = 0.6  # Prioritization exponent\nbeta = 0.4  # Importance sampling weight\n# Initialize DQN and Forward Model\ndevice = torch.device(\"cuda\" if torch.cuda.is_available() else \"cpu\")\npolicy_net = DQN(state_dim, action_dim).to(device)\ntarget_net = DQN(state_dim, action_dim).to(device)\ntarget_net.load_state_dict(policy_net.state_dict())\noptimizer = optim.Adam(policy_net.parameters(), lr=0.001)",
+        "detail": "geo",
+        "documentation": {}
+    },
+    {
+        "label": "n_step",
+        "kind": 5,
+        "importPath": "geo",
+        "description": "geo",
+        "peekOfCode": "n_step = 3  # For N-Step Returns\nalpha = 0.6  # Prioritization exponent\nbeta = 0.4  # Importance sampling weight\n# Initialize DQN and Forward Model\ndevice = torch.device(\"cuda\" if torch.cuda.is_available() else \"cpu\")\npolicy_net = DQN(state_dim, action_dim).to(device)\ntarget_net = DQN(state_dim, action_dim).to(device)\ntarget_net.load_state_dict(policy_net.state_dict())\noptimizer = optim.Adam(policy_net.parameters(), lr=0.001)\nforward_model = ForwardModel(state_dim, action_dim).to(device)",
+        "detail": "geo",
+        "documentation": {}
+    },
+    {
+        "label": "alpha",
+        "kind": 5,
+        "importPath": "geo",
+        "description": "geo",
+        "peekOfCode": "alpha = 0.6  # Prioritization exponent\nbeta = 0.4  # Importance sampling weight\n# Initialize DQN and Forward Model\ndevice = torch.device(\"cuda\" if torch.cuda.is_available() else \"cpu\")\npolicy_net = DQN(state_dim, action_dim).to(device)\ntarget_net = DQN(state_dim, action_dim).to(device)\ntarget_net.load_state_dict(policy_net.state_dict())\noptimizer = optim.Adam(policy_net.parameters(), lr=0.001)\nforward_model = ForwardModel(state_dim, action_dim).to(device)\noptimizer_fm = optim.Adam(forward_model.parameters(), lr=0.001)",
+        "detail": "geo",
+        "documentation": {}
+    },
+    {
+        "label": "beta",
+        "kind": 5,
+        "importPath": "geo",
+        "description": "geo",
+        "peekOfCode": "beta = 0.4  # Importance sampling weight\n# Initialize DQN and Forward Model\ndevice = torch.device(\"cuda\" if torch.cuda.is_available() else \"cpu\")\npolicy_net = DQN(state_dim, action_dim).to(device)\ntarget_net = DQN(state_dim, action_dim).to(device)\ntarget_net.load_state_dict(policy_net.state_dict())\noptimizer = optim.Adam(policy_net.parameters(), lr=0.001)\nforward_model = ForwardModel(state_dim, action_dim).to(device)\noptimizer_fm = optim.Adam(forward_model.parameters(), lr=0.001)\n# Initialize memory for Prioritized Experience Replay",
+        "detail": "geo",
+        "documentation": {}
+    },
+    {
+        "label": "device",
+        "kind": 5,
+        "importPath": "geo",
+        "description": "geo",
+        "peekOfCode": "device = torch.device(\"cuda\" if torch.cuda.is_available() else \"cpu\")\npolicy_net = DQN(state_dim, action_dim).to(device)\ntarget_net = DQN(state_dim, action_dim).to(device)\ntarget_net.load_state_dict(policy_net.state_dict())\noptimizer = optim.Adam(policy_net.parameters(), lr=0.001)\nforward_model = ForwardModel(state_dim, action_dim).to(device)\noptimizer_fm = optim.Adam(forward_model.parameters(), lr=0.001)\n# Initialize memory for Prioritized Experience Replay\nmemory = SumTree(memory_size)\nn_step_buffer = []  # For N-Step Returns",
+        "detail": "geo",
+        "documentation": {}
+    },
+    {
+        "label": "policy_net",
+        "kind": 5,
+        "importPath": "geo",
+        "description": "geo",
+        "peekOfCode": "policy_net = DQN(state_dim, action_dim).to(device)\ntarget_net = DQN(state_dim, action_dim).to(device)\ntarget_net.load_state_dict(policy_net.state_dict())\noptimizer = optim.Adam(policy_net.parameters(), lr=0.001)\nforward_model = ForwardModel(state_dim, action_dim).to(device)\noptimizer_fm = optim.Adam(forward_model.parameters(), lr=0.001)\n# Initialize memory for Prioritized Experience Replay\nmemory = SumTree(memory_size)\nn_step_buffer = []  # For N-Step Returns\n# Game State",
+        "detail": "geo",
+        "documentation": {}
+    },
+    {
+        "label": "target_net",
+        "kind": 5,
+        "importPath": "geo",
+        "description": "geo",
+        "peekOfCode": "target_net = DQN(state_dim, action_dim).to(device)\ntarget_net.load_state_dict(policy_net.state_dict())\noptimizer = optim.Adam(policy_net.parameters(), lr=0.001)\nforward_model = ForwardModel(state_dim, action_dim).to(device)\noptimizer_fm = optim.Adam(forward_model.parameters(), lr=0.001)\n# Initialize memory for Prioritized Experience Replay\nmemory = SumTree(memory_size)\nn_step_buffer = []  # For N-Step Returns\n# Game State\nstart_point = None",
+        "detail": "geo",
+        "documentation": {}
+    },
+    {
+        "label": "optimizer",
+        "kind": 5,
+        "importPath": "geo",
+        "description": "geo",
+        "peekOfCode": "optimizer = optim.Adam(policy_net.parameters(), lr=0.001)\nforward_model = ForwardModel(state_dim, action_dim).to(device)\noptimizer_fm = optim.Adam(forward_model.parameters(), lr=0.001)\n# Initialize memory for Prioritized Experience Replay\nmemory = SumTree(memory_size)\nn_step_buffer = []  # For N-Step Returns\n# Game State\nstart_point = None\nend_point = (WIDTH - 50, HEIGHT - 50)\ntriangle_points = []",
+        "detail": "geo",
+        "documentation": {}
+    },
+    {
+        "label": "forward_model",
+        "kind": 5,
+        "importPath": "geo",
+        "description": "geo",
+        "peekOfCode": "forward_model = ForwardModel(state_dim, action_dim).to(device)\noptimizer_fm = optim.Adam(forward_model.parameters(), lr=0.001)\n# Initialize memory for Prioritized Experience Replay\nmemory = SumTree(memory_size)\nn_step_buffer = []  # For N-Step Returns\n# Game State\nstart_point = None\nend_point = (WIDTH - 50, HEIGHT - 50)\ntriangle_points = []\ncircle_center = None",
+        "detail": "geo",
+        "documentation": {}
+    },
+    {
+        "label": "optimizer_fm",
+        "kind": 5,
+        "importPath": "geo",
+        "description": "geo",
+        "peekOfCode": "optimizer_fm = optim.Adam(forward_model.parameters(), lr=0.001)\n# Initialize memory for Prioritized Experience Replay\nmemory = SumTree(memory_size)\nn_step_buffer = []  # For N-Step Returns\n# Game State\nstart_point = None\nend_point = (WIDTH - 50, HEIGHT - 50)\ntriangle_points = []\ncircle_center = None\ncircle_radius = 50",
+        "detail": "geo",
+        "documentation": {}
+    },
+    {
+        "label": "memory",
+        "kind": 5,
+        "importPath": "geo",
+        "description": "geo",
+        "peekOfCode": "memory = SumTree(memory_size)\nn_step_buffer = []  # For N-Step Returns\n# Game State\nstart_point = None\nend_point = (WIDTH - 50, HEIGHT - 50)\ntriangle_points = []\ncircle_center = None\ncircle_radius = 50\npentagon_points = []\ntessellation_points = []",
+        "detail": "geo",
+        "documentation": {}
+    },
+    {
+        "label": "n_step_buffer",
+        "kind": 5,
+        "importPath": "geo",
+        "description": "geo",
+        "peekOfCode": "n_step_buffer = []  # For N-Step Returns\n# Game State\nstart_point = None\nend_point = (WIDTH - 50, HEIGHT - 50)\ntriangle_points = []\ncircle_center = None\ncircle_radius = 50\npentagon_points = []\ntessellation_points = []\ncurrent_shape = []",
+        "detail": "geo",
+        "documentation": {}
+    },
+    {
+        "label": "start_point",
+        "kind": 5,
+        "importPath": "geo",
+        "description": "geo",
+        "peekOfCode": "start_point = None\nend_point = (WIDTH - 50, HEIGHT - 50)\ntriangle_points = []\ncircle_center = None\ncircle_radius = 50\npentagon_points = []\ntessellation_points = []\ncurrent_shape = []\nai_step = 0\nmax_steps = 50",
+        "detail": "geo",
+        "documentation": {}
+    },
+    {
+        "label": "end_point",
+        "kind": 5,
+        "importPath": "geo",
+        "description": "geo",
+        "peekOfCode": "end_point = (WIDTH - 50, HEIGHT - 50)\ntriangle_points = []\ncircle_center = None\ncircle_radius = 50\npentagon_points = []\ntessellation_points = []\ncurrent_shape = []\nai_step = 0\nmax_steps = 50\ngame_state = \"waiting_for_start\"",
+        "detail": "geo",
+        "documentation": {}
+    },
+    {
+        "label": "triangle_points",
+        "kind": 5,
+        "importPath": "geo",
+        "description": "geo",
+        "peekOfCode": "triangle_points = []\ncircle_center = None\ncircle_radius = 50\npentagon_points = []\ntessellation_points = []\ncurrent_shape = []\nai_step = 0\nmax_steps = 50\ngame_state = \"waiting_for_start\"\nplayer_hint = None",
+        "detail": "geo",
+        "documentation": {}
+    },
+    {
+        "label": "circle_center",
+        "kind": 5,
+        "importPath": "geo",
+        "description": "geo",
+        "peekOfCode": "circle_center = None\ncircle_radius = 50\npentagon_points = []\ntessellation_points = []\ncurrent_shape = []\nai_step = 0\nmax_steps = 50\ngame_state = \"waiting_for_start\"\nplayer_hint = None\nrewards = deque(maxlen=100)  # For tracking average reward",
+        "detail": "geo",
+        "documentation": {}
+    },
+    {
+        "label": "circle_radius",
+        "kind": 5,
+        "importPath": "geo",
+        "description": "geo",
+        "peekOfCode": "circle_radius = 50\npentagon_points = []\ntessellation_points = []\ncurrent_shape = []\nai_step = 0\nmax_steps = 50\ngame_state = \"waiting_for_start\"\nplayer_hint = None\nrewards = deque(maxlen=100)  # For tracking average reward\ncurrent_reward = 0",
+        "detail": "geo",
+        "documentation": {}
+    },
+    {
+        "label": "pentagon_points",
+        "kind": 5,
+        "importPath": "geo",
+        "description": "geo",
+        "peekOfCode": "pentagon_points = []\ntessellation_points = []\ncurrent_shape = []\nai_step = 0\nmax_steps = 50\ngame_state = \"waiting_for_start\"\nplayer_hint = None\nrewards = deque(maxlen=100)  # For tracking average reward\ncurrent_reward = 0\nglobal_step = 0  # For logging",
+        "detail": "geo",
+        "documentation": {}
+    },
+    {
+        "label": "tessellation_points",
+        "kind": 5,
+        "importPath": "geo",
+        "description": "geo",
+        "peekOfCode": "tessellation_points = []\ncurrent_shape = []\nai_step = 0\nmax_steps = 50\ngame_state = \"waiting_for_start\"\nplayer_hint = None\nrewards = deque(maxlen=100)  # For tracking average reward\ncurrent_reward = 0\nglobal_step = 0  # For logging\n# Setup CSV file for logging",
+        "detail": "geo",
+        "documentation": {}
+    },
+    {
+        "label": "current_shape",
+        "kind": 5,
+        "importPath": "geo",
+        "description": "geo",
+        "peekOfCode": "current_shape = []\nai_step = 0\nmax_steps = 50\ngame_state = \"waiting_for_start\"\nplayer_hint = None\nrewards = deque(maxlen=100)  # For tracking average reward\ncurrent_reward = 0\nglobal_step = 0  # For logging\n# Setup CSV file for logging\nlog_file = \"ai_calculations.csv\"",
+        "detail": "geo",
+        "documentation": {}
+    },
+    {
+        "label": "ai_step",
+        "kind": 5,
+        "importPath": "geo",
+        "description": "geo",
+        "peekOfCode": "ai_step = 0\nmax_steps = 50\ngame_state = \"waiting_for_start\"\nplayer_hint = None\nrewards = deque(maxlen=100)  # For tracking average reward\ncurrent_reward = 0\nglobal_step = 0  # For logging\n# Setup CSV file for logging\nlog_file = \"ai_calculations.csv\"\nfile_exists = os.path.isfile(log_file)",
+        "detail": "geo",
+        "documentation": {}
+    },
+    {
+        "label": "max_steps",
+        "kind": 5,
+        "importPath": "geo",
+        "description": "geo",
+        "peekOfCode": "max_steps = 50\ngame_state = \"waiting_for_start\"\nplayer_hint = None\nrewards = deque(maxlen=100)  # For tracking average reward\ncurrent_reward = 0\nglobal_step = 0  # For logging\n# Setup CSV file for logging\nlog_file = \"ai_calculations.csv\"\nfile_exists = os.path.isfile(log_file)\nwith open(log_file, mode=\"a\", newline=\"\") as f:",
+        "detail": "geo",
+        "documentation": {}
+    },
+    {
+        "label": "game_state",
+        "kind": 5,
+        "importPath": "geo",
+        "description": "geo",
+        "peekOfCode": "game_state = \"waiting_for_start\"\nplayer_hint = None\nrewards = deque(maxlen=100)  # For tracking average reward\ncurrent_reward = 0\nglobal_step = 0  # For logging\n# Setup CSV file for logging\nlog_file = \"ai_calculations.csv\"\nfile_exists = os.path.isfile(log_file)\nwith open(log_file, mode=\"a\", newline=\"\") as f:\n    writer = csv.writer(f)",
+        "detail": "geo",
+        "documentation": {}
+    },
+    {
+        "label": "player_hint",
+        "kind": 5,
+        "importPath": "geo",
+        "description": "geo",
+        "peekOfCode": "player_hint = None\nrewards = deque(maxlen=100)  # For tracking average reward\ncurrent_reward = 0\nglobal_step = 0  # For logging\n# Setup CSV file for logging\nlog_file = \"ai_calculations.csv\"\nfile_exists = os.path.isfile(log_file)\nwith open(log_file, mode=\"a\", newline=\"\") as f:\n    writer = csv.writer(f)\n    if not file_exists:",
+        "detail": "geo",
+        "documentation": {}
+    },
+    {
+        "label": "rewards",
+        "kind": 5,
+        "importPath": "geo",
+        "description": "geo",
+        "peekOfCode": "rewards = deque(maxlen=100)  # For tracking average reward\ncurrent_reward = 0\nglobal_step = 0  # For logging\n# Setup CSV file for logging\nlog_file = \"ai_calculations.csv\"\nfile_exists = os.path.isfile(log_file)\nwith open(log_file, mode=\"a\", newline=\"\") as f:\n    writer = csv.writer(f)\n    if not file_exists:\n        writer.writerow(",
+        "detail": "geo",
+        "documentation": {}
+    },
+    {
+        "label": "current_reward",
+        "kind": 5,
+        "importPath": "geo",
+        "description": "geo",
+        "peekOfCode": "current_reward = 0\nglobal_step = 0  # For logging\n# Setup CSV file for logging\nlog_file = \"ai_calculations.csv\"\nfile_exists = os.path.isfile(log_file)\nwith open(log_file, mode=\"a\", newline=\"\") as f:\n    writer = csv.writer(f)\n    if not file_exists:\n        writer.writerow(\n            [\"Step\", \"State\", \"Action\", \"Reward\", \"Average Reward\", \"Learning Message\"]",
+        "detail": "geo",
+        "documentation": {}
+    },
+    {
+        "label": "global_step",
+        "kind": 5,
+        "importPath": "geo",
+        "description": "geo",
+        "peekOfCode": "global_step = 0  # For logging\n# Setup CSV file for logging\nlog_file = \"ai_calculations.csv\"\nfile_exists = os.path.isfile(log_file)\nwith open(log_file, mode=\"a\", newline=\"\") as f:\n    writer = csv.writer(f)\n    if not file_exists:\n        writer.writerow(\n            [\"Step\", \"State\", \"Action\", \"Reward\", \"Average Reward\", \"Learning Message\"]\n        )",
+        "detail": "geo",
+        "documentation": {}
+    },
+    {
+        "label": "log_file",
+        "kind": 5,
+        "importPath": "geo",
+        "description": "geo",
+        "peekOfCode": "log_file = \"ai_calculations.csv\"\nfile_exists = os.path.isfile(log_file)\nwith open(log_file, mode=\"a\", newline=\"\") as f:\n    writer = csv.writer(f)\n    if not file_exists:\n        writer.writerow(\n            [\"Step\", \"State\", \"Action\", \"Reward\", \"Average Reward\", \"Learning Message\"]\n        )\n# Geometric Projections\ndef stereographic_projection(point, R=100):",
+        "detail": "geo",
+        "documentation": {}
+    },
+    {
+        "label": "file_exists",
+        "kind": 5,
+        "importPath": "geo",
+        "description": "geo",
+        "peekOfCode": "file_exists = os.path.isfile(log_file)\nwith open(log_file, mode=\"a\", newline=\"\") as f:\n    writer = csv.writer(f)\n    if not file_exists:\n        writer.writerow(\n            [\"Step\", \"State\", \"Action\", \"Reward\", \"Average Reward\", \"Learning Message\"]\n        )\n# Geometric Projections\ndef stereographic_projection(point, R=100):\n    x, y, z = point",
+        "detail": "geo",
+        "documentation": {}
+    },
+    {
+        "label": "animation_time",
+        "kind": 5,
+        "importPath": "geo",
+        "description": "geo",
+        "peekOfCode": "animation_time = 0\ndef draw_wireframe(world):\n    global animation_time\n    animation_time += 0.05\n    pulse = 0.5 + 0.5 * np.sin(animation_time)\n    def gradient_color(t):\n        r = int(0 * (1 - t) + 0 * t)\n        g = int(0 * (1 - t) + 255 * t)\n        b = int(255 * (1 - t) + 255 * t)\n        return (r, g, b)",
+        "detail": "geo",
+        "documentation": {}
+    },
+    {
+        "label": "world_model",
+        "kind": 5,
+        "importPath": "geo",
+        "description": "geo",
+        "peekOfCode": "world_model = WorldModel(state_dim, action_dim).to(device)\noptimizer_wm = optim.Adam(world_model.parameters(), lr=0.001)\ndef plan_actions(state, model, steps=3):\n    best_sequence = []\n    best_reward = -float(\"inf\")\n    for _ in range(10):  # Try 10 random sequences\n        sequence = [np.random.randint(action_dim) for _ in range(steps)]\n        sim_state = state.clone()\n        total_reward = 0\n        for action in sequence:",
+        "detail": "geo",
+        "documentation": {}
+    },
+    {
+        "label": "optimizer_wm",
+        "kind": 5,
+        "importPath": "geo",
+        "description": "geo",
+        "peekOfCode": "optimizer_wm = optim.Adam(world_model.parameters(), lr=0.001)\ndef plan_actions(state, model, steps=3):\n    best_sequence = []\n    best_reward = -float(\"inf\")\n    for _ in range(10):  # Try 10 random sequences\n        sequence = [np.random.randint(action_dim) for _ in range(steps)]\n        sim_state = state.clone()\n        total_reward = 0\n        for action in sequence:\n            action_tensor = torch.tensor([action], dtype=torch.float).to(device)",
+        "detail": "geo",
+        "documentation": {}
+    },
+    {
+        "label": "clock",
+        "kind": 5,
+        "importPath": "geo",
+        "description": "geo",
+        "peekOfCode": "clock = pygame.time.Clock()\nrunning = True\nstep_counter = 0\nwhile running:\n    for event in pygame.event.get():\n        if event.type == pygame.QUIT:\n            running = False\n        elif event.type == pygame.MOUSEBUTTONDOWN and game_state == \"waiting_for_start\":\n            if current_task == TASK_LINE:\n                start_point = event.pos",
+        "detail": "geo",
+        "documentation": {}
+    },
+    {
+        "label": "running",
+        "kind": 5,
+        "importPath": "geo",
+        "description": "geo",
+        "peekOfCode": "running = True\nstep_counter = 0\nwhile running:\n    for event in pygame.event.get():\n        if event.type == pygame.QUIT:\n            running = False\n        elif event.type == pygame.MOUSEBUTTONDOWN and game_state == \"waiting_for_start\":\n            if current_task == TASK_LINE:\n                start_point = event.pos\n                current_shape = [event.pos]",
+        "detail": "geo",
+        "documentation": {}
+    },
+    {
+        "label": "step_counter",
+        "kind": 5,
+        "importPath": "geo",
+        "description": "geo",
+        "peekOfCode": "step_counter = 0\nwhile running:\n    for event in pygame.event.get():\n        if event.type == pygame.QUIT:\n            running = False\n        elif event.type == pygame.MOUSEBUTTONDOWN and game_state == \"waiting_for_start\":\n            if current_task == TASK_LINE:\n                start_point = event.pos\n                current_shape = [event.pos]\n            elif current_task == TASK_TRIANGLE:",
+        "detail": "geo",
+        "documentation": {}
+    }
+]
