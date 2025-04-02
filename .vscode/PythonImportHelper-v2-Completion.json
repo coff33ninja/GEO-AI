@@ -102,7 +102,7 @@
         "kind": 6,
         "importPath": "geo",
         "description": "geo",
-        "peekOfCode": "class ForwardModel(nn.Module):\n    def __init__(self, state_dim, action_dim):\n        super().__init__()\n        self.fc1 = nn.Linear(state_dim + 1, 128)  # Action is a scalar\n        self.fc2 = nn.Linear(128, state_dim)\n    def forward(self, state, action):\n        # Debug: Check input shapes\n        if state.dim() != 2 or action.dim() != 2:\n            raise ValueError(\n                f\"Expected 2D tensors, got state shape {state.shape}, action shape {action.shape}\"",
+        "peekOfCode": "class ForwardModel(nn.Module):\n    def __init__(self, state_dim, action_dim):\n        super().__init__()\n        self.fc1 = nn.Linear(state_dim + 1, 128)  # Action is a scalar\n        self.fc2 = nn.Linear(128, state_dim)\n    def forward(self, state, action):\n        try:\n            # Check input dimensions\n            if state.dim() != 2 or action.dim() != 2:\n                raise ValueError(",
         "detail": "geo",
         "documentation": {}
     },
@@ -111,7 +111,7 @@
         "kind": 6,
         "importPath": "geo",
         "description": "geo",
-        "peekOfCode": "class WorldModel(nn.Module):\n    def __init__(self, state_dim, action_dim):\n        super().__init__()\n        self.fc1 = nn.Linear(state_dim + 1, 128)\n        self.fc2 = nn.Linear(128, state_dim)\n    def forward(self, state, action):\n        action = action.view(-1, 1)\n        x = torch.cat([state, action], dim=1)\n        x = torch.relu(self.fc1(x))\n        return self.fc2(x)",
+        "peekOfCode": "class WorldModel(nn.Module):\n    def __init__(self, state_dim, action_dim):\n        super().__init__()\n        self.fc1 = nn.Linear(state_dim + 1, 128)\n        self.fc2 = nn.Linear(128, state_dim)\n    def forward(self, state, action):\n        try:\n            # Check input dimensions\n            if state.dim() != 2 or action.dim() != 2:\n                raise ValueError(",
         "detail": "geo",
         "documentation": {}
     },
@@ -201,7 +201,7 @@
         "kind": 2,
         "importPath": "geo",
         "description": "geo",
-        "peekOfCode": "def draw_line_segment(start, end, curvature, world):\n    if world == WORLD_HYPERBOLIC:\n        return hyperbolic_geodesic(start, end)\n    points = []\n    num_points = 10\n    for i in range(num_points + 1):\n        t = i / num_points\n        x = (1 - t) * start[0] + t * end[0]\n        y = (1 - t) * start[1] + t * end[1]\n        offset = curvature * 50 * np.sin(np.pi * t)",
+        "peekOfCode": "def draw_line_segment(start, end, curvature, world):\n    try:\n        if not (isinstance(start, (tuple, list)) and isinstance(end, (tuple, list))):\n            raise ValueError(f\"Invalid start or end point: start={start}, end={end}\")\n        if len(start) != 2 or len(end) != 2:\n            raise ValueError(\n                f\"Start and end must be 2D points: start={start}, end={end}\"\n            )\n        if world == WORLD_HYPERBOLIC:\n            return hyperbolic_geodesic(start, end)",
         "detail": "geo",
         "documentation": {}
     },
@@ -210,7 +210,7 @@
         "kind": 2,
         "importPath": "geo",
         "description": "geo",
-        "peekOfCode": "def draw_triangle(points, angle_adjust, world):\n    if len(points) < 3:\n        return points\n    new_points = points.copy()\n    p1, p2, p3 = points\n    dx = p3[0] - p2[0]\n    dy = p3[1] - p2[1]\n    angle = np.arctan2(dy, dx) + angle_adjust * np.pi / 180\n    length = np.sqrt(dx**2 + dy**2)\n    new_x = p2[0] + length * np.cos(angle)",
+        "peekOfCode": "def draw_triangle(points, angle_adjust, world):\n    try:\n        if len(points) < 3:\n            return points\n        if not all(isinstance(p, (tuple, list)) and len(p) == 2 for p in points):\n            raise ValueError(f\"Invalid points for triangle: {points}\")\n        new_points = points.copy()\n        p1, p2, p3 = points\n        dx = p3[0] - p2[0]\n        dy = p3[1] - p2[1]",
         "detail": "geo",
         "documentation": {}
     },
@@ -282,7 +282,7 @@
         "kind": 2,
         "importPath": "geo",
         "description": "geo",
-        "peekOfCode": "def calculate_dist_to_close(points):\n    if len(points) < 2:\n        return 0\n    p1, p_last = points[0], points[-1]\n    return np.sqrt((p1[0] - p_last[0]) ** 2 + (p1[1] - p_last[1]) ** 2)\n# Reward Function\ndef calculate_reward(shape, target, task, world):\n    reward = 0\n    if task == TASK_LINE:\n        current_pos = shape[-1] if shape else (0, 0)",
+        "peekOfCode": "def calculate_dist_to_close(points):\n    if len(points) < 2:\n        return 0\n    p1, p_last = points[0], points[-1]\n    return np.sqrt((p1[0] - p_last[0]) ** 2 + (p1[1] - p_last[1]) ** 2)\n# Reward Function\ndef calculate_reward(shape, target, task, world):\n    try:\n        reward = 0\n        if task == TASK_LINE:",
         "detail": "geo",
         "documentation": {}
     },
@@ -291,7 +291,7 @@
         "kind": 2,
         "importPath": "geo",
         "description": "geo",
-        "peekOfCode": "def calculate_reward(shape, target, task, world):\n    reward = 0\n    if task == TASK_LINE:\n        current_pos = shape[-1] if shape else (0, 0)\n        dx = target[0] - current_pos[0]\n        dy = target[1] - current_pos[1]\n        distance = np.sqrt(dx**2 + dy**2)\n        reward = -distance / 100.0\n        if distance < 10:\n            reward += 50",
+        "peekOfCode": "def calculate_reward(shape, target, task, world):\n    try:\n        reward = 0\n        if task == TASK_LINE:\n            if not shape:\n                return -10  # Penalize empty shape\n            current_pos = shape[-1] if shape else (0, 0)\n            if not (isinstance(current_pos, (tuple, list)) and len(current_pos) == 2):\n                raise ValueError(f\"Invalid current_pos: {current_pos}\")\n            if not (isinstance(target, (tuple, list)) and len(target) == 2):",
         "detail": "geo",
         "documentation": {}
     },
@@ -570,7 +570,7 @@
         "kind": 5,
         "importPath": "geo",
         "description": "geo",
-        "peekOfCode": "state_dim = 10  # [x, y, dx, dy, task_id, world_id, shape_progress, num_vertices, angle, dist_to_close]\naction_dim = 6  # [curvature_left, curvature_right, angle_adjust_left, angle_adjust_right, radius_adjust, add_vertex]\ngamma = 0.99\nepsilon_start = 1.0\nepsilon_end = 0.01\nepsilon_decay = 1000\nepsilon = epsilon_start\nbatch_size = 64\nmemory_size = 10000\ntarget_update = 10",
+        "peekOfCode": "state_dim = 10  # [x, y, dx, dy, task_id, world_id, shape_progress, num_vertices, angle, dist_to_close]\naction_dim = 6  # [curvature_left, curvature_right, angle_adjust_left, angle_adjust_right, radius_adjust, add_vertex]\ngamma = 0.99\nepsilon_start = 1.0\nepsilon_end = 0.01\nepsilon_decay = 5000  # Increased for more exploration\nepsilon = epsilon_start\nbatch_size = 64\nmemory_size = 10000\ntarget_update = 10",
         "detail": "geo",
         "documentation": {}
     },
@@ -579,7 +579,7 @@
         "kind": 5,
         "importPath": "geo",
         "description": "geo",
-        "peekOfCode": "action_dim = 6  # [curvature_left, curvature_right, angle_adjust_left, angle_adjust_right, radius_adjust, add_vertex]\ngamma = 0.99\nepsilon_start = 1.0\nepsilon_end = 0.01\nepsilon_decay = 1000\nepsilon = epsilon_start\nbatch_size = 64\nmemory_size = 10000\ntarget_update = 10\nn_step = 3  # For N-Step Returns",
+        "peekOfCode": "action_dim = 6  # [curvature_left, curvature_right, angle_adjust_left, angle_adjust_right, radius_adjust, add_vertex]\ngamma = 0.99\nepsilon_start = 1.0\nepsilon_end = 0.01\nepsilon_decay = 5000  # Increased for more exploration\nepsilon = epsilon_start\nbatch_size = 64\nmemory_size = 10000\ntarget_update = 10\nn_step = 3  # For N-Step Returns",
         "detail": "geo",
         "documentation": {}
     },
@@ -588,7 +588,7 @@
         "kind": 5,
         "importPath": "geo",
         "description": "geo",
-        "peekOfCode": "gamma = 0.99\nepsilon_start = 1.0\nepsilon_end = 0.01\nepsilon_decay = 1000\nepsilon = epsilon_start\nbatch_size = 64\nmemory_size = 10000\ntarget_update = 10\nn_step = 3  # For N-Step Returns\nalpha = 0.6  # Prioritization exponent",
+        "peekOfCode": "gamma = 0.99\nepsilon_start = 1.0\nepsilon_end = 0.01\nepsilon_decay = 5000  # Increased for more exploration\nepsilon = epsilon_start\nbatch_size = 64\nmemory_size = 10000\ntarget_update = 10\nn_step = 3  # For N-Step Returns\nalpha = 0.7  # Increased for more prioritization",
         "detail": "geo",
         "documentation": {}
     },
@@ -597,7 +597,7 @@
         "kind": 5,
         "importPath": "geo",
         "description": "geo",
-        "peekOfCode": "epsilon_start = 1.0\nepsilon_end = 0.01\nepsilon_decay = 1000\nepsilon = epsilon_start\nbatch_size = 64\nmemory_size = 10000\ntarget_update = 10\nn_step = 3  # For N-Step Returns\nalpha = 0.6  # Prioritization exponent\nbeta = 0.4  # Importance sampling weight",
+        "peekOfCode": "epsilon_start = 1.0\nepsilon_end = 0.01\nepsilon_decay = 5000  # Increased for more exploration\nepsilon = epsilon_start\nbatch_size = 64\nmemory_size = 10000\ntarget_update = 10\nn_step = 3  # For N-Step Returns\nalpha = 0.7  # Increased for more prioritization\nbeta = 0.5  # Increased for better importance sampling",
         "detail": "geo",
         "documentation": {}
     },
@@ -606,7 +606,7 @@
         "kind": 5,
         "importPath": "geo",
         "description": "geo",
-        "peekOfCode": "epsilon_end = 0.01\nepsilon_decay = 1000\nepsilon = epsilon_start\nbatch_size = 64\nmemory_size = 10000\ntarget_update = 10\nn_step = 3  # For N-Step Returns\nalpha = 0.6  # Prioritization exponent\nbeta = 0.4  # Importance sampling weight\n# Initialize DQN and Forward Model",
+        "peekOfCode": "epsilon_end = 0.01\nepsilon_decay = 5000  # Increased for more exploration\nepsilon = epsilon_start\nbatch_size = 64\nmemory_size = 10000\ntarget_update = 10\nn_step = 3  # For N-Step Returns\nalpha = 0.7  # Increased for more prioritization\nbeta = 0.5  # Increased for better importance sampling\n# Initialize DQN and Forward Model",
         "detail": "geo",
         "documentation": {}
     },
@@ -615,7 +615,7 @@
         "kind": 5,
         "importPath": "geo",
         "description": "geo",
-        "peekOfCode": "epsilon_decay = 1000\nepsilon = epsilon_start\nbatch_size = 64\nmemory_size = 10000\ntarget_update = 10\nn_step = 3  # For N-Step Returns\nalpha = 0.6  # Prioritization exponent\nbeta = 0.4  # Importance sampling weight\n# Initialize DQN and Forward Model\ndevice = torch.device(\"cuda\" if torch.cuda.is_available() else \"cpu\")",
+        "peekOfCode": "epsilon_decay = 5000  # Increased for more exploration\nepsilon = epsilon_start\nbatch_size = 64\nmemory_size = 10000\ntarget_update = 10\nn_step = 3  # For N-Step Returns\nalpha = 0.7  # Increased for more prioritization\nbeta = 0.5  # Increased for better importance sampling\n# Initialize DQN and Forward Model\ndevice = torch.device(\"cuda\" if torch.cuda.is_available() else \"cpu\")",
         "detail": "geo",
         "documentation": {}
     },
@@ -624,7 +624,7 @@
         "kind": 5,
         "importPath": "geo",
         "description": "geo",
-        "peekOfCode": "epsilon = epsilon_start\nbatch_size = 64\nmemory_size = 10000\ntarget_update = 10\nn_step = 3  # For N-Step Returns\nalpha = 0.6  # Prioritization exponent\nbeta = 0.4  # Importance sampling weight\n# Initialize DQN and Forward Model\ndevice = torch.device(\"cuda\" if torch.cuda.is_available() else \"cpu\")\npolicy_net = DQN(state_dim, action_dim).to(device)",
+        "peekOfCode": "epsilon = epsilon_start\nbatch_size = 64\nmemory_size = 10000\ntarget_update = 10\nn_step = 3  # For N-Step Returns\nalpha = 0.7  # Increased for more prioritization\nbeta = 0.5  # Increased for better importance sampling\n# Initialize DQN and Forward Model\ndevice = torch.device(\"cuda\" if torch.cuda.is_available() else \"cpu\")\npolicy_net = DQN(state_dim, action_dim).to(device)",
         "detail": "geo",
         "documentation": {}
     },
@@ -633,7 +633,7 @@
         "kind": 5,
         "importPath": "geo",
         "description": "geo",
-        "peekOfCode": "batch_size = 64\nmemory_size = 10000\ntarget_update = 10\nn_step = 3  # For N-Step Returns\nalpha = 0.6  # Prioritization exponent\nbeta = 0.4  # Importance sampling weight\n# Initialize DQN and Forward Model\ndevice = torch.device(\"cuda\" if torch.cuda.is_available() else \"cpu\")\npolicy_net = DQN(state_dim, action_dim).to(device)\ntarget_net = DQN(state_dim, action_dim).to(device)",
+        "peekOfCode": "batch_size = 64\nmemory_size = 10000\ntarget_update = 10\nn_step = 3  # For N-Step Returns\nalpha = 0.7  # Increased for more prioritization\nbeta = 0.5  # Increased for better importance sampling\n# Initialize DQN and Forward Model\ndevice = torch.device(\"cuda\" if torch.cuda.is_available() else \"cpu\")\npolicy_net = DQN(state_dim, action_dim).to(device)\ntarget_net = DQN(state_dim, action_dim).to(device)",
         "detail": "geo",
         "documentation": {}
     },
@@ -642,7 +642,7 @@
         "kind": 5,
         "importPath": "geo",
         "description": "geo",
-        "peekOfCode": "memory_size = 10000\ntarget_update = 10\nn_step = 3  # For N-Step Returns\nalpha = 0.6  # Prioritization exponent\nbeta = 0.4  # Importance sampling weight\n# Initialize DQN and Forward Model\ndevice = torch.device(\"cuda\" if torch.cuda.is_available() else \"cpu\")\npolicy_net = DQN(state_dim, action_dim).to(device)\ntarget_net = DQN(state_dim, action_dim).to(device)\ntarget_net.load_state_dict(policy_net.state_dict())",
+        "peekOfCode": "memory_size = 10000\ntarget_update = 10\nn_step = 3  # For N-Step Returns\nalpha = 0.7  # Increased for more prioritization\nbeta = 0.5  # Increased for better importance sampling\n# Initialize DQN and Forward Model\ndevice = torch.device(\"cuda\" if torch.cuda.is_available() else \"cpu\")\npolicy_net = DQN(state_dim, action_dim).to(device)\ntarget_net = DQN(state_dim, action_dim).to(device)\ntarget_net.load_state_dict(policy_net.state_dict())",
         "detail": "geo",
         "documentation": {}
     },
@@ -651,7 +651,7 @@
         "kind": 5,
         "importPath": "geo",
         "description": "geo",
-        "peekOfCode": "target_update = 10\nn_step = 3  # For N-Step Returns\nalpha = 0.6  # Prioritization exponent\nbeta = 0.4  # Importance sampling weight\n# Initialize DQN and Forward Model\ndevice = torch.device(\"cuda\" if torch.cuda.is_available() else \"cpu\")\npolicy_net = DQN(state_dim, action_dim).to(device)\ntarget_net = DQN(state_dim, action_dim).to(device)\ntarget_net.load_state_dict(policy_net.state_dict())\noptimizer = optim.Adam(policy_net.parameters(), lr=0.001)",
+        "peekOfCode": "target_update = 10\nn_step = 3  # For N-Step Returns\nalpha = 0.7  # Increased for more prioritization\nbeta = 0.5  # Increased for better importance sampling\n# Initialize DQN and Forward Model\ndevice = torch.device(\"cuda\" if torch.cuda.is_available() else \"cpu\")\npolicy_net = DQN(state_dim, action_dim).to(device)\ntarget_net = DQN(state_dim, action_dim).to(device)\ntarget_net.load_state_dict(policy_net.state_dict())\noptimizer = optim.Adam(policy_net.parameters(), lr=0.001)",
         "detail": "geo",
         "documentation": {}
     },
@@ -660,7 +660,7 @@
         "kind": 5,
         "importPath": "geo",
         "description": "geo",
-        "peekOfCode": "n_step = 3  # For N-Step Returns\nalpha = 0.6  # Prioritization exponent\nbeta = 0.4  # Importance sampling weight\n# Initialize DQN and Forward Model\ndevice = torch.device(\"cuda\" if torch.cuda.is_available() else \"cpu\")\npolicy_net = DQN(state_dim, action_dim).to(device)\ntarget_net = DQN(state_dim, action_dim).to(device)\ntarget_net.load_state_dict(policy_net.state_dict())\noptimizer = optim.Adam(policy_net.parameters(), lr=0.001)\nforward_model = ForwardModel(state_dim, action_dim).to(device)",
+        "peekOfCode": "n_step = 3  # For N-Step Returns\nalpha = 0.7  # Increased for more prioritization\nbeta = 0.5  # Increased for better importance sampling\n# Initialize DQN and Forward Model\ndevice = torch.device(\"cuda\" if torch.cuda.is_available() else \"cpu\")\npolicy_net = DQN(state_dim, action_dim).to(device)\ntarget_net = DQN(state_dim, action_dim).to(device)\ntarget_net.load_state_dict(policy_net.state_dict())\noptimizer = optim.Adam(policy_net.parameters(), lr=0.001)\nforward_model = ForwardModel(state_dim, action_dim).to(device)",
         "detail": "geo",
         "documentation": {}
     },
@@ -669,7 +669,7 @@
         "kind": 5,
         "importPath": "geo",
         "description": "geo",
-        "peekOfCode": "alpha = 0.6  # Prioritization exponent\nbeta = 0.4  # Importance sampling weight\n# Initialize DQN and Forward Model\ndevice = torch.device(\"cuda\" if torch.cuda.is_available() else \"cpu\")\npolicy_net = DQN(state_dim, action_dim).to(device)\ntarget_net = DQN(state_dim, action_dim).to(device)\ntarget_net.load_state_dict(policy_net.state_dict())\noptimizer = optim.Adam(policy_net.parameters(), lr=0.001)\nforward_model = ForwardModel(state_dim, action_dim).to(device)\noptimizer_fm = optim.Adam(forward_model.parameters(), lr=0.001)",
+        "peekOfCode": "alpha = 0.7  # Increased for more prioritization\nbeta = 0.5  # Increased for better importance sampling\n# Initialize DQN and Forward Model\ndevice = torch.device(\"cuda\" if torch.cuda.is_available() else \"cpu\")\npolicy_net = DQN(state_dim, action_dim).to(device)\ntarget_net = DQN(state_dim, action_dim).to(device)\ntarget_net.load_state_dict(policy_net.state_dict())\noptimizer = optim.Adam(policy_net.parameters(), lr=0.001)\nforward_model = ForwardModel(state_dim, action_dim).to(device)\noptimizer_fm = optim.Adam(forward_model.parameters(), lr=0.001)",
         "detail": "geo",
         "documentation": {}
     },
@@ -678,7 +678,7 @@
         "kind": 5,
         "importPath": "geo",
         "description": "geo",
-        "peekOfCode": "beta = 0.4  # Importance sampling weight\n# Initialize DQN and Forward Model\ndevice = torch.device(\"cuda\" if torch.cuda.is_available() else \"cpu\")\npolicy_net = DQN(state_dim, action_dim).to(device)\ntarget_net = DQN(state_dim, action_dim).to(device)\ntarget_net.load_state_dict(policy_net.state_dict())\noptimizer = optim.Adam(policy_net.parameters(), lr=0.001)\nforward_model = ForwardModel(state_dim, action_dim).to(device)\noptimizer_fm = optim.Adam(forward_model.parameters(), lr=0.001)\n# Initialize memory for Prioritized Experience Replay",
+        "peekOfCode": "beta = 0.5  # Increased for better importance sampling\n# Initialize DQN and Forward Model\ndevice = torch.device(\"cuda\" if torch.cuda.is_available() else \"cpu\")\npolicy_net = DQN(state_dim, action_dim).to(device)\ntarget_net = DQN(state_dim, action_dim).to(device)\ntarget_net.load_state_dict(policy_net.state_dict())\noptimizer = optim.Adam(policy_net.parameters(), lr=0.001)\nforward_model = ForwardModel(state_dim, action_dim).to(device)\noptimizer_fm = optim.Adam(forward_model.parameters(), lr=0.001)\n# Initialize memory for Prioritized Experience Replay",
         "detail": "geo",
         "documentation": {}
     },

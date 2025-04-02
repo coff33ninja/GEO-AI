@@ -134,15 +134,23 @@ class ForwardModel(nn.Module):
         self.fc2 = nn.Linear(128, state_dim)
 
     def forward(self, state, action):
-        # Debug: Check input shapes
-        if state.dim() != 2 or action.dim() != 2:
-            raise ValueError(
-                f"Expected 2D tensors, got state shape {state.shape}, action shape {action.shape}"
-            )
-        action = action.view(-1, 1)  # Ensure action is [batch_size, 1]
-        x = torch.cat([state, action], dim=1)
-        x = torch.relu(self.fc1(x))
-        return self.fc2(x)
+        try:
+            # Check input dimensions
+            if state.dim() != 2 or action.dim() != 2:
+                raise ValueError(
+                    f"Expected 2D tensors, got state shape {state.shape}, action shape {action.shape}"
+                )
+            if state.shape[1] != state_dim or action.shape[1] != 1:
+                raise ValueError(
+                    f"Unexpected feature dimensions: state {state.shape}, action {action.shape}"
+                )
+            action = action.view(-1, 1)  # Ensure action is [batch_size, 1]
+            x = torch.cat([state, action], dim=1)
+            x = torch.relu(self.fc1(x))
+            return self.fc2(x)
+        except Exception as e:
+            print(f"Error in ForwardModel forward: {e}")
+            raise
 
 
 # DQN Parameters
@@ -151,14 +159,14 @@ action_dim = 6  # [curvature_left, curvature_right, angle_adjust_left, angle_adj
 gamma = 0.99
 epsilon_start = 1.0
 epsilon_end = 0.01
-epsilon_decay = 1000
+epsilon_decay = 5000  # Increased for more exploration
 epsilon = epsilon_start
 batch_size = 64
 memory_size = 10000
 target_update = 10
 n_step = 3  # For N-Step Returns
-alpha = 0.6  # Prioritization exponent
-beta = 0.4  # Importance sampling weight
+alpha = 0.7  # Increased for more prioritization
+beta = 0.5  # Increased for better importance sampling
 
 # Initialize DQN and Forward Model
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
@@ -475,44 +483,61 @@ def draw_wireframe(world):
 
 # Drawing Functions
 def draw_line_segment(start, end, curvature, world):
-    if world == WORLD_HYPERBOLIC:
-        return hyperbolic_geodesic(start, end)
-    points = []
-    num_points = 10
-    for i in range(num_points + 1):
-        t = i / num_points
-        x = (1 - t) * start[0] + t * end[0]
-        y = (1 - t) * start[1] + t * end[1]
-        offset = curvature * 50 * np.sin(np.pi * t)
-        dx = end[0] - start[0]
-        dy = end[1] - start[1]
-        length = np.sqrt(dx**2 + dy**2)
-        if length > 0:
-            perp_x = -dy / length
-            perp_y = dx / length
-            x += offset * perp_x
-            y += offset * perp_y
-        proj = project_point((x - WIDTH / 2, y - HEIGHT / 2), world)
-        if proj:
-            points.append(proj)
-    return points
+    try:
+        if not (isinstance(start, (tuple, list)) and isinstance(end, (tuple, list))):
+            raise ValueError(f"Invalid start or end point: start={start}, end={end}")
+        if len(start) != 2 or len(end) != 2:
+            raise ValueError(
+                f"Start and end must be 2D points: start={start}, end={end}"
+            )
+        if world == WORLD_HYPERBOLIC:
+            return hyperbolic_geodesic(start, end)
+        points = []
+        num_points = 10
+        for i in range(num_points + 1):
+            t = i / num_points
+            x = (1 - t) * start[0] + t * end[0]
+            y = (1 - t) * start[1] + t * end[1]
+            offset = curvature * 50 * np.sin(np.pi * t)
+            dx = end[0] - start[0]
+            dy = end[1] - start[1]
+            length = np.sqrt(dx**2 + dy**2)
+            if length > 0:
+                perp_x = -dy / length
+                perp_y = dx / length
+                x += offset * perp_x
+                y += offset * perp_y
+            proj = project_point((x - WIDTH / 2, y - HEIGHT / 2), world)
+            if proj:
+                points.append(proj)
+        return points
+    except Exception as e:
+        print(f"Error in draw_line_segment: {e}")
+        return []
 
 
 def draw_triangle(points, angle_adjust, world):
-    if len(points) < 3:
+    try:
+        if len(points) < 3:
+            return points
+        if not all(isinstance(p, (tuple, list)) and len(p) == 2 for p in points):
+            raise ValueError(f"Invalid points for triangle: {points}")
+        new_points = points.copy()
+        p1, p2, p3 = points
+        dx = p3[0] - p2[0]
+        dy = p3[1] - p2[1]
+        angle = np.arctan2(dy, dx) + angle_adjust * np.pi / 180
+        length = np.sqrt(dx**2 + dy**2)
+        new_x = p2[0] + length * np.cos(angle)
+        new_y = p2[1] + length * np.sin(angle)
+        new_points[2] = (new_x, new_y)
+        return [
+            project_point((p[0] - WIDTH / 2, p[1] - HEIGHT / 2), world)
+            for p in new_points
+        ]
+    except Exception as e:
+        print(f"Error in draw_triangle: {e}")
         return points
-    new_points = points.copy()
-    p1, p2, p3 = points
-    dx = p3[0] - p2[0]
-    dy = p3[1] - p2[1]
-    angle = np.arctan2(dy, dx) + angle_adjust * np.pi / 180
-    length = np.sqrt(dx**2 + dy**2)
-    new_x = p2[0] + length * np.cos(angle)
-    new_y = p2[1] + length * np.sin(angle)
-    new_points[2] = (new_x, new_y)
-    return [
-        project_point((p[0] - WIDTH / 2, p[1] - HEIGHT / 2), world) for p in new_points
-    ]
 
 
 def draw_circle(center, radius, radius_adjust, world):
@@ -589,10 +614,23 @@ class WorldModel(nn.Module):
         self.fc2 = nn.Linear(128, state_dim)
 
     def forward(self, state, action):
-        action = action.view(-1, 1)
-        x = torch.cat([state, action], dim=1)
-        x = torch.relu(self.fc1(x))
-        return self.fc2(x)
+        try:
+            # Check input dimensions
+            if state.dim() != 2 or action.dim() != 2:
+                raise ValueError(
+                    f"Expected 2D tensors, got state shape {state.shape}, action shape {action.shape}"
+                )
+            if state.shape[1] != state_dim or action.shape[1] != 1:
+                raise ValueError(
+                    f"Unexpected feature dimensions: state {state.shape}, action {action.shape}"
+                )
+            action = action.view(-1, 1)
+            x = torch.cat([state, action], dim=1)
+            x = torch.relu(self.fc1(x))
+            return self.fc2(x)
+        except Exception as e:
+            print(f"Error in WorldModel forward: {e}")
+            raise
 
 
 world_model = WorldModel(state_dim, action_dim).to(device)
@@ -737,17 +775,27 @@ def calculate_dist_to_close(points):
 
 # Reward Function
 def calculate_reward(shape, target, task, world):
-    reward = 0
-    if task == TASK_LINE:
-        current_pos = shape[-1] if shape else (0, 0)
-        dx = target[0] - current_pos[0]
-        dy = target[1] - current_pos[1]
-        distance = np.sqrt(dx**2 + dy**2)
-        reward = -distance / 100.0
-        if distance < 10:
-            reward += 50
-    elif task == TASK_TRIANGLE:
-        if len(shape) == 3:
+    try:
+        reward = 0
+        if task == TASK_LINE:
+            if not shape:
+                return -10  # Penalize empty shape
+            current_pos = shape[-1] if shape else (0, 0)
+            if not (isinstance(current_pos, (tuple, list)) and len(current_pos) == 2):
+                raise ValueError(f"Invalid current_pos: {current_pos}")
+            if not (isinstance(target, (tuple, list)) and len(target) == 2):
+                raise ValueError(f"Invalid target: {target}")
+            dx = target[0] - current_pos[0]
+            dy = target[1] - current_pos[1]
+            distance = np.sqrt(dx**2 + dy**2)
+            reward = -distance / 100.0
+            if distance < 10:
+                reward += 50
+        elif task == TASK_TRIANGLE:
+            if len(shape) != 3:
+                return -10  # Penalize incomplete triangle
+            if not all(isinstance(p, (tuple, list)) and len(p) == 2 for p in shape):
+                raise ValueError(f"Invalid shape for triangle: {shape}")
             angle = calculate_triangle_angle(shape)
             if world == WORLD_SPHERICAL:
                 reward = (angle - 60) / 10 if angle > 60 else -10
@@ -757,42 +805,58 @@ def calculate_reward(shape, target, task, world):
                 reward = -abs(angle - 60) / 10
                 if abs(angle - 60) < 10:
                     reward += 10
-    elif task == TASK_CIRCLE:
-        current_radius = target[1]
-        ideal_radius = 50
-        reward = -abs(current_radius - ideal_radius) / 10
-        if abs(current_radius - ideal_radius) < 5:
-            reward += 20
-    elif task == TASK_PENTAGON:
-        if len(shape) == 5:
+        elif task == TASK_CIRCLE:
+            if not shape:
+                return -10
+            if not isinstance(target, (tuple, list)) or len(target) != 2:
+                raise ValueError(f"Invalid target for circle: {target}")
+            current_radius = target[1]
+            ideal_radius = 50
+            reward = -abs(current_radius - ideal_radius) / 10
+            if abs(current_radius - ideal_radius) < 5:
+                reward += 20
+        elif task == TASK_PENTAGON:
+            if len(shape) != 5:
+                return -10
+            if not all(isinstance(p, (tuple, list)) and len(p) == 2 for p in shape):
+                raise ValueError(f"Invalid shape for pentagon: {shape}")
             dist = calculate_dist_to_close(shape)
             reward = -dist / 10
             if dist < 10:
                 reward += 30
-    elif task == TASK_TESSELLATION:
-        num_triangles = len(shape)
-        reward = num_triangles * 10
-        if world == WORLD_HYPERBOLIC:
+        elif task == TASK_TESSELLATION:
+            if not shape:
+                return -10
+            num_triangles = len(shape)
+            reward = num_triangles * 10
             for triangle in shape:
+                if not (isinstance(triangle, (list, tuple)) and len(triangle) == 3):
+                    raise ValueError(f"Invalid triangle in tessellation: {triangle}")
+                if not all(
+                    isinstance(p, (tuple, list)) and len(p) == 2 for p in triangle
+                ):
+                    raise ValueError(
+                        f"Invalid points in tessellation triangle: {triangle}"
+                    )
                 angle = calculate_triangle_angle(triangle)
-                if angle < 60:
-                    reward += (60 - angle) / 10
+                if world == WORLD_HYPERBOLIC:
+                    if angle < 60:
+                        reward += (60 - angle) / 10
+                    else:
+                        reward -= 5
+                elif world == WORLD_SPHERICAL:
+                    if angle > 60:
+                        reward += (angle - 60) / 10
+                    else:
+                        reward -= 5
                 else:
-                    reward -= 5
-        elif world == WORLD_SPHERICAL:
-            for triangle in shape:
-                angle = calculate_triangle_angle(triangle)
-                if angle > 60:
-                    reward += (angle - 60) / 10
-                else:
-                    reward -= 5
-        else:
-            for triangle in shape:
-                angle = calculate_triangle_angle(triangle)
-                reward -= abs(angle - 60) / 10
-                if abs(angle - 60) < 10:
-                    reward += 5
-    return reward
+                    reward -= abs(angle - 60) / 10
+                    if abs(angle - 60) < 10:
+                        reward += 5
+        return reward
+    except Exception as e:
+        print(f"Error in calculate_reward: {e}")
+        return -10  # Default penalty for errors
 
 
 # DQN Training with Prioritized Experience Replay
@@ -957,6 +1021,13 @@ while running:
         # Add batch dimension to state_tensor
         state_tensor = torch.FloatTensor(state).unsqueeze(0).to(device)
 
+        # Define target before action selection
+        target = (
+            end_point
+            if current_task == TASK_LINE
+            else (circle_center, circle_radius)
+        )
+
         # Update epsilon for exploration
         epsilon = epsilon_end + (epsilon_start - epsilon_end) * np.exp(
             -global_step / epsilon_decay
@@ -975,7 +1046,14 @@ while running:
             if random.random() < epsilon:
                 actions = [random.randint(0, action_dim - 1)]
             else:
-                actions = plan_actions(state_tensor, world_model)
+                actions = plan_actions(
+                    state_tensor,
+                    world_model,
+                    current_shape,
+                    target,
+                    current_task,
+                    current_world,
+                )
 
         # Apply player hint in guidance mode
         if current_mode == MODE_GUIDANCE and player_hint:
@@ -1098,8 +1176,8 @@ while running:
                 predicted_next_state - next_state_tensor
             ).item()
             current_reward = (
-                extrinsic_reward + 0.1 * intrinsic_reward
-            )  # Weight intrinsic reward
+                extrinsic_reward + 0.3 * intrinsic_reward  # Increased weight for more curiosity-driven exploration
+            )
             rewards.append(current_reward)
 
             # Store transition
