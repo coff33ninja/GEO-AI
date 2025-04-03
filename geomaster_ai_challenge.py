@@ -831,6 +831,8 @@ def calculate_reward(shape, target, task, world):
             reward = num_triangles * 10
             for triangle in shape:
                 if not (isinstance(triangle, (list, tuple)) and len(triangle) == 3):
+                    print(f"Invalid triangle in tessellation: {triangle}")
+                    continue  # Skip invalid triangles
                     raise ValueError(f"Invalid triangle in tessellation: {triangle}")
                 if not all(
                     isinstance(p, (tuple, list)) and len(p) == 2 for p in triangle
