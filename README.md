@@ -1,7 +1,7 @@
 # GeoMaster AI Challenge
 
 ## Purpose
-The **GeoMaster AI Challenge** is an interactive Python application designed to explore the intersection of artificial intelligence, reinforcement learning, and non-Euclidean geometry. The primary purpose of this project is to create an AI agent that learns to draw geometric shapes (e.g., lines, triangles, circles, pentagons, and tessellations) in various geometric worlds (Euclidean, Spherical, Hyperbolic, Elliptical, Projective, and Fractal) using a Deep Q-Network (DQN) enhanced with advanced techniques like Prioritized Experience Replay, N-Step Returns, and curiosity-driven exploration via a forward model. 
+The **GeoMaster AI Challenge** is an interactive Python application designed to explore the intersection of artificial intelligence, reinforcement learning, and non-Euclidean geometry. The primary purpose of this project is to create an AI agent that learns to draw geometric shapes (e.g., lines, triangles, circles, pentagons, and tessellations) in various geometric worlds (Euclidean, Spherical, Hyperbolic, Elliptical, Projective, and Fractal) using a Deep Q-Network (DQN) enhanced with advanced techniques like Prioritized Experience Replay, N-Step Returns, and curiosity-driven exploration via a forward model.
 
 This project serves as both an educational tool and a research platform:
 - **Educational Tool**: It visually demonstrates how AI can adapt to different geometric constraints and tasks, making it accessible for learning about reinforcement learning and geometry.
@@ -42,6 +42,15 @@ pip install pygame numpy torch
 
 ---
 
+## File Structure
+- `geomaster_ai_challenge.py`: The main script containing all game logic, AI models, and rendering code. It includes:
+  - **Game Logic**: Handles user input, task progression, and geometric world transitions.
+  - **AI Models**: Implements the DQN, Forward Model, and World Model for reinforcement learning and planning.
+  - **Rendering**: Visualizes geometric shapes and AI actions in real-time using `pygame`.
+- `ai_calculations.csv`: Generated log file storing AI steps, states, actions, rewards, and learning messages (created on first run).
+
+---
+
 ## How to Run
 1. **Clone or Download**: Obtain the source code by cloning this repository or downloading the script.
 2. **Install Dependencies**: Ensure all required libraries are installed (see Requirements).
@@ -54,12 +63,6 @@ pip install pygame numpy torch
    - **Guidance Mode**: Use arrow keys (Left, Right, Up, Down), Space, or 'V' to provide hints to the AI.
    - **Reset**: Press 'R' when the AI finishes a task to reset and cycle to the next task and world.
    - **Quit**: Close the window or press the 'X' button to exit.
-
----
-
-## File Structure
-- `geomaster_ai_challenge.py`: The main script containing all game logic, AI models, and rendering code.
-- `ai_calculations.csv`: Generated log file storing AI steps, states, actions, rewards, and learning messages (created on first run).
 
 ---
 
@@ -78,12 +81,6 @@ pip install pygame numpy torch
    - Space: Adjust radius.
    - V: Add a vertex.
 4. **Progress**: Monitor the AI's performance via on-screen reward metrics and the CSV log.
-
-### Example Workflow
-- Start the game, and the initial task is "Draw Line" in the Euclidean world.
-- Click to set a starting point; the AI begins drawing toward the red target.
-- Watch the AI adjust its path, or switch to Guidance mode to influence its actions.
-- When finished, press 'R' to move to the next task (e.g., "Draw Triangle") and world (e.g., Spherical).
 
 ---
 

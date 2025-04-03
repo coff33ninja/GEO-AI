@@ -7,7 +7,6 @@ import torch.nn as nn
 import torch.optim as optim
 import csv
 import os
-import threading
 import time
 import matplotlib.pyplot as plt
 from io import BytesIO
@@ -33,6 +32,17 @@ GREEN = (0, 255, 0)
 # Font
 font = pygame.font.SysFont("monospace", 20)
 
+# Thread-safe logging
+log_queue = Queue()
+debug_mode = False
+
+def log_message(message):
+    if debug_mode:
+        log_queue.put(message)
+
+def process_logs():
+    while not log_queue.empty():
+        print(log_queue.get())
 
 # Helper function
 def to_int_point(point):
@@ -41,10 +51,9 @@ def to_int_point(point):
         or len(point) != 2
         or not all(isinstance(coord, (int, float)) for coord in point)
     ):
-        print(f"Invalid point detected: {point}")
+        log_message(f"Invalid point detected: {repr(point)}")
         return (0, 0)
     return (int(point[0]), int(point[1]))
-
 
 # Geometric Worlds and Tasks
 WORLD_EUCLIDEAN = "Euclidean"
@@ -70,7 +79,6 @@ TASK_PENTAGON = "Draw Pentagon"
 TASK_TESSELLATION = "Draw Tessellation"
 tasks = [TASK_LINE, TASK_TRIANGLE, TASK_CIRCLE, TASK_PENTAGON, TASK_TESSELLATION]
 current_task = TASK_LINE
-
 
 # --- SumTree for Prioritized Experience Replay ---
 class SumTree:
@@ -110,7 +118,6 @@ class SumTree:
         data_idx = parent_idx - self.capacity + 1
         return parent_idx, self.tree[parent_idx], self.data[data_idx]
 
-
 # Neural Networks
 class DQN(nn.Module):
     def __init__(self, input_dim, output_dim):
@@ -124,11 +131,10 @@ class DQN(nn.Module):
         x = torch.relu(self.fc2(x))
         return self.fc3(x)
 
-
 class ForwardModel(nn.Module):
     def __init__(self, state_dim, action_dim):
         super().__init__()
-        self.fc1 = nn.Linear(state_dim + 1, 128)  # Action is a scalar
+        self.fc1 = nn.Linear(state_dim + 1, 128)
         self.fc2 = nn.Linear(128, state_dim)
 
     def forward(self, state, action):
@@ -146,9 +152,8 @@ class ForwardModel(nn.Module):
             x = torch.relu(self.fc1(x))
             return self.fc2(x)
         except Exception as e:
-            print(f"Error in ForwardModel forward: {e}")
+            log_message(f"Error in ForwardModel forward: {repr(e)}")
             raise
-
 
 class WorldModel(nn.Module):
     def __init__(self, state_dim, action_dim):
@@ -171,9 +176,8 @@ class WorldModel(nn.Module):
             x = torch.relu(self.fc1(x))
             return self.fc2(x)
         except Exception as e:
-            print(f"Error in WorldModel forward: {e}")
+            log_message(f"Error in WorldModel forward: {repr(e)}")
             raise
-
 
 class NextShapePredictor(nn.Module):
     def __init__(self, input_dim, output_dim):
@@ -187,11 +191,12 @@ class NextShapePredictor(nn.Module):
         x = torch.relu(self.fc2(x))
         return self.fc3(x)
 
-
 # DQN Parameters
-state_dim = 10
+state_dim_2d = 10
+state_dim_3d = 11  # Add z or dz for 3D
+state_dim = state_dim_2d  # Default to 2D
 action_dim = 6
-predictor_input_dim = 13  # task_id, world_id, avg_reward, last 10 rewards
+predictor_input_dim = 13
 predictor_output_dim = len(tasks)
 gamma = 0.99
 epsilon_start = 1.0
@@ -218,9 +223,7 @@ optimizer_fm = optim.Adam(forward_model.parameters(), lr=base_lr)
 world_model = WorldModel(state_dim, action_dim).to(device)
 optimizer_wm = optim.Adam(world_model.parameters(), lr=base_lr)
 
-shape_predictor = NextShapePredictor(predictor_input_dim, predictor_output_dim).to(
-    device
-)
+shape_predictor = NextShapePredictor(predictor_input_dim, predictor_output_dim).to(device)
 optimizer_sp = optim.Adam(shape_predictor.parameters(), lr=0.001)
 
 memory = SumTree(memory_size)
@@ -268,29 +271,26 @@ with open(log_file, mode="a", newline="") as f:
             ]
         )
 
-
 # Geometric Projections
 def stereographic_projection(point, R=100):
     x, y, z = point
     if z == 2 * R:
-        return (0, 0)  # Default point instead of None
+        return (0, 0)
     factor = 2 * R / (2 * R - z)
     proj_x = factor * x + WIDTH / 2
     proj_y = factor * y + HEIGHT / 2
     return (proj_x, proj_y)
 
-
 def poincare_disk_projection(point, R=100):
     x, y = point
     dist = np.sqrt(x**2 + y**2)
     if dist >= R:
-        return (WIDTH / 2, HEIGHT / 2)  # Center of disk as default
+        return (WIDTH / 2, HEIGHT / 2)
     factor = R * np.tanh(dist / R)
     angle = np.arctan2(y, x)
     proj_x = factor * np.cos(angle) + WIDTH / 2
-    proj_y = factor * np.sin(angle) + HEIGHT / 2
+    proj_y = factor * np.sin(angle) + WIDTH / 2
     return (proj_x, proj_y)
-
 
 def elliptical_projection(point, a=150, b=100):
     x, y = point
@@ -298,16 +298,14 @@ def elliptical_projection(point, a=150, b=100):
     proj_y = (y / b) * (HEIGHT / 2) + HEIGHT / 2
     return (proj_x, proj_y)
 
-
 def projective_projection(point, fov=90, near=1):
     x, y = point
     z = 100
     if z <= 0:
-        return (WIDTH / 2, HEIGHT / 2)  # Center as default
+        return (WIDTH / 2, HEIGHT / 2)
     proj_x = (x * near / z) * (WIDTH / 2) + WIDTH / 2
     proj_y = (y * near / z) * (HEIGHT / 2) + HEIGHT / 2
     return (proj_x, proj_y)
-
 
 def fractal_projection(point, iterations=3):
     x, y = point
@@ -320,8 +318,7 @@ def fractal_projection(point, iterations=3):
             x, y = (x + 1) / 2, y / 2
         else:
             x, y = x / 2, (y + 1) / 2
-    return (x * WIDTH, y * HEIGHT)  # Always returns a valid point
-
+    return (x * WIDTH, y * HEIGHT)
 
 def project_point(point, world):
     x, y = point
@@ -340,9 +337,7 @@ def project_point(point, world):
         proj = fractal_projection((x, y))
     else:
         proj = (x, y)
-    # Clamp coordinates to screen bounds
     return (max(0, min(proj[0], WIDTH)), max(0, min(proj[1], HEIGHT)))
-
 
 def hyperbolic_geodesic(start, end, R=100):
     start = (start[0] - WIDTH / 2, start[1] - HEIGHT / 2)
@@ -365,10 +360,131 @@ def hyperbolic_geodesic(start, end, R=100):
             points.append(proj)
     return points
 
+# 3D Projections
+def perspective_projection(point, fov=90, aspect_ratio=WIDTH / HEIGHT, near=1, far=1000):
+    x, y, z = point
+    if z <= near:
+        return None
+    scale = 1 / np.tan(np.radians(fov) / 2)
+    proj_x = (scale * x / z) * WIDTH / 2 + WIDTH / 2
+    proj_y = (scale * y / z) * HEIGHT / 2 + HEIGHT / 2
+    return (proj_x, proj_y)
+
+def orthographic_projection(point):
+    x, y, z = point
+    proj_x = x + WIDTH / 2
+    proj_y = y + HEIGHT / 2
+    return (proj_x, proj_y)
+
+# Extend project_point to handle 3D
+def project_point_3d(point, world, projection="perspective"):
+    if len(point) == 3:
+        if projection == "perspective":
+            return perspective_projection(point)
+        elif projection == "orthographic":
+            return orthographic_projection(point)
+    return project_point(point, world)
+
+# Toggle between 2D and 3D modes
+is_3d_mode = False
+projection_mode = "perspective"  # Options: "perspective", "orthographic"
+
+def update_network_dimensions():
+    global policy_net, target_net, forward_model, world_model, state_dim
+    state_dim = state_dim_3d if is_3d_mode else state_dim_2d
+    policy_net = DQN(state_dim, action_dim).to(device)
+    target_net = DQN(state_dim, action_dim).to(device)
+    target_net.load_state_dict(policy_net.state_dict())
+    forward_model = ForwardModel(state_dim, action_dim).to(device)
+    world_model = WorldModel(state_dim, action_dim).to(device)
+    global optimizer, optimizer_fm, optimizer_wm
+    optimizer = optim.Adam(policy_net.parameters(), lr=base_lr)
+    optimizer_fm = optim.Adam(forward_model.parameters(), lr=base_lr)
+    optimizer_wm = optim.Adam(world_model.parameters(), lr=base_lr)
+
+def toggle_3d_mode():
+    global is_3d_mode
+    is_3d_mode = not is_3d_mode
+    update_network_dimensions()
+    log_message(f"3D mode {'enabled' if is_3d_mode else 'disabled'}")
+
+# Extend tasks to 3D
+def draw_line_segment_3d(start, end, curvature, world):
+    try:
+        if not (isinstance(start, (tuple, list)) and isinstance(end, (tuple, list))):
+            raise ValueError(f"Invalid start or end point: start={repr(start)}, end={repr(end)}")
+        if len(start) != 3 or len(end) != 3:
+            raise ValueError(f"Start and end must be 3D points: start={repr(start)}, end={repr(end)}")
+        
+        points = []
+        num_points = 10
+        for i in range(num_points + 1):
+            t = i / num_points
+            x = (1 - t) * start[0] + t * end[0]
+            y = (1 - t) * start[1] + t * end[1]
+            z = (1 - t) * start[2] + t * end[2]
+            offset = curvature * 50 * np.sin(np.pi * t)
+            dx = end[0] - start[0]
+            dy = end[1] - start[1]
+            dz = end[2] - start[2]
+            length = np.sqrt(dx**2 + dy**2 + dz**2)
+            if length > 0:
+                perp_x = -dy / length
+                perp_y = dx / length
+                x += offset * perp_x
+                y += offset * perp_y
+            proj = project_point_3d((x, y, z), world)
+            if proj:
+                points.append(proj)
+        return points
+    except Exception as e:
+        log_message(f"Error in draw_line_segment_3d: {repr(e)}")
+        return [start]
+
+def draw_triangle_3d(points, angle_adjust, world):
+    try:
+        if len(points) != 3:
+            return points if len(points) < 3 else points[:3]
+        if not all(isinstance(p, (tuple, list)) and len(p) == 3 for p in points):
+            raise ValueError(f"Invalid points for triangle: {repr(points)}")
+        
+        new_points = points.copy()
+        p1, p2, p3 = points
+        dx = p3[0] - p2[0]
+        dy = p3[1] - p2[1]
+        dz = p3[2] - p2[2]
+        angle = np.arctan2(dy, dx) + angle_adjust * np.pi / 180
+        length = np.sqrt(dx**2 + dy**2 + dz**2)
+        new_x = p2[0] + length * np.cos(angle)
+        new_y = p2[1] + length * np.sin(angle)
+        new_z = p2[2]  # Keep z constant for simplicity
+        new_points[2] = (new_x, new_y, new_z)
+        return [
+            project_point_3d((p[0], p[1], p[2]), world) for p in new_points
+        ]
+    except Exception as e:
+        log_message(f"Error in draw_triangle_3d: {repr(e)}")
+        return points
+
+def draw_circle_3d(center, radius, radius_adjust, world):
+    try:
+        radius = max(10, radius + radius_adjust)
+        points = []
+        for theta in np.linspace(0, 2 * np.pi, 20):
+            for phi in np.linspace(0, np.pi, 10):  # Add depth for 3D
+                x = center[0] + radius * np.sin(phi) * np.cos(theta)
+                y = center[1] + radius * np.sin(phi) * np.sin(theta)
+                z = center[2] + radius * np.cos(phi)
+                proj = project_point_3d((x, y, z), world)
+                if proj:
+                    points.append(proj)
+        return points, radius
+    except Exception as e:
+        log_message(f"Error in draw_circle_3d: {repr(e)}")
+        return [], radius
 
 # Wireframe Visualization
 animation_time = 0
-
 
 def draw_wireframe(world):
     global animation_time
@@ -481,15 +597,14 @@ def draw_wireframe(world):
                 int(1 + pulse),
             )
 
-
 # Drawing Functions
 def draw_line_segment(start, end, curvature, world):
     try:
         if not (isinstance(start, (tuple, list)) and isinstance(end, (tuple, list))):
-            raise ValueError(f"Invalid start or end point: start={start}, end={end}")
+            raise ValueError(f"Invalid start or end point: start={repr(start)}, end={repr(end)}")
         if len(start) != 2 or len(end) != 2:
             raise ValueError(
-                f"Start and end must be 2D points: start={start}, end={end}"
+                f"Start and end must be 2D points: start={repr(start)}, end={repr(end)}"
             )
         if world == WORLD_HYPERBOLIC:
             return hyperbolic_geodesic(start, end)
@@ -512,16 +627,15 @@ def draw_line_segment(start, end, curvature, world):
             points.append(proj)
         return points
     except Exception as e:
-        print(f"Error in draw_line_segment: {e}")
-        return [start]  # Fallback to prevent empty lists
-
+        log_message(f"Error in draw_line_segment: {repr(e)}")
+        return [start]
 
 def draw_triangle(points, angle_adjust, world):
     try:
-        if len(points) < 3:
-            return points
+        if len(points) != 3:
+            return points if len(points) < 3 else points[:3]
         if not all(isinstance(p, (tuple, list)) and len(p) == 2 for p in points):
-            raise ValueError(f"Invalid points for triangle: {points}")
+            raise ValueError(f"Invalid points for triangle: {repr(points)}")
         new_points = points.copy()
         p1, p2, p3 = points
         dx = p3[0] - p2[0]
@@ -536,9 +650,8 @@ def draw_triangle(points, angle_adjust, world):
             for p in new_points
         ]
     except Exception as e:
-        print(f"Error in draw_triangle: {e}")
+        log_message(f"Error in draw_triangle: {repr(e)}")
         return points
-
 
 def draw_circle(center, radius, radius_adjust, world):
     radius = max(10, radius + radius_adjust)
@@ -551,10 +664,9 @@ def draw_circle(center, radius, radius_adjust, world):
             points.append(proj)
     return points, radius
 
-
 def draw_pentagon(points, angle_adjust, world):
-    if len(points) < 5:
-        return points
+    if len(points) != 5:
+        return points if len(points) < 5 else points[:5]
     new_points = points.copy()
     for i in range(2, 5):
         p1 = new_points[i - 1]
@@ -570,10 +682,9 @@ def draw_pentagon(points, angle_adjust, world):
         project_point((p[0] - WIDTH / 2, p[1] - HEIGHT / 2), world) for p in new_points
     ]
 
-
 def draw_tessellation(points, world):
     if len(points) < 3:
-        return [points]  # Return as a single triangle list
+        return [points]
     base_triangle = points[:3]
     tessellation = [base_triangle]
     center_x = sum(p[0] for p in base_triangle) / 3
@@ -586,7 +697,6 @@ def draw_tessellation(points, world):
         tessellation.append(new_triangle)
     return [[project_point((p[0] - WIDTH / 2, p[1] - HEIGHT / 2), world) for p in triangle] for triangle in tessellation]
 
-
 # Macro Actions
 def macro_action_draw_triangle(current_shape, world):
     actions = []
@@ -595,61 +705,85 @@ def macro_action_draw_triangle(current_shape, world):
             actions.append(3)
     return actions
 
-
 def macro_action_draw_circle(center, radius, world):
     actions = []
     for _ in range(3):
         actions.append(4)
     return actions
 
-
 # Helper Functions
 def calculate_triangle_angle(points):
-    if len(points) < 3:
+    try:
+        if len(points) < 3:
+            return 0
+        # Flatten if nested (e.g., from tessellation)
+        flat_points = []
+        for p in points[:3]:
+            if isinstance(p, (tuple, list)) and len(p) >= 2:
+                flat_points.append((float(p[0]), float(p[1])))
+            else:
+                raise ValueError(f"Invalid point format: {repr(p)}")
+        if len(flat_points) != 3:
+            raise ValueError(f"Expected 3 points, got {len(flat_points)}")
+        p1, p2, p3 = flat_points
+        v1 = np.array([p2[0] - p1[0], p2[1] - p1[1]])
+        v2 = np.array([p3[0] - p2[0], p3[1] - p2[1]])
+        if np.linalg.norm(v1) == 0 or np.linalg.norm(v2) == 0:
+            return 0
+        dot_product = np.dot(v1, v2)
+        norms_product = np.linalg.norm(v1) * np.linalg.norm(v2)
+        if norms_product == 0 or not (-1 <= dot_product / norms_product <= 1):
+            return 0
+        angle = (
+            np.arccos(dot_product / norms_product)
+            * 180
+            / np.pi
+        )
+        return angle
+    except Exception as e:
+        log_message(f"Error in calculate_triangle_angle: {repr(e)}")
         return 0
-    p1, p2, p3 = points
-    v1 = np.array([p2[0] - p1[0], p2[1] - p1[1]])
-    v2 = np.array([p3[0] - p2[0], p3[1] - p2[1]])
-    if np.linalg.norm(v1) == 0 or np.linalg.norm(v2) == 0:
-        return 0
-    angle = (
-        np.arccos(np.dot(v1, v2) / (np.linalg.norm(v1) * np.linalg.norm(v2)))
-        * 180
-        / np.pi
-    )
-    return angle
-
 
 def calculate_dist_to_close(points):
-    if len(points) < 2:
+    if not points or len(points) < 2:
         return 0
-    p1, p_last = points[0], points[-1]
-    return np.sqrt((p1[0] - p_last[0]) ** 2 + (p1[1] - p_last[1]) ** 2)
+    if all(isinstance(p, (tuple, list)) and len(p) == 2 for p in points):
+        p1 = points[0]
+        p_last = points[-1]
+        return np.sqrt((p1[0] - p_last[0]) ** 2 + (p1[1] - p_last[1]) ** 2)
+    elif all(isinstance(t, (list, tuple)) and len(t) == 3 for t in points):
+        if not points[0] or not points[-1]:
+            return 0
+        p1 = points[0][0]
+        p_last = points[-1][-1]
+        return np.sqrt((p1[0] - p_last[0]) ** 2 + (p1[1] - p_last[1]) ** 2)
+    else:
+        log_message(f"Invalid points structure for dist_to_close: {repr(points)}")
+        return 0
 
-
-# Reward Function
-def calculate_reward(shape, target, task, world):
+# Advanced Reward System
+def calculate_advanced_reward(shape, target, task, world):
     try:
         reward = 0
+        efficiency_factor = 1.0
+        creativity_factor = 1.0
+        constraint_penalty = 0
+
         if task == TASK_LINE:
             if not shape:
                 return -10
             current_pos = shape[-1] if shape else (0, 0)
-            if not (isinstance(current_pos, (tuple, list)) and len(current_pos) == 2):
-                raise ValueError(f"Invalid current_pos: {current_pos}")
-            if not (isinstance(target, (tuple, list)) and len(target) == 2):
-                raise ValueError(f"Invalid target: {target}")
             dx = target[0] - current_pos[0]
             dy = target[1] - current_pos[1]
             distance = np.sqrt(dx**2 + dy**2)
             reward = -distance / 100.0
             if distance < 10:
                 reward += 50
+            efficiency_factor = max(0.5, 1 - len(shape) / 50)  # Penalize longer paths
+
         elif task == TASK_TRIANGLE:
             if len(shape) != 3:
                 return -10
-            if not all(isinstance(p, (tuple, list)) and len(p) == 2 for p in shape):
-                raise ValueError(f"Invalid shape for triangle: {shape}")
             angle = calculate_triangle_angle(shape)
             if world == WORLD_SPHERICAL:
                 reward = (angle - 60) / 10 if angle > 60 else -10
@@ -659,40 +793,33 @@ def calculate_reward(shape, target, task, world):
                 reward = -abs(angle - 60) / 10
                 if abs(angle - 60) < 10:
                     reward += 10
+            creativity_factor = 1 + (angle / 180)  # Reward diverse angles
+
         elif task == TASK_CIRCLE:
             if not shape:
                 return -10
-            if not isinstance(target, (tuple, list)) or len(target) != 2:
-                raise ValueError(f"Invalid target for circle: {target}")
             current_radius = target[1]
             ideal_radius = 50
             reward = -abs(current_radius - ideal_radius) / 10
             if abs(current_radius - ideal_radius) < 5:
                 reward += 20
+            efficiency_factor = max(0.5, 1 - abs(current_radius - ideal_radius) / 50)
+
         elif task == TASK_PENTAGON:
             if len(shape) != 5:
                 return -10
-            if not all(isinstance(p, (tuple, list)) and len(p) == 2 for p in shape):
-                raise ValueError(f"Invalid shape for pentagon: {shape}")
             dist = calculate_dist_to_close(shape)
             reward = -dist / 10
             if dist < 10:
                 reward += 30
+            creativity_factor = 1 + (len(set(shape)) / 5)  # Reward unique vertices
+
         elif task == TASK_TESSELLATION:
-            if not shape:
+            if not shape or not isinstance(shape, (list, tuple)):
                 return -10
             num_triangles = len(shape)
             reward = num_triangles * 10
             for triangle in shape:
-                if not (
-                    isinstance(triangle, (list, tuple))
-                    and len(triangle) == 3
-                    and all(
-                        isinstance(p, (tuple, list)) and len(p) == 2 for p in triangle
-                    )
-                ):
-                    print(f"Invalid triangle in tessellation: {triangle}")
-                    continue
                 angle = calculate_triangle_angle(triangle)
                 if world == WORLD_HYPERBOLIC:
                     if angle < 60:
@@ -708,11 +835,18 @@ def calculate_reward(shape, target, task, world):
                     reward -= abs(angle - 60) / 10
                     if abs(angle - 60) < 10:
                         reward += 5
+            efficiency_factor = max(0.5, 1 - num_triangles / 10)
+
+        # Apply penalties for constraint violations
+        if task == TASK_TRIANGLE and len(shape) > 3:
+            constraint_penalty = -5 * (len(shape) - 3)
+
+        # Combine factors into the final reward
+        reward = reward * efficiency_factor * creativity_factor + constraint_penalty
         return reward
     except Exception as e:
-        print(f"Error in calculate_reward: {e}")
+        log_message(f"Error in calculate_advanced_reward: {repr(e)}")
         return -10
-
 
 # DQN Training
 def optimize_model():
@@ -729,12 +863,24 @@ def optimize_model():
         a = segment * i
         b = segment * (i + 1)
         s = random.uniform(a, b)
-        idx, priority, data = memory.get_leaf(s)
+        leaf = memory.get_leaf(s)
+        if not isinstance(leaf, tuple) or len(leaf) != 3:
+            log_message(f"Invalid leaf retrieved from memory: {repr(leaf)}")
+            continue
+        idx, priority, data = leaf
         batch.append(data)
         idxs.append(idx)
         priorities.append(priority)
 
-    state_batch, action_batch, reward_batch, next_state_batch, done_batch = zip(*batch)
+    if not batch:
+        log_message("Batch is empty, skipping optimization.")
+        return
+
+    try:
+        state_batch, action_batch, reward_batch, next_state_batch, done_batch = zip(*batch)
+    except Exception as e:
+        log_message(f"Error unpacking batch: {repr(e)}")
+        return
 
     state_batch = torch.FloatTensor(np.array(state_batch)).to(device)
     action_batch = torch.LongTensor(np.array(action_batch)).to(device)
@@ -750,9 +896,7 @@ def optimize_model():
     for i, idx in enumerate(idxs):
         memory.update(idx, (td_errors[i] + 1e-5) ** alpha)
 
-    weights = torch.FloatTensor([(total_priority / p) ** -beta for p in priorities]).to(
-        device
-    )
+    weights = torch.FloatTensor([(total_priority / p) ** -beta for p in priorities]).to(device)
     loss = (weights * (q_values - expected_q_values) ** 2).mean()
 
     optimizer.zero_grad()
@@ -766,7 +910,6 @@ def optimize_model():
     fm_loss.backward()
     optimizer_fm.step()
 
-
 def store_transition(transition):
     n_step_buffer.append(transition)
     if len(n_step_buffer) < n_step:
@@ -777,7 +920,6 @@ def store_transition(transition):
     memory.add(1.0, (state, action, cumulative_reward, next_state, done))
     n_step_buffer.pop(0)
 
-
 def plan_actions(state_tensor, model, current_shape, target, task, world, steps=3):
     best_sequence = []
     best_reward = -float("inf")
@@ -786,7 +928,7 @@ def plan_actions(state_tensor, model, current_shape, target, task, world, steps=
     for _ in range(10):
         sequence = [np.random.randint(action_dim) for _ in range(steps)]
         sim_state = state.copy()
-        sim_shape = current_shape.copy()
+        sim_shape = current_shape.copy() if isinstance(current_shape, list) else []
         total_reward = 0
 
         for action in sequence:
@@ -825,7 +967,8 @@ def plan_actions(state_tensor, model, current_shape, target, task, world, steps=
                 sim_shape = draw_pentagon(sim_shape, angle_adjust, world)
             elif task == TASK_TESSELLATION:
                 if action == 5:
-                    sim_shape = draw_tessellation(sim_shape, world)
+                    base_points = sim_shape[0] if sim_shape and isinstance(sim_shape[0], (list, tuple)) else [(0, 0), (50, 50), (100, 0)]
+                    sim_shape = draw_tessellation(base_points, world)
 
             shape_progress = (
                 len(sim_shape) / 5 if task != TASK_TESSELLATION else len(sim_shape)
@@ -833,12 +976,15 @@ def plan_actions(state_tensor, model, current_shape, target, task, world, steps=
             num_vertices = (
                 len(sim_shape)
                 if task != TASK_TESSELLATION
-                else sum(len(t) for t in sim_shape)
+                else sum(len(t) for t in sim_shape if isinstance(t, (list, tuple)))
             )
             angle = 0
             dist_to_close = 0
             if task == TASK_LINE:
                 next_pos = sim_shape[-1] if sim_shape else (0, 0)
+                # Flatten next_pos if it contains nested tuples
+                if isinstance(next_pos[0], (tuple, list)):
+                    next_pos = (next_pos[0][0], next_pos[0][1])
                 dx = target[0] - next_pos[0]
                 dy = target[1] - next_pos[1]
             else:
@@ -867,7 +1013,7 @@ def plan_actions(state_tensor, model, current_shape, target, task, world, steps=
                 ]
             )
 
-            reward = calculate_reward(sim_shape, target, task, world)
+            reward = calculate_advanced_reward(sim_shape, target, task, world)
             total_reward += reward
 
             sim_state_tensor = torch.FloatTensor(sim_state).unsqueeze(0).to(device)
@@ -882,26 +1028,6 @@ def plan_actions(state_tensor, model, current_shape, target, task, world, steps=
             best_sequence = sequence
 
     return best_sequence
-
-
-# Console Input Handler
-command = ""
-command_queue = Queue()
-
-def console_input():
-    while True:
-        cmd = (
-            input(
-                "Enter command (start, pause, resume, quit, faster, slower, iters_up, iters_down): "
-            )
-            .strip()
-            .lower()
-        )
-        command_queue.put(cmd)
-
-lock = threading.Lock()
-threading.Thread(target=console_input, daemon=True).start()
-
 
 # Adaptive Learning Rate
 def adjust_learning_rate(fps):
@@ -920,7 +1046,6 @@ def adjust_learning_rate(fps):
         param_group["lr"] = current_lr
     return current_lr
 
-
 # Predict Next Shape
 def predict_next_shape():
     global current_task, reward_history
@@ -935,32 +1060,48 @@ def predict_next_shape():
         pred = shape_predictor(state_tensor).argmax().item()
     return tasks[pred]
 
-
 # Reset Episode
 def reset_episode():
     global start_point, triangle_points, circle_center, pentagon_points, tessellation_points, current_shape, game_state, ai_step
-    if current_task == TASK_LINE:
-        start_point = (random.randint(50, WIDTH-50), random.randint(50, HEIGHT-50))
-        current_shape = [start_point]
-    elif current_task == TASK_TRIANGLE:
-        triangle_points = [(random.randint(50, WIDTH-50), random.randint(50, HEIGHT-50)) for _ in range(3)]
-        current_shape = triangle_points.copy()
-    elif current_task == TASK_CIRCLE:
-        circle_center = (random.randint(50, WIDTH-50), random.randint(50, HEIGHT-50))
-        current_shape = []
-    elif current_task == TASK_PENTAGON:
-        pentagon_points = [(random.randint(50, WIDTH-50), random.randint(50, HEIGHT-50)) for _ in range(5)]
-        current_shape = pentagon_points.copy()
-    elif current_task == TASK_TESSELLATION:
-        tessellation_points = [(random.randint(50, WIDTH-50), random.randint(50, HEIGHT-50)) for _ in range(3)]
-        current_shape = [tessellation_points.copy()]  # Initialize as a list containing one triangle
+    if is_3d_mode:
+        if current_task == TASK_LINE:
+            start_point = (random.randint(50, WIDTH-50), random.randint(50, HEIGHT-50), random.randint(-100, 100))
+            current_shape = [start_point]
+            global end_point
+            end_point = (WIDTH - 50, HEIGHT - 50, random.randint(-100, 100))
+        elif current_task == TASK_TRIANGLE:
+            triangle_points = [(random.randint(50, WIDTH-50), random.randint(50, HEIGHT-50), random.randint(-100, 100)) for _ in range(3)]
+            current_shape = triangle_points.copy()
+        elif current_task == TASK_CIRCLE:
+            circle_center = (random.randint(50, WIDTH-50), random.randint(50, HEIGHT-50), random.randint(-100, 100))
+            current_shape = []
+        elif current_task == TASK_PENTAGON:
+            pentagon_points = [(random.randint(50, WIDTH-50), random.randint(50, HEIGHT-50), random.randint(-100, 100)) for _ in range(5)]
+            current_shape = pentagon_points.copy()
+        elif current_task == TASK_TESSELLATION:
+            tessellation_points = [(random.randint(50, WIDTH-50), random.randint(50, HEIGHT-50), random.randint(-100, 100)) for _ in range(3)]
+            current_shape = [tessellation_points.copy()]
+    else:
+        if current_task == TASK_LINE:
+            start_point = (random.randint(50, WIDTH-50), random.randint(50, HEIGHT-50))
+            current_shape = [start_point]
+        elif current_task == TASK_TRIANGLE:
+            triangle_points = [(random.randint(50, WIDTH-50), random.randint(50, HEIGHT-50)) for _ in range(3)]
+            current_shape = triangle_points.copy()
+        elif current_task == TASK_CIRCLE:
+            circle_center = (random.randint(50, WIDTH-50), random.randint(50, HEIGHT-50))
+            current_shape = []
+        elif current_task == TASK_PENTAGON:
+            pentagon_points = [(random.randint(50, WIDTH-50), random.randint(50, HEIGHT-50)) for _ in range(5)]
+            current_shape = pentagon_points.copy()
+        elif current_task == TASK_TESSELLATION:
+            tessellation_points = [(random.randint(50, WIDTH-50), random.randint(50, HEIGHT-50)) for _ in range(3)]
+            current_shape = [tessellation_points.copy()]
     game_state = "ai_drawing"
     ai_step = 0
 
-
 # Matplotlib Plot
 plot_surface = None
-
 
 def update_reward_plot():
     global plot_surface, episode_rewards
@@ -978,6 +1119,47 @@ def update_reward_plot():
     buf.close()
     return pygame.transform.scale(image, (300, 150))
 
+# Transfer Learning
+def save_model_weights(task, world):
+    filename = f"model_{task}_{world}.pth"
+    torch.save(policy_net.state_dict(), filename)
+    log_message(f"Model weights saved to {filename}")
+
+def load_model_weights(task, world):
+    filename = f"model_{task}_{world}.pth"
+    if os.path.exists(filename):
+        policy_net.load_state_dict(torch.load(filename))
+        target_net.load_state_dict(policy_net.state_dict())
+        log_message(f"Model weights loaded from {filename}")
+    else:
+        log_message(f"No saved weights found for {task} in {world}")
+
+# Explainable AI (XAI)
+def explain_decision(state_tensor):
+    with torch.no_grad():
+        q_values = policy_net(state_tensor).cpu().numpy().flatten()
+    action_probabilities = np.exp(q_values) / np.sum(np.exp(q_values))
+    explanation = {
+        "action_probabilities": action_probabilities.tolist(),
+        "q_values": q_values.tolist(),
+    }
+    log_message(f"Decision explanation: {explanation}")
+    return explanation
+
+def visualize_explanation(explanation):
+    plt.figure(figsize=(6, 4))
+    actions = [f"Action {i}" for i in range(len(explanation["action_probabilities"]))]
+    plt.bar(actions, explanation["action_probabilities"], color="cyan")
+    plt.xlabel("Actions")
+    plt.ylabel("Probability")
+    plt.title("Action Probabilities")
+    buf = BytesIO()
+    plt.savefig(buf, format="png", bbox_inches="tight")
+    buf.seek(0)
+    image = pygame.image.load(buf)
+    plt.close()
+    buf.close()
+    return pygame.transform.scale(image, (300, 200))
 
 # Main Game Loop
 clock = pygame.time.Clock()
@@ -985,34 +1167,51 @@ running = True
 last_plot_update = 0
 step_counter = 0
 
+# Command handling via Pygame keys
+command_keys = {
+    pygame.K_s: "start",
+    pygame.K_p: "pause",
+    pygame.K_r: "resume",
+    pygame.K_q: "quit",
+    pygame.K_f: "faster",
+    pygame.K_l: "slower",
+    pygame.K_u: "iters_up",
+    pygame.K_d: "iters_down",
+    pygame.K_b: "toggle_debug",
+    pygame.K_3: "toggle_3d_mode",
+}
+
 while running:
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
             running = False
-
-    # Process commands from the queue
-    while not command_queue.empty():
-        command = command_queue.get()
-        if command == "start" and running_state == "stopped":
-            running_state = "running"
-        elif command == "pause" and running_state == "running":
-            running_state = "paused"
-        elif command == "resume" and running_state == "paused":
-            running_state = "running"
-        elif command == "quit":
-            running = False
-        elif command == "faster":
-            tick_rate = min(tick_rate + 10, 120)
-            print(f"Tick rate increased to {tick_rate}")
-        elif command == "slower":
-            tick_rate = max(tick_rate - 10, 10)
-            print(f"Tick rate decreased to {tick_rate}")
-        elif command == "iters_up":
-            train_iters = min(train_iters + 1, 10)
-            print(f"Training iterations increased to {train_iters}")
-        elif command == "iters_down":
-            train_iters = max(train_iters - 1, 1)
-            print(f"Training iterations decreased to {train_iters}")
+        elif event.type == pygame.KEYDOWN:
+            command = command_keys.get(event.key)
+            if command == "start" and running_state == "stopped":
+                running_state = "running"
+            elif command == "pause" and running_state == "running":
+                running_state = "paused"
+            elif command == "resume" and running_state == "paused":
+                running_state = "running"
+            elif command == "quit":
+                running = False
+            elif command == "faster":
+                tick_rate = min(tick_rate + 10, 120)
+                log_message(f"Tick rate increased to {tick_rate}")
+            elif command == "slower":
+                tick_rate = max(tick_rate - 10, 10)
+                log_message(f"Tick rate decreased to {tick_rate}")
+            elif command == "iters_up":
+                train_iters = min(train_iters + 1, 10)
+                log_message(f"Training iterations increased to {train_iters}")
+            elif command == "iters_down":
+                train_iters = max(train_iters - 1, 1)
+                log_message(f"Training iterations decreased to {train_iters}")
+            elif command == "toggle_debug":
+                debug_mode = not debug_mode
+                log_message(f"Debug mode {'enabled' if debug_mode else 'disabled'}")
+            elif command == "toggle_3d_mode":
+                toggle_3d_mode()
 
     if running_state == "running" and game_state == "waiting":
         reset_episode()
@@ -1026,39 +1225,60 @@ while running:
         num_vertices = (
             len(current_shape)
             if current_task != TASK_TESSELLATION
-            else sum(len(t) for t in current_shape)
+            else sum(len(t) for t in current_shape if isinstance(t, (list, tuple)))
         )
         angle = 0
         dist_to_close = 0
-        if current_task == TASK_LINE:
-            current_pos = current_shape[-1] if current_shape else (0, 0)
-            dx = end_point[0] - current_pos[0]
-            dy = end_point[1] - current_pos[1]
+        if is_3d_mode:
+            current_pos = current_shape[-1] if current_shape else (0, 0, 0)
+            if len(current_pos) == 2:
+                current_pos = (current_pos[0], current_pos[1], 0)
+            if current_task == TASK_LINE:
+                dx = end_point[0] - current_pos[0]
+                dy = end_point[1] - current_pos[1]
+                dz = end_point[2] - current_pos[2]
+                state = np.array([
+                    current_pos[0], current_pos[1], dx, dy, tasks.index(current_task),
+                    worlds.index(current_world), shape_progress, num_vertices, angle, dz
+                ])
+            else:
+                state = np.array([
+                    0, 0, 0, 0, tasks.index(current_task),
+                    worlds.index(current_world), shape_progress, num_vertices, angle, 0
+                ])
         else:
-            current_pos = (0, 0)
-            dx = dy = 0
-            if current_task == TASK_TRIANGLE and len(current_shape) == 3:
-                angle = calculate_triangle_angle(current_shape)
-            elif current_task == TASK_PENTAGON and len(current_shape) >= 2:
-                dist_to_close = calculate_dist_to_close(current_shape)
-            elif current_task == TASK_TESSELLATION and current_shape:
-                angle = calculate_triangle_angle(current_shape[0])
-        task_id = tasks.index(current_task)
-        world_id = worlds.index(current_world)
-        state = np.array(
-            [
-                current_pos[0],
-                current_pos[1],
-                dx,
-                dy,
-                task_id,
-                world_id,
-                shape_progress,
-                num_vertices,
-                angle,
-                dist_to_close,
-            ]
-        )
+            if current_task == TASK_LINE:
+                current_pos = current_shape[-1] if current_shape else (0, 0)
+                # Flatten current_pos if it contains nested tuples
+                if isinstance(current_pos[0], (tuple, list)):
+                    current_pos = (current_pos[0][0], current_pos[0][1])
+                dx = end_point[0] - current_pos[0]
+                dy = end_point[1] - current_pos[1]
+            else:
+                current_pos = (0, 0)
+                dx = dy = 0
+                if current_task == TASK_TRIANGLE and len(current_shape) == 3:
+                    angle = calculate_triangle_angle(current_shape)
+                elif current_task == TASK_PENTAGON and len(current_shape) >= 2:
+                    dist_to_close = calculate_dist_to_close(current_shape)
+                elif current_task == TASK_TESSELLATION and current_shape:
+                    angle = calculate_triangle_angle(current_shape[0])
+            task_id = tasks.index(current_task)
+            world_id = worlds.index(current_world)
+            state = np.array(
+                [
+                    current_pos[0],
+                    current_pos[1],
+                    dx,
+                    dy,
+                    task_id,
+                    world_id,
+                    shape_progress,
+                    num_vertices,
+                    angle,
+                    dist_to_close,
+                ]
+            )
         state_tensor = torch.FloatTensor(state).unsqueeze(0).to(device)
 
         target = (
@@ -1089,48 +1309,61 @@ while running:
                 )
 
         for action in actions:
-            if current_task == TASK_LINE:
-                curvature = 0
-                if action == 0:
-                    curvature = -1
-                elif action == 1:
-                    curvature = 1
-                next_segment = draw_line_segment(
-                    current_shape[-1], end_point, curvature, current_world
-                )
-                current_shape.extend(
-                    [p for p in next_segment if p is not None]
-                )  # Filter out None
-            elif current_task == TASK_TRIANGLE:
-                angle_adjust = 0
-                if action == 2:
-                    angle_adjust = -10
-                elif action == 3:
-                    angle_adjust = 10
-                current_shape = draw_triangle(
-                    current_shape, angle_adjust, current_world
-                )
-            elif current_task == TASK_CIRCLE:
-                radius_adjust = 0
-                if action == 4:
-                    radius_adjust = 5
-                current_shape, circle_radius = draw_circle(
-                    circle_center, circle_radius, radius_adjust, current_world
-                )
-            elif current_task == TASK_PENTAGON:
-                angle_adjust = 0
-                if action == 2:
-                    angle_adjust = -10
-                elif action == 3:
-                    angle_adjust = 10
-                current_shape = draw_pentagon(
-                    current_shape, angle_adjust, current_world
-                )
-            elif current_task == TASK_TESSELLATION:
-                if action == 5:
-                    current_shape = draw_tessellation(
-                        tessellation_points, current_world
+            if is_3d_mode:
+                if current_task == TASK_LINE:
+                    curvature = 0  # Initialize curvature
+                    next_segment = draw_line_segment_3d(
+                        current_shape[-1], end_point, curvature, current_world
                     )
+                    current_shape.extend([p for p in next_segment if p is not None])
+                elif current_task == TASK_TRIANGLE:
+                    angle_adjust = 0  # Initialize angle_adjust
+                    current_shape = draw_triangle_3d(current_shape, angle_adjust, current_world)
+                elif current_task == TASK_CIRCLE:
+                    radius_adjust = 0  # Initialize radius_adjust
+                    current_shape, circle_radius = draw_circle_3d(
+                        circle_center, circle_radius, radius_adjust, current_world
+                    )
+            else:
+                if current_task == TASK_LINE:
+                    curvature = 0  # Initialize curvature
+                    if action == 0:
+                        curvature = -1
+                    elif action == 1:
+                        curvature = 1
+                    next_segment = draw_line_segment(
+                        current_shape[-1], end_point, curvature, current_world
+                    )
+                    current_shape.extend([p for p in next_segment if p is not None])
+                elif current_task == TASK_TRIANGLE:
+                    angle_adjust = 0  # Initialize angle_adjust
+                    if action == 2:
+                        angle_adjust = -10
+                    elif action == 3:
+                        angle_adjust = 10
+                    current_shape = draw_triangle(
+                        current_shape, angle_adjust, current_world
+                    )
+                elif current_task == TASK_CIRCLE:
+                    radius_adjust = 0  # Initialize radius_adjust
+                    if action == 4:
+                        radius_adjust = 5
+                    current_shape, circle_radius = draw_circle(
+                        circle_center, circle_radius, radius_adjust, current_world
+                    )
+                elif current_task == TASK_PENTAGON:
+                    angle_adjust = 0
+                    if action == 2:
+                        angle_adjust = -10
+                    elif action == 3:
+                        angle_adjust = 10
+                    current_shape = draw_pentagon(
+                        current_shape, angle_adjust, current_world
+                    )
+                elif current_task == TASK_TESSELLATION:
+                    if action == 5:
+                        base_points = current_shape[0] if current_shape and isinstance(current_shape[0], (list, tuple)) else tessellation_points
+                        current_shape = draw_tessellation(base_points, current_world)
 
             shape_progress = (
                 len(current_shape) / 5
@@ -1140,12 +1373,15 @@ while running:
             num_vertices = (
                 len(current_shape)
                 if current_task != TASK_TESSELLATION
-                else sum(len(t) for t in current_shape)
+                else sum(len(t) for t in current_shape if isinstance(t, (list, tuple)))
             )
             angle = 0
             dist_to_close = 0
             if current_task == TASK_LINE:
                 next_pos = current_shape[-1] if current_shape else (0, 0)
+                # Flatten next_pos if it contains nested tuples
+                if isinstance(next_pos[0], (tuple, list)):
+                    next_pos = (next_pos[0][0], next_pos[0][1])
                 dx = end_point[0] - next_pos[0]
                 dy = end_point[1] - next_pos[1]
             else:
@@ -1172,7 +1408,7 @@ while running:
                 ]
             )
 
-            extrinsic_reward = calculate_reward(
+            extrinsic_reward = calculate_advanced_reward(
                 current_shape, target, current_task, current_world
             )
             action_tensor = (
@@ -1208,8 +1444,9 @@ while running:
                 current_world = worlds[(worlds.index(current_world) + 1) % len(worlds)]
 
             store_transition((state, action, current_reward, next_state, done))
-            for _ in range(train_iters):
-                optimize_model()
+            if global_step % 5 == 0:  # Train every 5 steps
+                for _ in range(train_iters):
+                    optimize_model()
 
             avg_reward = sum(rewards) / len(rewards) if rewards else 0
             fps = clock.get_fps()
@@ -1237,6 +1474,19 @@ while running:
             if step_counter % target_update == 0:
                 target_net.load_state_dict(policy_net.state_dict())
 
+            if global_step % 1000 == 0:
+                torch.save(policy_net.state_dict(), "policy_net.pth")
+                torch.save(shape_predictor.state_dict(), "shape_predictor.pth")
+                log_message(f"Models saved at step {global_step}")
+
+            if global_step % 100 == 0:  # Save weights periodically
+                save_model_weights(current_task, current_world)
+
+            if global_step % 50 == 0:  # Explain decisions periodically
+                explanation = explain_decision(state_tensor)
+                explanation_image = visualize_explanation(explanation)
+                screen.blit(explanation_image, (WIDTH - 310, HEIGHT - 220))
+
             state = next_state
             state_tensor = torch.FloatTensor(state).unsqueeze(0).to(device)
 
@@ -1257,117 +1507,165 @@ while running:
         f"LR: {optimizer.param_groups[0]['lr']:.6f}",
         f"FPS: {fps:.1f}",
         f"Tick: {tick_rate}, Iters: {train_iters}",
-        "Cmds: start, pause, resume, quit, faster, slower, iters_up, iters_down",
+        "Keys: S:start, P:pause, R:resume, Q:quit, F:faster, L:slower, U:iters_up, D:iters_down, B:toggle_debug, 3:toggle_3d_mode",
     ]
     for i, line in enumerate(info_text):
         text = font.render(line, True, WHITE)
         screen.blit(text, (10, 10 + i * 30))
 
     if current_task == TASK_LINE:
-        pygame.draw.circle(screen, RED, to_int_point(end_point), 5)
+        if is_3d_mode:
+            pygame.draw.circle(screen, RED, to_int_point(project_point_3d(end_point, current_world)), 5)
+        else:
+            pygame.draw.circle(screen, RED, to_int_point(end_point), 5)
     elif current_task == TASK_TRIANGLE:
         for p in triangle_points:
-            pygame.draw.circle(screen, RED, to_int_point(p), 5)
+            if is_3d_mode:
+                pygame.draw.circle(screen, RED, to_int_point(project_point_3d(p, current_world)), 5)
+            else:
+                pygame.draw.circle(screen, RED, to_int_point(p), 5)
     elif current_task == TASK_CIRCLE and circle_center:
-        pygame.draw.circle(screen, RED, to_int_point(circle_center), 5)
+        if is_3d_mode:
+            pygame.draw.circle(screen, RED, to_int_point(project_point_3d(circle_center, current_world)), 5)
+        else:
+            pygame.draw.circle(screen, RED, to_int_point(circle_center), 5)
     elif current_task == TASK_PENTAGON:
         for p in pentagon_points:
-            pygame.draw.circle(screen, RED, to_int_point(p), 5)
+            if is_3d_mode:
+                pygame.draw.circle(screen, RED, to_int_point(project_point_3d(p, current_world)), 5)
+            else:
+                pygame.draw.circle(screen, RED, to_int_point(p), 5)
     elif current_task == TASK_TESSELLATION:
         for p in tessellation_points:
-            pygame.draw.circle(screen, RED, to_int_point(p), 5)
+            if is_3d_mode:
+                pygame.draw.circle(screen, RED, to_int_point(project_point_3d(p, current_world)), 5)
+            else:
+                pygame.draw.circle(screen, RED, to_int_point(p), 5)
 
     if current_shape:
         try:
             if current_task == TASK_LINE:
-                pygame.draw.circle(screen, BLUE, to_int_point(start_point), 5)
-                for i in range(len(current_shape) - 1):
-                    start_pos = current_shape[i]
-                    end_pos = current_shape[i + 1]
-                    if (
-                        start_pos
-                        and end_pos
-                        and isinstance(start_pos, (tuple, list))
-                        and isinstance(end_pos, (tuple, list))
-                    ):
-                        pygame.draw.line(
-                            screen,
-                            CYAN,
-                            to_int_point(start_pos),
-                            to_int_point(end_pos),
-                            2,
-                        )
-                    else:
-                        print(
-                            f"Invalid line segment at index {i}: start={start_pos}, end={end_pos}"
-                        )
+                if is_3d_mode:
+                    pygame.draw.circle(screen, BLUE, to_int_point(project_point_3d(start_point, current_world)), 5)
+                    for i in range(len(current_shape) - 1):
+                        start_pos = current_shape[i]
+                        end_pos = current_shape[i + 1]
+                        proj_start = project_point_3d(start_pos, current_world)
+                        proj_end = project_point_3d(end_pos, current_world)
+                        if proj_start and proj_end:
+                            pygame.draw.line(screen, CYAN, to_int_point(proj_start), to_int_point(proj_end), 2)
+                else:
+                    pygame.draw.circle(screen, BLUE, to_int_point(start_point), 5)
+                    for i in range(len(current_shape) - 1):
+                        start_pos = current_shape[i]
+                        end_pos = current_shape[i + 1]
+                        if (
+                            start_pos
+                            and end_pos
+                            and isinstance(start_pos, (tuple, list))
+                            and isinstance(end_pos, (tuple, list))
+                        ):
+                            pygame.draw.line(
+                                screen,
+                                CYAN,
+                                to_int_point(start_pos),
+                                to_int_point(end_pos),
+                                2,
+                            )
+                        else:
+                            log_message(
+                                f"Invalid line segment at index {i}: start={repr(start_pos)}, end={repr(end_pos)}"
+                            )
             elif current_task == TASK_TRIANGLE and len(current_shape) == 3:
-                for i in range(3):
-                    start_pos = current_shape[i]
-                    end_pos = current_shape[(i + 1) % 3]
-                    if (
-                        start_pos
-                        and end_pos
-                        and isinstance(start_pos, (tuple, list))
-                        and isinstance(end_pos, (tuple, list))
-                    ):
-                        pygame.draw.line(
-                            screen,
-                            CYAN,
-                            to_int_point(start_pos),
-                            to_int_point(end_pos),
-                            2,
-                        )
-                    else:
-                        print(
-                            f"Invalid triangle segment at index {i}: start={start_pos}, end={end_pos}"
-                        )
+                if is_3d_mode:
+                    for i in range(3):
+                        start_pos = project_point_3d(current_shape[i], current_world)
+                        end_pos = project_point_3d(current_shape[(i + 1) % 3], current_world)
+                        if start_pos and end_pos:
+                            pygame.draw.line(screen, CYAN, to_int_point(start_pos), to_int_point(end_pos), 2)
+                else:
+                    for i in range(3):
+                        start_pos = current_shape[i]
+                        end_pos = current_shape[(i + 1) % 3]
+                        if (
+                            start_pos
+                            and end_pos
+                            and isinstance(start_pos, (tuple, list))
+                            and isinstance(end_pos, (tuple, list))
+                        ):
+                            pygame.draw.line(
+                                screen,
+                                CYAN,
+                                to_int_point(start_pos),
+                                to_int_point(end_pos),
+                                2,
+                            )
+                        else:
+                            log_message(
+                                f"Invalid triangle segment at index {i}: start={repr(start_pos)}, end={repr(end_pos)}"
+                            )
             elif current_task == TASK_CIRCLE:
-                for i in range(len(current_shape) - 1):
-                    start_pos = current_shape[i]
-                    end_pos = current_shape[i + 1]
-                    if (
-                        start_pos
-                        and end_pos
-                        and isinstance(start_pos, (tuple, list))
-                        and isinstance(end_pos, (tuple, list))
-                    ):
-                        pygame.draw.line(
-                            screen,
-                            CYAN,
-                            to_int_point(start_pos),
-                            to_int_point(end_pos),
-                            2,
-                        )
-                    else:
-                        print(
-                            f"Invalid circle segment at index {i}: start={start_pos}, end={end_pos}"
-                        )
+                if is_3d_mode:
+                    for i in range(len(current_shape) - 1):
+                        start_pos = current_shape[i]
+                        end_pos = current_shape[i + 1]
+                        proj_start = project_point_3d(start_pos, current_world)
+                        proj_end = project_point_3d(end_pos, current_world)
+                        if proj_start and proj_end:
+                            pygame.draw.line(screen, CYAN, to_int_point(proj_start), to_int_point(proj_end), 2)
+                else:
+                    for i in range(len(current_shape) - 1):
+                        start_pos = current_shape[i]
+                        end_pos = current_shape[i + 1]
+                        if (
+                            start_pos
+                            and end_pos
+                            and isinstance(start_pos, (tuple, list))
+                            and isinstance(end_pos, (tuple, list))
+                        ):
+                            pygame.draw.line(
+                                screen,
+                                CYAN,
+                                to_int_point(start_pos),
+                                to_int_point(end_pos),
+                                2,
+                            )
+                        else:
+                            log_message(
+                                f"Invalid circle segment at index {i}: start={repr(start_pos)}, end={repr(end_pos)}"
+                            )
             elif current_task == TASK_PENTAGON and len(current_shape) == 5:
-                for i in range(5):
-                    start_pos = current_shape[i]
-                    end_pos = current_shape[(i + 1) % 5]
-                    if (
-                        start_pos
-                        and end_pos
-                        and isinstance(start_pos, (tuple, list))
-                        and isinstance(end_pos, (tuple, list))
-                    ):
-                        pygame.draw.line(
-                            screen,
-                            CYAN,
-                            to_int_point(start_pos),
-                            to_int_point(end_pos),
-                            2,
-                        )
-                    else:
-                        print(
-                            f"Invalid pentagon segment at index {i}: start={start_pos}, end={end_pos}"
-                        )
+                if is_3d_mode:
+                    for i in range(5):
+                        start_pos = project_point_3d(current_shape[i], current_world)
+                        end_pos = project_point_3d(current_shape[(i + 1) % 5], current_world)
+                        if start_pos and end_pos:
+                            pygame.draw.line(screen, CYAN, to_int_point(start_pos), to_int_point(end_pos), 2)
+                else:
+                    for i in range(5):
+                        start_pos = current_shape[i]
+                        end_pos = current_shape[(i + 1) % 5]
+                        if (
+                            start_pos
+                            and end_pos
+                            and isinstance(start_pos, (tuple, list))
+                            and isinstance(end_pos, (tuple, list))
+                        ):
+                            pygame.draw.line(
+                                screen,
+                                CYAN,
+                                to_int_point(start_pos),
+                                to_int_point(end_pos),
+                                2,
+                            )
+                        else:
+                            log_message(
+                                f"Invalid pentagon segment at index {i}: start={repr(start_pos)}, end={repr(end_pos)}"
+                            )
             elif current_task == TASK_TESSELLATION:
                 for triangle in current_shape:
                     if not isinstance(triangle, (list, tuple)) or len(triangle) != 3:
-                        print(f"Invalid triangle in tessellation: {triangle}")
+                        log_message(f"Invalid triangle in tessellation: {repr(triangle)}")
                         continue
                     for i in range(3):
                         start_pos = triangle[i]
@@ -1386,12 +1684,13 @@ while running:
                                 2,
                             )
                         else:
-                            print(
-                                f"Invalid tessellation segment: start={start_pos}, end={end_pos}"
+                            log_message(
+                                f"Invalid tessellation segment: start={repr(start_pos)}, end={repr(end_pos)}"
                             )
         except Exception as e:
-            print(f"Error in drawing shape: {e}, current_shape={current_shape}")
+            log_message(f"Error in drawing shape: {repr(e)}, current_shape={repr(current_shape)}")
 
+    process_logs()
     if time.time() - last_plot_update > 1:
         plot_surface = update_reward_plot()
         last_plot_update = time.time()

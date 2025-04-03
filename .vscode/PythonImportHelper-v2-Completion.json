@@ -80,15 +80,6 @@
         "documentation": {}
     },
     {
-        "label": "threading",
-        "kind": 6,
-        "isExtraImport": true,
-        "importPath": "threading",
-        "description": "threading",
-        "detail": "threading",
-        "documentation": {}
-    },
-    {
         "label": "time",
         "kind": 6,
         "isExtraImport": true,
@@ -145,7 +136,7 @@
         "kind": 6,
         "importPath": "geomaster_ai_challenge",
         "description": "geomaster_ai_challenge",
-        "peekOfCode": "class ForwardModel(nn.Module):\n    def __init__(self, state_dim, action_dim):\n        super().__init__()\n        self.fc1 = nn.Linear(state_dim + 1, 128)  # Action is a scalar\n        self.fc2 = nn.Linear(128, state_dim)\n    def forward(self, state, action):\n        try:\n            if state.dim() != 2 or action.dim() != 2:\n                raise ValueError(\n                    f\"Expected 2D tensors, got state shape {state.shape}, action shape {action.shape}\"",
+        "peekOfCode": "class ForwardModel(nn.Module):\n    def __init__(self, state_dim, action_dim):\n        super().__init__()\n        self.fc1 = nn.Linear(state_dim + 1, 128)\n        self.fc2 = nn.Linear(128, state_dim)\n    def forward(self, state, action):\n        try:\n            if state.dim() != 2 or action.dim() != 2:\n                raise ValueError(\n                    f\"Expected 2D tensors, got state shape {state.shape}, action shape {action.shape}\"",
         "detail": "geomaster_ai_challenge",
         "documentation": {}
     },
@@ -168,11 +159,29 @@
         "documentation": {}
     },
     {
+        "label": "log_message",
+        "kind": 2,
+        "importPath": "geomaster_ai_challenge",
+        "description": "geomaster_ai_challenge",
+        "peekOfCode": "def log_message(message):\n    if debug_mode:\n        log_queue.put(message)\ndef process_logs():\n    while not log_queue.empty():\n        print(log_queue.get())\n# Helper function\ndef to_int_point(point):\n    if (\n        not isinstance(point, (tuple, list))",
+        "detail": "geomaster_ai_challenge",
+        "documentation": {}
+    },
+    {
+        "label": "process_logs",
+        "kind": 2,
+        "importPath": "geomaster_ai_challenge",
+        "description": "geomaster_ai_challenge",
+        "peekOfCode": "def process_logs():\n    while not log_queue.empty():\n        print(log_queue.get())\n# Helper function\ndef to_int_point(point):\n    if (\n        not isinstance(point, (tuple, list))\n        or len(point) != 2\n        or not all(isinstance(coord, (int, float)) for coord in point)\n    ):",
+        "detail": "geomaster_ai_challenge",
+        "documentation": {}
+    },
+    {
         "label": "to_int_point",
         "kind": 2,
         "importPath": "geomaster_ai_challenge",
         "description": "geomaster_ai_challenge",
-        "peekOfCode": "def to_int_point(point):\n    if (\n        not isinstance(point, (tuple, list))\n        or len(point) != 2\n        or not all(isinstance(coord, (int, float)) for coord in point)\n    ):\n        print(f\"Invalid point detected: {point}\")\n        return (0, 0)\n    return (int(point[0]), int(point[1]))\n# Geometric Worlds and Tasks",
+        "peekOfCode": "def to_int_point(point):\n    if (\n        not isinstance(point, (tuple, list))\n        or len(point) != 2\n        or not all(isinstance(coord, (int, float)) for coord in point)\n    ):\n        log_message(f\"Invalid point detected: {repr(point)}\")\n        return (0, 0)\n    return (int(point[0]), int(point[1]))\n# Geometric Worlds and Tasks",
         "detail": "geomaster_ai_challenge",
         "documentation": {}
     },
@@ -181,7 +190,7 @@
         "kind": 2,
         "importPath": "geomaster_ai_challenge",
         "description": "geomaster_ai_challenge",
-        "peekOfCode": "def stereographic_projection(point, R=100):\n    x, y, z = point\n    if z == 2 * R:\n        return (0, 0)  # Default point instead of None\n    factor = 2 * R / (2 * R - z)\n    proj_x = factor * x + WIDTH / 2\n    proj_y = factor * y + HEIGHT / 2\n    return (proj_x, proj_y)\ndef poincare_disk_projection(point, R=100):\n    x, y = point",
+        "peekOfCode": "def stereographic_projection(point, R=100):\n    x, y, z = point\n    if z == 2 * R:\n        return (0, 0)\n    factor = 2 * R / (2 * R - z)\n    proj_x = factor * x + WIDTH / 2\n    proj_y = factor * y + HEIGHT / 2\n    return (proj_x, proj_y)\ndef poincare_disk_projection(point, R=100):\n    x, y = point",
         "detail": "geomaster_ai_challenge",
         "documentation": {}
     },
@@ -190,7 +199,7 @@
         "kind": 2,
         "importPath": "geomaster_ai_challenge",
         "description": "geomaster_ai_challenge",
-        "peekOfCode": "def poincare_disk_projection(point, R=100):\n    x, y = point\n    dist = np.sqrt(x**2 + y**2)\n    if dist >= R:\n        return (WIDTH / 2, HEIGHT / 2)  # Center of disk as default\n    factor = R * np.tanh(dist / R)\n    angle = np.arctan2(y, x)\n    proj_x = factor * np.cos(angle) + WIDTH / 2\n    proj_y = factor * np.sin(angle) + HEIGHT / 2\n    return (proj_x, proj_y)",
+        "peekOfCode": "def poincare_disk_projection(point, R=100):\n    x, y = point\n    dist = np.sqrt(x**2 + y**2)\n    if dist >= R:\n        return (WIDTH / 2, HEIGHT / 2)\n    factor = R * np.tanh(dist / R)\n    angle = np.arctan2(y, x)\n    proj_x = factor * np.cos(angle) + WIDTH / 2\n    proj_y = factor * np.sin(angle) + WIDTH / 2\n    return (proj_x, proj_y)",
         "detail": "geomaster_ai_challenge",
         "documentation": {}
     },
@@ -199,7 +208,7 @@
         "kind": 2,
         "importPath": "geomaster_ai_challenge",
         "description": "geomaster_ai_challenge",
-        "peekOfCode": "def elliptical_projection(point, a=150, b=100):\n    x, y = point\n    proj_x = (x / a) * (WIDTH / 2) + WIDTH / 2\n    proj_y = (y / b) * (HEIGHT / 2) + HEIGHT / 2\n    return (proj_x, proj_y)\ndef projective_projection(point, fov=90, near=1):\n    x, y = point\n    z = 100\n    if z <= 0:\n        return (WIDTH / 2, HEIGHT / 2)  # Center as default",
+        "peekOfCode": "def elliptical_projection(point, a=150, b=100):\n    x, y = point\n    proj_x = (x / a) * (WIDTH / 2) + WIDTH / 2\n    proj_y = (y / b) * (HEIGHT / 2) + HEIGHT / 2\n    return (proj_x, proj_y)\ndef projective_projection(point, fov=90, near=1):\n    x, y = point\n    z = 100\n    if z <= 0:\n        return (WIDTH / 2, HEIGHT / 2)",
         "detail": "geomaster_ai_challenge",
         "documentation": {}
     },
@@ -208,7 +217,7 @@
         "kind": 2,
         "importPath": "geomaster_ai_challenge",
         "description": "geomaster_ai_challenge",
-        "peekOfCode": "def projective_projection(point, fov=90, near=1):\n    x, y = point\n    z = 100\n    if z <= 0:\n        return (WIDTH / 2, HEIGHT / 2)  # Center as default\n    proj_x = (x * near / z) * (WIDTH / 2) + WIDTH / 2\n    proj_y = (y * near / z) * (HEIGHT / 2) + HEIGHT / 2\n    return (proj_x, proj_y)\ndef fractal_projection(point, iterations=3):\n    x, y = point",
+        "peekOfCode": "def projective_projection(point, fov=90, near=1):\n    x, y = point\n    z = 100\n    if z <= 0:\n        return (WIDTH / 2, HEIGHT / 2)\n    proj_x = (x * near / z) * (WIDTH / 2) + WIDTH / 2\n    proj_y = (y * near / z) * (HEIGHT / 2) + HEIGHT / 2\n    return (proj_x, proj_y)\ndef fractal_projection(point, iterations=3):\n    x, y = point",
         "detail": "geomaster_ai_challenge",
         "documentation": {}
     },
@@ -240,6 +249,78 @@
         "documentation": {}
     },
     {
+        "label": "perspective_projection",
+        "kind": 2,
+        "importPath": "geomaster_ai_challenge",
+        "description": "geomaster_ai_challenge",
+        "peekOfCode": "def perspective_projection(point, fov=90, aspect_ratio=WIDTH / HEIGHT, near=1, far=1000):\n    x, y, z = point\n    if z <= near:\n        return None\n    scale = 1 / np.tan(np.radians(fov) / 2)\n    proj_x = (scale * x / z) * WIDTH / 2 + WIDTH / 2\n    proj_y = (scale * y / z) * HEIGHT / 2 + HEIGHT / 2\n    return (proj_x, proj_y)\ndef orthographic_projection(point):\n    x, y, z = point",
+        "detail": "geomaster_ai_challenge",
+        "documentation": {}
+    },
+    {
+        "label": "orthographic_projection",
+        "kind": 2,
+        "importPath": "geomaster_ai_challenge",
+        "description": "geomaster_ai_challenge",
+        "peekOfCode": "def orthographic_projection(point):\n    x, y, z = point\n    proj_x = x + WIDTH / 2\n    proj_y = y + HEIGHT / 2\n    return (proj_x, proj_y)\n# Extend project_point to handle 3D\ndef project_point_3d(point, world, projection=\"perspective\"):\n    if len(point) == 3:\n        if projection == \"perspective\":\n            return perspective_projection(point)",
+        "detail": "geomaster_ai_challenge",
+        "documentation": {}
+    },
+    {
+        "label": "project_point_3d",
+        "kind": 2,
+        "importPath": "geomaster_ai_challenge",
+        "description": "geomaster_ai_challenge",
+        "peekOfCode": "def project_point_3d(point, world, projection=\"perspective\"):\n    if len(point) == 3:\n        if projection == \"perspective\":\n            return perspective_projection(point)\n        elif projection == \"orthographic\":\n            return orthographic_projection(point)\n    return project_point(point, world)\n# Toggle between 2D and 3D modes\nis_3d_mode = False\nprojection_mode = \"perspective\"  # Options: \"perspective\", \"orthographic\"",
+        "detail": "geomaster_ai_challenge",
+        "documentation": {}
+    },
+    {
+        "label": "update_network_dimensions",
+        "kind": 2,
+        "importPath": "geomaster_ai_challenge",
+        "description": "geomaster_ai_challenge",
+        "peekOfCode": "def update_network_dimensions():\n    global policy_net, target_net, forward_model, world_model, state_dim\n    state_dim = state_dim_3d if is_3d_mode else state_dim_2d\n    policy_net = DQN(state_dim, action_dim).to(device)\n    target_net = DQN(state_dim, action_dim).to(device)\n    target_net.load_state_dict(policy_net.state_dict())\n    forward_model = ForwardModel(state_dim, action_dim).to(device)\n    world_model = WorldModel(state_dim, action_dim).to(device)\n    global optimizer, optimizer_fm, optimizer_wm\n    optimizer = optim.Adam(policy_net.parameters(), lr=base_lr)",
+        "detail": "geomaster_ai_challenge",
+        "documentation": {}
+    },
+    {
+        "label": "toggle_3d_mode",
+        "kind": 2,
+        "importPath": "geomaster_ai_challenge",
+        "description": "geomaster_ai_challenge",
+        "peekOfCode": "def toggle_3d_mode():\n    global is_3d_mode\n    is_3d_mode = not is_3d_mode\n    update_network_dimensions()\n    log_message(f\"3D mode {'enabled' if is_3d_mode else 'disabled'}\")\n# Extend tasks to 3D\ndef draw_line_segment_3d(start, end, curvature, world):\n    try:\n        if not (isinstance(start, (tuple, list)) and isinstance(end, (tuple, list))):\n            raise ValueError(f\"Invalid start or end point: start={repr(start)}, end={repr(end)}\")",
+        "detail": "geomaster_ai_challenge",
+        "documentation": {}
+    },
+    {
+        "label": "draw_line_segment_3d",
+        "kind": 2,
+        "importPath": "geomaster_ai_challenge",
+        "description": "geomaster_ai_challenge",
+        "peekOfCode": "def draw_line_segment_3d(start, end, curvature, world):\n    try:\n        if not (isinstance(start, (tuple, list)) and isinstance(end, (tuple, list))):\n            raise ValueError(f\"Invalid start or end point: start={repr(start)}, end={repr(end)}\")\n        if len(start) != 3 or len(end) != 3:\n            raise ValueError(f\"Start and end must be 3D points: start={repr(start)}, end={repr(end)}\")\n        points = []\n        num_points = 10\n        for i in range(num_points + 1):\n            t = i / num_points",
+        "detail": "geomaster_ai_challenge",
+        "documentation": {}
+    },
+    {
+        "label": "draw_triangle_3d",
+        "kind": 2,
+        "importPath": "geomaster_ai_challenge",
+        "description": "geomaster_ai_challenge",
+        "peekOfCode": "def draw_triangle_3d(points, angle_adjust, world):\n    try:\n        if len(points) != 3:\n            return points if len(points) < 3 else points[:3]\n        if not all(isinstance(p, (tuple, list)) and len(p) == 3 for p in points):\n            raise ValueError(f\"Invalid points for triangle: {repr(points)}\")\n        new_points = points.copy()\n        p1, p2, p3 = points\n        dx = p3[0] - p2[0]\n        dy = p3[1] - p2[1]",
+        "detail": "geomaster_ai_challenge",
+        "documentation": {}
+    },
+    {
+        "label": "draw_circle_3d",
+        "kind": 2,
+        "importPath": "geomaster_ai_challenge",
+        "description": "geomaster_ai_challenge",
+        "peekOfCode": "def draw_circle_3d(center, radius, radius_adjust, world):\n    try:\n        radius = max(10, radius + radius_adjust)\n        points = []\n        for theta in np.linspace(0, 2 * np.pi, 20):\n            for phi in np.linspace(0, np.pi, 10):  # Add depth for 3D\n                x = center[0] + radius * np.sin(phi) * np.cos(theta)\n                y = center[1] + radius * np.sin(phi) * np.sin(theta)\n                z = center[2] + radius * np.cos(phi)\n                proj = project_point_3d((x, y, z), world)",
+        "detail": "geomaster_ai_challenge",
+        "documentation": {}
+    },
+    {
         "label": "draw_wireframe",
         "kind": 2,
         "importPath": "geomaster_ai_challenge",
@@ -253,7 +334,7 @@
         "kind": 2,
         "importPath": "geomaster_ai_challenge",
         "description": "geomaster_ai_challenge",
-        "peekOfCode": "def draw_line_segment(start, end, curvature, world):\n    try:\n        if not (isinstance(start, (tuple, list)) and isinstance(end, (tuple, list))):\n            raise ValueError(f\"Invalid start or end point: start={start}, end={end}\")\n        if len(start) != 2 or len(end) != 2:\n            raise ValueError(\n                f\"Start and end must be 2D points: start={start}, end={end}\"\n            )\n        if world == WORLD_HYPERBOLIC:\n            return hyperbolic_geodesic(start, end)",
+        "peekOfCode": "def draw_line_segment(start, end, curvature, world):\n    try:\n        if not (isinstance(start, (tuple, list)) and isinstance(end, (tuple, list))):\n            raise ValueError(f\"Invalid start or end point: start={repr(start)}, end={repr(end)}\")\n        if len(start) != 2 or len(end) != 2:\n            raise ValueError(\n                f\"Start and end must be 2D points: start={repr(start)}, end={repr(end)}\"\n            )\n        if world == WORLD_HYPERBOLIC:\n            return hyperbolic_geodesic(start, end)",
         "detail": "geomaster_ai_challenge",
         "documentation": {}
     },
@@ -262,7 +343,7 @@
         "kind": 2,
         "importPath": "geomaster_ai_challenge",
         "description": "geomaster_ai_challenge",
-        "peekOfCode": "def draw_triangle(points, angle_adjust, world):\n    try:\n        if len(points) < 3:\n            return points\n        if not all(isinstance(p, (tuple, list)) and len(p) == 2 for p in points):\n            raise ValueError(f\"Invalid points for triangle: {points}\")\n        new_points = points.copy()\n        p1, p2, p3 = points\n        dx = p3[0] - p2[0]\n        dy = p3[1] - p2[1]",
+        "peekOfCode": "def draw_triangle(points, angle_adjust, world):\n    try:\n        if len(points) != 3:\n            return points if len(points) < 3 else points[:3]\n        if not all(isinstance(p, (tuple, list)) and len(p) == 2 for p in points):\n            raise ValueError(f\"Invalid points for triangle: {repr(points)}\")\n        new_points = points.copy()\n        p1, p2, p3 = points\n        dx = p3[0] - p2[0]\n        dy = p3[1] - p2[1]",
         "detail": "geomaster_ai_challenge",
         "documentation": {}
     },
@@ -280,7 +361,7 @@
         "kind": 2,
         "importPath": "geomaster_ai_challenge",
         "description": "geomaster_ai_challenge",
-        "peekOfCode": "def draw_pentagon(points, angle_adjust, world):\n    if len(points) < 5:\n        return points\n    new_points = points.copy()\n    for i in range(2, 5):\n        p1 = new_points[i - 1]\n        p2 = new_points[i]\n        dx = p2[0] - p1[0]\n        dy = p2[1] - p1[1]\n        angle = np.arctan2(dy, dx) + angle_adjust * np.pi / 180",
+        "peekOfCode": "def draw_pentagon(points, angle_adjust, world):\n    if len(points) != 5:\n        return points if len(points) < 5 else points[:5]\n    new_points = points.copy()\n    for i in range(2, 5):\n        p1 = new_points[i - 1]\n        p2 = new_points[i]\n        dx = p2[0] - p1[0]\n        dy = p2[1] - p1[1]\n        angle = np.arctan2(dy, dx) + angle_adjust * np.pi / 180",
         "detail": "geomaster_ai_challenge",
         "documentation": {}
     },
@@ -289,7 +370,7 @@
         "kind": 2,
         "importPath": "geomaster_ai_challenge",
         "description": "geomaster_ai_challenge",
-        "peekOfCode": "def draw_tessellation(points, world):\n    if len(points) < 3:\n        return [points]  # Return as a single triangle list\n    base_triangle = points[:3]\n    tessellation = [base_triangle]\n    center_x = sum(p[0] for p in base_triangle) / 3\n    center_y = sum(p[1] for p in base_triangle) / 3\n    for i in range(3):\n        p1 = base_triangle[i]\n        p2 = base_triangle[(i + 1) % 3]",
+        "peekOfCode": "def draw_tessellation(points, world):\n    if len(points) < 3:\n        return [points]\n    base_triangle = points[:3]\n    tessellation = [base_triangle]\n    center_x = sum(p[0] for p in base_triangle) / 3\n    center_y = sum(p[1] for p in base_triangle) / 3\n    for i in range(3):\n        p1 = base_triangle[i]\n        p2 = base_triangle[(i + 1) % 3]",
         "detail": "geomaster_ai_challenge",
         "documentation": {}
     },
@@ -307,7 +388,7 @@
         "kind": 2,
         "importPath": "geomaster_ai_challenge",
         "description": "geomaster_ai_challenge",
-        "peekOfCode": "def macro_action_draw_circle(center, radius, world):\n    actions = []\n    for _ in range(3):\n        actions.append(4)\n    return actions\n# Helper Functions\ndef calculate_triangle_angle(points):\n    if len(points) < 3:\n        return 0\n    p1, p2, p3 = points",
+        "peekOfCode": "def macro_action_draw_circle(center, radius, world):\n    actions = []\n    for _ in range(3):\n        actions.append(4)\n    return actions\n# Helper Functions\ndef calculate_triangle_angle(points):\n    try:\n        if len(points) < 3:\n            return 0",
         "detail": "geomaster_ai_challenge",
         "documentation": {}
     },
@@ -316,7 +397,7 @@
         "kind": 2,
         "importPath": "geomaster_ai_challenge",
         "description": "geomaster_ai_challenge",
-        "peekOfCode": "def calculate_triangle_angle(points):\n    if len(points) < 3:\n        return 0\n    p1, p2, p3 = points\n    v1 = np.array([p2[0] - p1[0], p2[1] - p1[1]])\n    v2 = np.array([p3[0] - p2[0], p3[1] - p2[1]])\n    if np.linalg.norm(v1) == 0 or np.linalg.norm(v2) == 0:\n        return 0\n    angle = (\n        np.arccos(np.dot(v1, v2) / (np.linalg.norm(v1) * np.linalg.norm(v2)))",
+        "peekOfCode": "def calculate_triangle_angle(points):\n    try:\n        if len(points) < 3:\n            return 0\n        # Flatten if nested (e.g., from tessellation)\n        flat_points = []\n        for p in points[:3]:\n            if isinstance(p, (tuple, list)) and len(p) >= 2:\n                flat_points.append((float(p[0]), float(p[1])))\n            else:",
         "detail": "geomaster_ai_challenge",
         "documentation": {}
     },
@@ -325,16 +406,16 @@
         "kind": 2,
         "importPath": "geomaster_ai_challenge",
         "description": "geomaster_ai_challenge",
-        "peekOfCode": "def calculate_dist_to_close(points):\n    if len(points) < 2:\n        return 0\n    p1, p_last = points[0], points[-1]\n    return np.sqrt((p1[0] - p_last[0]) ** 2 + (p1[1] - p_last[1]) ** 2)\n# Reward Function\ndef calculate_reward(shape, target, task, world):\n    try:\n        reward = 0\n        if task == TASK_LINE:",
+        "peekOfCode": "def calculate_dist_to_close(points):\n    if not points or len(points) < 2:\n        return 0\n    if all(isinstance(p, (tuple, list)) and len(p) == 2 for p in points):\n        p1 = points[0]\n        p_last = points[-1]\n        return np.sqrt((p1[0] - p_last[0]) ** 2 + (p1[1] - p_last[1]) ** 2)\n    elif all(isinstance(t, (list, tuple)) and len(t) == 3 for t in points):\n        if not points[0] or not points[-1]:\n            return 0",
         "detail": "geomaster_ai_challenge",
         "documentation": {}
     },
     {
-        "label": "calculate_reward",
+        "label": "calculate_advanced_reward",
         "kind": 2,
         "importPath": "geomaster_ai_challenge",
         "description": "geomaster_ai_challenge",
-        "peekOfCode": "def calculate_reward(shape, target, task, world):\n    try:\n        reward = 0\n        if task == TASK_LINE:\n            if not shape:\n                return -10\n            current_pos = shape[-1] if shape else (0, 0)\n            if not (isinstance(current_pos, (tuple, list)) and len(current_pos) == 2):\n                raise ValueError(f\"Invalid current_pos: {current_pos}\")\n            if not (isinstance(target, (tuple, list)) and len(target) == 2):",
+        "peekOfCode": "def calculate_advanced_reward(shape, target, task, world):\n    try:\n        reward = 0\n        efficiency_factor = 1.0\n        creativity_factor = 1.0\n        constraint_penalty = 0\n        if task == TASK_LINE:\n            if not shape:\n                return -10\n            current_pos = shape[-1] if shape else (0, 0)",
         "detail": "geomaster_ai_challenge",
         "documentation": {}
     },
@@ -361,16 +442,7 @@
         "kind": 2,
         "importPath": "geomaster_ai_challenge",
         "description": "geomaster_ai_challenge",
-        "peekOfCode": "def plan_actions(state_tensor, model, current_shape, target, task, world, steps=3):\n    best_sequence = []\n    best_reward = -float(\"inf\")\n    state = state_tensor.squeeze(0).cpu().numpy()\n    for _ in range(10):\n        sequence = [np.random.randint(action_dim) for _ in range(steps)]\n        sim_state = state.copy()\n        sim_shape = current_shape.copy()\n        total_reward = 0\n        for action in sequence:",
-        "detail": "geomaster_ai_challenge",
-        "documentation": {}
-    },
-    {
-        "label": "console_input",
-        "kind": 2,
-        "importPath": "geomaster_ai_challenge",
-        "description": "geomaster_ai_challenge",
-        "peekOfCode": "def console_input():\n    while True:\n        cmd = (\n            input(\n                \"Enter command (start, pause, resume, quit, faster, slower, iters_up, iters_down): \"\n            )\n            .strip()\n            .lower()\n        )\n        command_queue.put(cmd)",
+        "peekOfCode": "def plan_actions(state_tensor, model, current_shape, target, task, world, steps=3):\n    best_sequence = []\n    best_reward = -float(\"inf\")\n    state = state_tensor.squeeze(0).cpu().numpy()\n    for _ in range(10):\n        sequence = [np.random.randint(action_dim) for _ in range(steps)]\n        sim_state = state.copy()\n        sim_shape = current_shape.copy() if isinstance(current_shape, list) else []\n        total_reward = 0\n        for action in sequence:",
         "detail": "geomaster_ai_challenge",
         "documentation": {}
     },
@@ -397,7 +469,7 @@
         "kind": 2,
         "importPath": "geomaster_ai_challenge",
         "description": "geomaster_ai_challenge",
-        "peekOfCode": "def reset_episode():\n    global start_point, triangle_points, circle_center, pentagon_points, tessellation_points, current_shape, game_state, ai_step\n    if current_task == TASK_LINE:\n        start_point = (random.randint(50, WIDTH-50), random.randint(50, HEIGHT-50))\n        current_shape = [start_point]\n    elif current_task == TASK_TRIANGLE:\n        triangle_points = [(random.randint(50, WIDTH-50), random.randint(50, HEIGHT-50)) for _ in range(3)]\n        current_shape = triangle_points.copy()\n    elif current_task == TASK_CIRCLE:\n        circle_center = (random.randint(50, WIDTH-50), random.randint(50, HEIGHT-50))",
+        "peekOfCode": "def reset_episode():\n    global start_point, triangle_points, circle_center, pentagon_points, tessellation_points, current_shape, game_state, ai_step\n    if is_3d_mode:\n        if current_task == TASK_LINE:\n            start_point = (random.randint(50, WIDTH-50), random.randint(50, HEIGHT-50), random.randint(-100, 100))\n            current_shape = [start_point]\n            global end_point\n            end_point = (WIDTH - 50, HEIGHT - 50, random.randint(-100, 100))\n        elif current_task == TASK_TRIANGLE:\n            triangle_points = [(random.randint(50, WIDTH-50), random.randint(50, HEIGHT-50), random.randint(-100, 100)) for _ in range(3)]",
         "detail": "geomaster_ai_challenge",
         "documentation": {}
     },
@@ -407,6 +479,42 @@
         "importPath": "geomaster_ai_challenge",
         "description": "geomaster_ai_challenge",
         "peekOfCode": "def update_reward_plot():\n    global plot_surface, episode_rewards\n    plt.figure(figsize=(4, 2))\n    plt.plot(list(episode_rewards), label=\"Reward\", color=\"cyan\")\n    plt.xlabel(\"Episode\")\n    plt.ylabel(\"Avg Reward\")\n    plt.title(\"Reward Trend\")\n    plt.legend()\n    buf = BytesIO()\n    plt.savefig(buf, format=\"png\", bbox_inches=\"tight\")",
+        "detail": "geomaster_ai_challenge",
+        "documentation": {}
+    },
+    {
+        "label": "save_model_weights",
+        "kind": 2,
+        "importPath": "geomaster_ai_challenge",
+        "description": "geomaster_ai_challenge",
+        "peekOfCode": "def save_model_weights(task, world):\n    filename = f\"model_{task}_{world}.pth\"\n    torch.save(policy_net.state_dict(), filename)\n    log_message(f\"Model weights saved to {filename}\")\ndef load_model_weights(task, world):\n    filename = f\"model_{task}_{world}.pth\"\n    if os.path.exists(filename):\n        policy_net.load_state_dict(torch.load(filename))\n        target_net.load_state_dict(policy_net.state_dict())\n        log_message(f\"Model weights loaded from {filename}\")",
+        "detail": "geomaster_ai_challenge",
+        "documentation": {}
+    },
+    {
+        "label": "load_model_weights",
+        "kind": 2,
+        "importPath": "geomaster_ai_challenge",
+        "description": "geomaster_ai_challenge",
+        "peekOfCode": "def load_model_weights(task, world):\n    filename = f\"model_{task}_{world}.pth\"\n    if os.path.exists(filename):\n        policy_net.load_state_dict(torch.load(filename))\n        target_net.load_state_dict(policy_net.state_dict())\n        log_message(f\"Model weights loaded from {filename}\")\n    else:\n        log_message(f\"No saved weights found for {task} in {world}\")\n# Explainable AI (XAI)\ndef explain_decision(state_tensor):",
+        "detail": "geomaster_ai_challenge",
+        "documentation": {}
+    },
+    {
+        "label": "explain_decision",
+        "kind": 2,
+        "importPath": "geomaster_ai_challenge",
+        "description": "geomaster_ai_challenge",
+        "peekOfCode": "def explain_decision(state_tensor):\n    with torch.no_grad():\n        q_values = policy_net(state_tensor).cpu().numpy().flatten()\n    action_probabilities = np.exp(q_values) / np.sum(np.exp(q_values))\n    explanation = {\n        \"action_probabilities\": action_probabilities.tolist(),\n        \"q_values\": q_values.tolist(),\n    }\n    log_message(f\"Decision explanation: {explanation}\")\n    return explanation",
+        "detail": "geomaster_ai_challenge",
+        "documentation": {}
+    },
+    {
+        "label": "visualize_explanation",
+        "kind": 2,
+        "importPath": "geomaster_ai_challenge",
+        "description": "geomaster_ai_challenge",
+        "peekOfCode": "def visualize_explanation(explanation):\n    plt.figure(figsize=(6, 4))\n    actions = [f\"Action {i}\" for i in range(len(explanation[\"action_probabilities\"]))]\n    plt.bar(actions, explanation[\"action_probabilities\"], color=\"cyan\")\n    plt.xlabel(\"Actions\")\n    plt.ylabel(\"Probability\")\n    plt.title(\"Action Probabilities\")\n    buf = BytesIO()\n    plt.savefig(buf, format=\"png\", bbox_inches=\"tight\")\n    buf.seek(0)",
         "detail": "geomaster_ai_challenge",
         "documentation": {}
     },
@@ -442,7 +550,7 @@
         "kind": 5,
         "importPath": "geomaster_ai_challenge",
         "description": "geomaster_ai_challenge",
-        "peekOfCode": "BLACK = (0, 0, 0)\nWHITE = (255, 255, 255)\nRED = (255, 0, 0)\nBLUE = (0, 0, 255)\nCYAN = (0, 255, 255)\nGREEN = (0, 255, 0)\n# Font\nfont = pygame.font.SysFont(\"monospace\", 20)\n# Helper function\ndef to_int_point(point):",
+        "peekOfCode": "BLACK = (0, 0, 0)\nWHITE = (255, 255, 255)\nRED = (255, 0, 0)\nBLUE = (0, 0, 255)\nCYAN = (0, 255, 255)\nGREEN = (0, 255, 0)\n# Font\nfont = pygame.font.SysFont(\"monospace\", 20)\n# Thread-safe logging\nlog_queue = Queue()",
         "detail": "geomaster_ai_challenge",
         "documentation": {}
     },
@@ -451,7 +559,7 @@
         "kind": 5,
         "importPath": "geomaster_ai_challenge",
         "description": "geomaster_ai_challenge",
-        "peekOfCode": "WHITE = (255, 255, 255)\nRED = (255, 0, 0)\nBLUE = (0, 0, 255)\nCYAN = (0, 255, 255)\nGREEN = (0, 255, 0)\n# Font\nfont = pygame.font.SysFont(\"monospace\", 20)\n# Helper function\ndef to_int_point(point):\n    if (",
+        "peekOfCode": "WHITE = (255, 255, 255)\nRED = (255, 0, 0)\nBLUE = (0, 0, 255)\nCYAN = (0, 255, 255)\nGREEN = (0, 255, 0)\n# Font\nfont = pygame.font.SysFont(\"monospace\", 20)\n# Thread-safe logging\nlog_queue = Queue()\ndebug_mode = False",
         "detail": "geomaster_ai_challenge",
         "documentation": {}
     },
@@ -460,7 +568,7 @@
         "kind": 5,
         "importPath": "geomaster_ai_challenge",
         "description": "geomaster_ai_challenge",
-        "peekOfCode": "RED = (255, 0, 0)\nBLUE = (0, 0, 255)\nCYAN = (0, 255, 255)\nGREEN = (0, 255, 0)\n# Font\nfont = pygame.font.SysFont(\"monospace\", 20)\n# Helper function\ndef to_int_point(point):\n    if (\n        not isinstance(point, (tuple, list))",
+        "peekOfCode": "RED = (255, 0, 0)\nBLUE = (0, 0, 255)\nCYAN = (0, 255, 255)\nGREEN = (0, 255, 0)\n# Font\nfont = pygame.font.SysFont(\"monospace\", 20)\n# Thread-safe logging\nlog_queue = Queue()\ndebug_mode = False\ndef log_message(message):",
         "detail": "geomaster_ai_challenge",
         "documentation": {}
     },
@@ -469,7 +577,7 @@
         "kind": 5,
         "importPath": "geomaster_ai_challenge",
         "description": "geomaster_ai_challenge",
-        "peekOfCode": "BLUE = (0, 0, 255)\nCYAN = (0, 255, 255)\nGREEN = (0, 255, 0)\n# Font\nfont = pygame.font.SysFont(\"monospace\", 20)\n# Helper function\ndef to_int_point(point):\n    if (\n        not isinstance(point, (tuple, list))\n        or len(point) != 2",
+        "peekOfCode": "BLUE = (0, 0, 255)\nCYAN = (0, 255, 255)\nGREEN = (0, 255, 0)\n# Font\nfont = pygame.font.SysFont(\"monospace\", 20)\n# Thread-safe logging\nlog_queue = Queue()\ndebug_mode = False\ndef log_message(message):\n    if debug_mode:",
         "detail": "geomaster_ai_challenge",
         "documentation": {}
     },
@@ -478,7 +586,7 @@
         "kind": 5,
         "importPath": "geomaster_ai_challenge",
         "description": "geomaster_ai_challenge",
-        "peekOfCode": "CYAN = (0, 255, 255)\nGREEN = (0, 255, 0)\n# Font\nfont = pygame.font.SysFont(\"monospace\", 20)\n# Helper function\ndef to_int_point(point):\n    if (\n        not isinstance(point, (tuple, list))\n        or len(point) != 2\n        or not all(isinstance(coord, (int, float)) for coord in point)",
+        "peekOfCode": "CYAN = (0, 255, 255)\nGREEN = (0, 255, 0)\n# Font\nfont = pygame.font.SysFont(\"monospace\", 20)\n# Thread-safe logging\nlog_queue = Queue()\ndebug_mode = False\ndef log_message(message):\n    if debug_mode:\n        log_queue.put(message)",
         "detail": "geomaster_ai_challenge",
         "documentation": {}
     },
@@ -487,7 +595,7 @@
         "kind": 5,
         "importPath": "geomaster_ai_challenge",
         "description": "geomaster_ai_challenge",
-        "peekOfCode": "GREEN = (0, 255, 0)\n# Font\nfont = pygame.font.SysFont(\"monospace\", 20)\n# Helper function\ndef to_int_point(point):\n    if (\n        not isinstance(point, (tuple, list))\n        or len(point) != 2\n        or not all(isinstance(coord, (int, float)) for coord in point)\n    ):",
+        "peekOfCode": "GREEN = (0, 255, 0)\n# Font\nfont = pygame.font.SysFont(\"monospace\", 20)\n# Thread-safe logging\nlog_queue = Queue()\ndebug_mode = False\ndef log_message(message):\n    if debug_mode:\n        log_queue.put(message)\ndef process_logs():",
         "detail": "geomaster_ai_challenge",
         "documentation": {}
     },
@@ -496,7 +604,25 @@
         "kind": 5,
         "importPath": "geomaster_ai_challenge",
         "description": "geomaster_ai_challenge",
-        "peekOfCode": "font = pygame.font.SysFont(\"monospace\", 20)\n# Helper function\ndef to_int_point(point):\n    if (\n        not isinstance(point, (tuple, list))\n        or len(point) != 2\n        or not all(isinstance(coord, (int, float)) for coord in point)\n    ):\n        print(f\"Invalid point detected: {point}\")\n        return (0, 0)",
+        "peekOfCode": "font = pygame.font.SysFont(\"monospace\", 20)\n# Thread-safe logging\nlog_queue = Queue()\ndebug_mode = False\ndef log_message(message):\n    if debug_mode:\n        log_queue.put(message)\ndef process_logs():\n    while not log_queue.empty():\n        print(log_queue.get())",
+        "detail": "geomaster_ai_challenge",
+        "documentation": {}
+    },
+    {
+        "label": "log_queue",
+        "kind": 5,
+        "importPath": "geomaster_ai_challenge",
+        "description": "geomaster_ai_challenge",
+        "peekOfCode": "log_queue = Queue()\ndebug_mode = False\ndef log_message(message):\n    if debug_mode:\n        log_queue.put(message)\ndef process_logs():\n    while not log_queue.empty():\n        print(log_queue.get())\n# Helper function\ndef to_int_point(point):",
+        "detail": "geomaster_ai_challenge",
+        "documentation": {}
+    },
+    {
+        "label": "debug_mode",
+        "kind": 5,
+        "importPath": "geomaster_ai_challenge",
+        "description": "geomaster_ai_challenge",
+        "peekOfCode": "debug_mode = False\ndef log_message(message):\n    if debug_mode:\n        log_queue.put(message)\ndef process_logs():\n    while not log_queue.empty():\n        print(log_queue.get())\n# Helper function\ndef to_int_point(point):\n    if (",
         "detail": "geomaster_ai_challenge",
         "documentation": {}
     },
@@ -636,11 +762,29 @@
         "documentation": {}
     },
     {
+        "label": "state_dim_2d",
+        "kind": 5,
+        "importPath": "geomaster_ai_challenge",
+        "description": "geomaster_ai_challenge",
+        "peekOfCode": "state_dim_2d = 10\nstate_dim_3d = 11  # Add z or dz for 3D\nstate_dim = state_dim_2d  # Default to 2D\naction_dim = 6\npredictor_input_dim = 13\npredictor_output_dim = len(tasks)\ngamma = 0.99\nepsilon_start = 1.0\nepsilon_end = 0.01\nepsilon_decay = 5000",
+        "detail": "geomaster_ai_challenge",
+        "documentation": {}
+    },
+    {
+        "label": "state_dim_3d",
+        "kind": 5,
+        "importPath": "geomaster_ai_challenge",
+        "description": "geomaster_ai_challenge",
+        "peekOfCode": "state_dim_3d = 11  # Add z or dz for 3D\nstate_dim = state_dim_2d  # Default to 2D\naction_dim = 6\npredictor_input_dim = 13\npredictor_output_dim = len(tasks)\ngamma = 0.99\nepsilon_start = 1.0\nepsilon_end = 0.01\nepsilon_decay = 5000\nepsilon = epsilon_start",
+        "detail": "geomaster_ai_challenge",
+        "documentation": {}
+    },
+    {
         "label": "state_dim",
         "kind": 5,
         "importPath": "geomaster_ai_challenge",
         "description": "geomaster_ai_challenge",
-        "peekOfCode": "state_dim = 10\naction_dim = 6\npredictor_input_dim = 13  # task_id, world_id, avg_reward, last 10 rewards\npredictor_output_dim = len(tasks)\ngamma = 0.99\nepsilon_start = 1.0\nepsilon_end = 0.01\nepsilon_decay = 5000\nepsilon = epsilon_start\nbatch_size = 64",
+        "peekOfCode": "state_dim = state_dim_2d  # Default to 2D\naction_dim = 6\npredictor_input_dim = 13\npredictor_output_dim = len(tasks)\ngamma = 0.99\nepsilon_start = 1.0\nepsilon_end = 0.01\nepsilon_decay = 5000\nepsilon = epsilon_start\nbatch_size = 64",
         "detail": "geomaster_ai_challenge",
         "documentation": {}
     },
@@ -649,7 +793,7 @@
         "kind": 5,
         "importPath": "geomaster_ai_challenge",
         "description": "geomaster_ai_challenge",
-        "peekOfCode": "action_dim = 6\npredictor_input_dim = 13  # task_id, world_id, avg_reward, last 10 rewards\npredictor_output_dim = len(tasks)\ngamma = 0.99\nepsilon_start = 1.0\nepsilon_end = 0.01\nepsilon_decay = 5000\nepsilon = epsilon_start\nbatch_size = 64\nmemory_size = 10000",
+        "peekOfCode": "action_dim = 6\npredictor_input_dim = 13\npredictor_output_dim = len(tasks)\ngamma = 0.99\nepsilon_start = 1.0\nepsilon_end = 0.01\nepsilon_decay = 5000\nepsilon = epsilon_start\nbatch_size = 64\nmemory_size = 10000",
         "detail": "geomaster_ai_challenge",
         "documentation": {}
     },
@@ -658,7 +802,7 @@
         "kind": 5,
         "importPath": "geomaster_ai_challenge",
         "description": "geomaster_ai_challenge",
-        "peekOfCode": "predictor_input_dim = 13  # task_id, world_id, avg_reward, last 10 rewards\npredictor_output_dim = len(tasks)\ngamma = 0.99\nepsilon_start = 1.0\nepsilon_end = 0.01\nepsilon_decay = 5000\nepsilon = epsilon_start\nbatch_size = 64\nmemory_size = 10000\ntarget_update = 10",
+        "peekOfCode": "predictor_input_dim = 13\npredictor_output_dim = len(tasks)\ngamma = 0.99\nepsilon_start = 1.0\nepsilon_end = 0.01\nepsilon_decay = 5000\nepsilon = epsilon_start\nbatch_size = 64\nmemory_size = 10000\ntarget_update = 10",
         "detail": "geomaster_ai_challenge",
         "documentation": {}
     },
@@ -784,7 +928,7 @@
         "kind": 5,
         "importPath": "geomaster_ai_challenge",
         "description": "geomaster_ai_challenge",
-        "peekOfCode": "device = torch.device(\"cuda\" if torch.cuda.is_available() else \"cpu\")\npolicy_net = DQN(state_dim, action_dim).to(device)\ntarget_net = DQN(state_dim, action_dim).to(device)\ntarget_net.load_state_dict(policy_net.state_dict())\noptimizer = optim.Adam(policy_net.parameters(), lr=base_lr)\nforward_model = ForwardModel(state_dim, action_dim).to(device)\noptimizer_fm = optim.Adam(forward_model.parameters(), lr=base_lr)\nworld_model = WorldModel(state_dim, action_dim).to(device)\noptimizer_wm = optim.Adam(world_model.parameters(), lr=base_lr)\nshape_predictor = NextShapePredictor(predictor_input_dim, predictor_output_dim).to(",
+        "peekOfCode": "device = torch.device(\"cuda\" if torch.cuda.is_available() else \"cpu\")\npolicy_net = DQN(state_dim, action_dim).to(device)\ntarget_net = DQN(state_dim, action_dim).to(device)\ntarget_net.load_state_dict(policy_net.state_dict())\noptimizer = optim.Adam(policy_net.parameters(), lr=base_lr)\nforward_model = ForwardModel(state_dim, action_dim).to(device)\noptimizer_fm = optim.Adam(forward_model.parameters(), lr=base_lr)\nworld_model = WorldModel(state_dim, action_dim).to(device)\noptimizer_wm = optim.Adam(world_model.parameters(), lr=base_lr)\nshape_predictor = NextShapePredictor(predictor_input_dim, predictor_output_dim).to(device)",
         "detail": "geomaster_ai_challenge",
         "documentation": {}
     },
@@ -793,7 +937,7 @@
         "kind": 5,
         "importPath": "geomaster_ai_challenge",
         "description": "geomaster_ai_challenge",
-        "peekOfCode": "policy_net = DQN(state_dim, action_dim).to(device)\ntarget_net = DQN(state_dim, action_dim).to(device)\ntarget_net.load_state_dict(policy_net.state_dict())\noptimizer = optim.Adam(policy_net.parameters(), lr=base_lr)\nforward_model = ForwardModel(state_dim, action_dim).to(device)\noptimizer_fm = optim.Adam(forward_model.parameters(), lr=base_lr)\nworld_model = WorldModel(state_dim, action_dim).to(device)\noptimizer_wm = optim.Adam(world_model.parameters(), lr=base_lr)\nshape_predictor = NextShapePredictor(predictor_input_dim, predictor_output_dim).to(\n    device",
+        "peekOfCode": "policy_net = DQN(state_dim, action_dim).to(device)\ntarget_net = DQN(state_dim, action_dim).to(device)\ntarget_net.load_state_dict(policy_net.state_dict())\noptimizer = optim.Adam(policy_net.parameters(), lr=base_lr)\nforward_model = ForwardModel(state_dim, action_dim).to(device)\noptimizer_fm = optim.Adam(forward_model.parameters(), lr=base_lr)\nworld_model = WorldModel(state_dim, action_dim).to(device)\noptimizer_wm = optim.Adam(world_model.parameters(), lr=base_lr)\nshape_predictor = NextShapePredictor(predictor_input_dim, predictor_output_dim).to(device)\noptimizer_sp = optim.Adam(shape_predictor.parameters(), lr=0.001)",
         "detail": "geomaster_ai_challenge",
         "documentation": {}
     },
@@ -802,7 +946,7 @@
         "kind": 5,
         "importPath": "geomaster_ai_challenge",
         "description": "geomaster_ai_challenge",
-        "peekOfCode": "target_net = DQN(state_dim, action_dim).to(device)\ntarget_net.load_state_dict(policy_net.state_dict())\noptimizer = optim.Adam(policy_net.parameters(), lr=base_lr)\nforward_model = ForwardModel(state_dim, action_dim).to(device)\noptimizer_fm = optim.Adam(forward_model.parameters(), lr=base_lr)\nworld_model = WorldModel(state_dim, action_dim).to(device)\noptimizer_wm = optim.Adam(world_model.parameters(), lr=base_lr)\nshape_predictor = NextShapePredictor(predictor_input_dim, predictor_output_dim).to(\n    device\n)",
+        "peekOfCode": "target_net = DQN(state_dim, action_dim).to(device)\ntarget_net.load_state_dict(policy_net.state_dict())\noptimizer = optim.Adam(policy_net.parameters(), lr=base_lr)\nforward_model = ForwardModel(state_dim, action_dim).to(device)\noptimizer_fm = optim.Adam(forward_model.parameters(), lr=base_lr)\nworld_model = WorldModel(state_dim, action_dim).to(device)\noptimizer_wm = optim.Adam(world_model.parameters(), lr=base_lr)\nshape_predictor = NextShapePredictor(predictor_input_dim, predictor_output_dim).to(device)\noptimizer_sp = optim.Adam(shape_predictor.parameters(), lr=0.001)\nmemory = SumTree(memory_size)",
         "detail": "geomaster_ai_challenge",
         "documentation": {}
     },
@@ -811,7 +955,7 @@
         "kind": 5,
         "importPath": "geomaster_ai_challenge",
         "description": "geomaster_ai_challenge",
-        "peekOfCode": "optimizer = optim.Adam(policy_net.parameters(), lr=base_lr)\nforward_model = ForwardModel(state_dim, action_dim).to(device)\noptimizer_fm = optim.Adam(forward_model.parameters(), lr=base_lr)\nworld_model = WorldModel(state_dim, action_dim).to(device)\noptimizer_wm = optim.Adam(world_model.parameters(), lr=base_lr)\nshape_predictor = NextShapePredictor(predictor_input_dim, predictor_output_dim).to(\n    device\n)\noptimizer_sp = optim.Adam(shape_predictor.parameters(), lr=0.001)\nmemory = SumTree(memory_size)",
+        "peekOfCode": "optimizer = optim.Adam(policy_net.parameters(), lr=base_lr)\nforward_model = ForwardModel(state_dim, action_dim).to(device)\noptimizer_fm = optim.Adam(forward_model.parameters(), lr=base_lr)\nworld_model = WorldModel(state_dim, action_dim).to(device)\noptimizer_wm = optim.Adam(world_model.parameters(), lr=base_lr)\nshape_predictor = NextShapePredictor(predictor_input_dim, predictor_output_dim).to(device)\noptimizer_sp = optim.Adam(shape_predictor.parameters(), lr=0.001)\nmemory = SumTree(memory_size)\nn_step_buffer = []\n# Game State",
         "detail": "geomaster_ai_challenge",
         "documentation": {}
     },
@@ -820,7 +964,7 @@
         "kind": 5,
         "importPath": "geomaster_ai_challenge",
         "description": "geomaster_ai_challenge",
-        "peekOfCode": "forward_model = ForwardModel(state_dim, action_dim).to(device)\noptimizer_fm = optim.Adam(forward_model.parameters(), lr=base_lr)\nworld_model = WorldModel(state_dim, action_dim).to(device)\noptimizer_wm = optim.Adam(world_model.parameters(), lr=base_lr)\nshape_predictor = NextShapePredictor(predictor_input_dim, predictor_output_dim).to(\n    device\n)\noptimizer_sp = optim.Adam(shape_predictor.parameters(), lr=0.001)\nmemory = SumTree(memory_size)\nn_step_buffer = []",
+        "peekOfCode": "forward_model = ForwardModel(state_dim, action_dim).to(device)\noptimizer_fm = optim.Adam(forward_model.parameters(), lr=base_lr)\nworld_model = WorldModel(state_dim, action_dim).to(device)\noptimizer_wm = optim.Adam(world_model.parameters(), lr=base_lr)\nshape_predictor = NextShapePredictor(predictor_input_dim, predictor_output_dim).to(device)\noptimizer_sp = optim.Adam(shape_predictor.parameters(), lr=0.001)\nmemory = SumTree(memory_size)\nn_step_buffer = []\n# Game State\nstart_point = None",
         "detail": "geomaster_ai_challenge",
         "documentation": {}
     },
@@ -829,7 +973,7 @@
         "kind": 5,
         "importPath": "geomaster_ai_challenge",
         "description": "geomaster_ai_challenge",
-        "peekOfCode": "optimizer_fm = optim.Adam(forward_model.parameters(), lr=base_lr)\nworld_model = WorldModel(state_dim, action_dim).to(device)\noptimizer_wm = optim.Adam(world_model.parameters(), lr=base_lr)\nshape_predictor = NextShapePredictor(predictor_input_dim, predictor_output_dim).to(\n    device\n)\noptimizer_sp = optim.Adam(shape_predictor.parameters(), lr=0.001)\nmemory = SumTree(memory_size)\nn_step_buffer = []\n# Game State",
+        "peekOfCode": "optimizer_fm = optim.Adam(forward_model.parameters(), lr=base_lr)\nworld_model = WorldModel(state_dim, action_dim).to(device)\noptimizer_wm = optim.Adam(world_model.parameters(), lr=base_lr)\nshape_predictor = NextShapePredictor(predictor_input_dim, predictor_output_dim).to(device)\noptimizer_sp = optim.Adam(shape_predictor.parameters(), lr=0.001)\nmemory = SumTree(memory_size)\nn_step_buffer = []\n# Game State\nstart_point = None\nend_point = (WIDTH - 50, HEIGHT - 50)",
         "detail": "geomaster_ai_challenge",
         "documentation": {}
     },
@@ -838,7 +982,7 @@
         "kind": 5,
         "importPath": "geomaster_ai_challenge",
         "description": "geomaster_ai_challenge",
-        "peekOfCode": "world_model = WorldModel(state_dim, action_dim).to(device)\noptimizer_wm = optim.Adam(world_model.parameters(), lr=base_lr)\nshape_predictor = NextShapePredictor(predictor_input_dim, predictor_output_dim).to(\n    device\n)\noptimizer_sp = optim.Adam(shape_predictor.parameters(), lr=0.001)\nmemory = SumTree(memory_size)\nn_step_buffer = []\n# Game State\nstart_point = None",
+        "peekOfCode": "world_model = WorldModel(state_dim, action_dim).to(device)\noptimizer_wm = optim.Adam(world_model.parameters(), lr=base_lr)\nshape_predictor = NextShapePredictor(predictor_input_dim, predictor_output_dim).to(device)\noptimizer_sp = optim.Adam(shape_predictor.parameters(), lr=0.001)\nmemory = SumTree(memory_size)\nn_step_buffer = []\n# Game State\nstart_point = None\nend_point = (WIDTH - 50, HEIGHT - 50)\ntriangle_points = []",
         "detail": "geomaster_ai_challenge",
         "documentation": {}
     },
@@ -847,7 +991,7 @@
         "kind": 5,
         "importPath": "geomaster_ai_challenge",
         "description": "geomaster_ai_challenge",
-        "peekOfCode": "optimizer_wm = optim.Adam(world_model.parameters(), lr=base_lr)\nshape_predictor = NextShapePredictor(predictor_input_dim, predictor_output_dim).to(\n    device\n)\noptimizer_sp = optim.Adam(shape_predictor.parameters(), lr=0.001)\nmemory = SumTree(memory_size)\nn_step_buffer = []\n# Game State\nstart_point = None\nend_point = (WIDTH - 50, HEIGHT - 50)",
+        "peekOfCode": "optimizer_wm = optim.Adam(world_model.parameters(), lr=base_lr)\nshape_predictor = NextShapePredictor(predictor_input_dim, predictor_output_dim).to(device)\noptimizer_sp = optim.Adam(shape_predictor.parameters(), lr=0.001)\nmemory = SumTree(memory_size)\nn_step_buffer = []\n# Game State\nstart_point = None\nend_point = (WIDTH - 50, HEIGHT - 50)\ntriangle_points = []\ncircle_center = None",
         "detail": "geomaster_ai_challenge",
         "documentation": {}
     },
@@ -856,7 +1000,7 @@
         "kind": 5,
         "importPath": "geomaster_ai_challenge",
         "description": "geomaster_ai_challenge",
-        "peekOfCode": "shape_predictor = NextShapePredictor(predictor_input_dim, predictor_output_dim).to(\n    device\n)\noptimizer_sp = optim.Adam(shape_predictor.parameters(), lr=0.001)\nmemory = SumTree(memory_size)\nn_step_buffer = []\n# Game State\nstart_point = None\nend_point = (WIDTH - 50, HEIGHT - 50)\ntriangle_points = []",
+        "peekOfCode": "shape_predictor = NextShapePredictor(predictor_input_dim, predictor_output_dim).to(device)\noptimizer_sp = optim.Adam(shape_predictor.parameters(), lr=0.001)\nmemory = SumTree(memory_size)\nn_step_buffer = []\n# Game State\nstart_point = None\nend_point = (WIDTH - 50, HEIGHT - 50)\ntriangle_points = []\ncircle_center = None\ncircle_radius = 50",
         "detail": "geomaster_ai_challenge",
         "documentation": {}
     },
@@ -1086,38 +1230,29 @@
         "documentation": {}
     },
     {
+        "label": "is_3d_mode",
+        "kind": 5,
+        "importPath": "geomaster_ai_challenge",
+        "description": "geomaster_ai_challenge",
+        "peekOfCode": "is_3d_mode = False\nprojection_mode = \"perspective\"  # Options: \"perspective\", \"orthographic\"\ndef update_network_dimensions():\n    global policy_net, target_net, forward_model, world_model, state_dim\n    state_dim = state_dim_3d if is_3d_mode else state_dim_2d\n    policy_net = DQN(state_dim, action_dim).to(device)\n    target_net = DQN(state_dim, action_dim).to(device)\n    target_net.load_state_dict(policy_net.state_dict())\n    forward_model = ForwardModel(state_dim, action_dim).to(device)\n    world_model = WorldModel(state_dim, action_dim).to(device)",
+        "detail": "geomaster_ai_challenge",
+        "documentation": {}
+    },
+    {
+        "label": "projection_mode",
+        "kind": 5,
+        "importPath": "geomaster_ai_challenge",
+        "description": "geomaster_ai_challenge",
+        "peekOfCode": "projection_mode = \"perspective\"  # Options: \"perspective\", \"orthographic\"\ndef update_network_dimensions():\n    global policy_net, target_net, forward_model, world_model, state_dim\n    state_dim = state_dim_3d if is_3d_mode else state_dim_2d\n    policy_net = DQN(state_dim, action_dim).to(device)\n    target_net = DQN(state_dim, action_dim).to(device)\n    target_net.load_state_dict(policy_net.state_dict())\n    forward_model = ForwardModel(state_dim, action_dim).to(device)\n    world_model = WorldModel(state_dim, action_dim).to(device)\n    global optimizer, optimizer_fm, optimizer_wm",
+        "detail": "geomaster_ai_challenge",
+        "documentation": {}
+    },
+    {
         "label": "animation_time",
         "kind": 5,
         "importPath": "geomaster_ai_challenge",
         "description": "geomaster_ai_challenge",
         "peekOfCode": "animation_time = 0\ndef draw_wireframe(world):\n    global animation_time\n    animation_time += 0.05\n    pulse = 0.5 + 0.5 * np.sin(animation_time)\n    def gradient_color(t):\n        r = int(0 * (1 - t) + 0 * t)\n        g = int(0 * (1 - t) + 255 * t)\n        b = int(255 * (1 - t) + 255 * t)\n        return (r, g, b)",
-        "detail": "geomaster_ai_challenge",
-        "documentation": {}
-    },
-    {
-        "label": "command",
-        "kind": 5,
-        "importPath": "geomaster_ai_challenge",
-        "description": "geomaster_ai_challenge",
-        "peekOfCode": "command = \"\"\ncommand_queue = Queue()\ndef console_input():\n    while True:\n        cmd = (\n            input(\n                \"Enter command (start, pause, resume, quit, faster, slower, iters_up, iters_down): \"\n            )\n            .strip()\n            .lower()",
-        "detail": "geomaster_ai_challenge",
-        "documentation": {}
-    },
-    {
-        "label": "command_queue",
-        "kind": 5,
-        "importPath": "geomaster_ai_challenge",
-        "description": "geomaster_ai_challenge",
-        "peekOfCode": "command_queue = Queue()\ndef console_input():\n    while True:\n        cmd = (\n            input(\n                \"Enter command (start, pause, resume, quit, faster, slower, iters_up, iters_down): \"\n            )\n            .strip()\n            .lower()\n        )",
-        "detail": "geomaster_ai_challenge",
-        "documentation": {}
-    },
-    {
-        "label": "lock",
-        "kind": 5,
-        "importPath": "geomaster_ai_challenge",
-        "description": "geomaster_ai_challenge",
-        "peekOfCode": "lock = threading.Lock()\nthreading.Thread(target=console_input, daemon=True).start()\n# Adaptive Learning Rate\ndef adjust_learning_rate(fps):\n    global optimizer\n    avg_reward = sum(episode_rewards) / len(episode_rewards) if episode_rewards else 0\n    current_lr = base_lr\n    if avg_reward > 10:\n        current_lr = min(base_lr * 2, 0.01)\n    elif avg_reward < -5:",
         "detail": "geomaster_ai_challenge",
         "documentation": {}
     },
@@ -1135,7 +1270,7 @@
         "kind": 5,
         "importPath": "geomaster_ai_challenge",
         "description": "geomaster_ai_challenge",
-        "peekOfCode": "clock = pygame.time.Clock()\nrunning = True\nlast_plot_update = 0\nstep_counter = 0\nwhile running:\n    for event in pygame.event.get():\n        if event.type == pygame.QUIT:\n            running = False\n    # Process commands from the queue\n    while not command_queue.empty():",
+        "peekOfCode": "clock = pygame.time.Clock()\nrunning = True\nlast_plot_update = 0\nstep_counter = 0\n# Command handling via Pygame keys\ncommand_keys = {\n    pygame.K_s: \"start\",\n    pygame.K_p: \"pause\",\n    pygame.K_r: \"resume\",\n    pygame.K_q: \"quit\",",
         "detail": "geomaster_ai_challenge",
         "documentation": {}
     },
@@ -1144,7 +1279,7 @@
         "kind": 5,
         "importPath": "geomaster_ai_challenge",
         "description": "geomaster_ai_challenge",
-        "peekOfCode": "running = True\nlast_plot_update = 0\nstep_counter = 0\nwhile running:\n    for event in pygame.event.get():\n        if event.type == pygame.QUIT:\n            running = False\n    # Process commands from the queue\n    while not command_queue.empty():\n        command = command_queue.get()",
+        "peekOfCode": "running = True\nlast_plot_update = 0\nstep_counter = 0\n# Command handling via Pygame keys\ncommand_keys = {\n    pygame.K_s: \"start\",\n    pygame.K_p: \"pause\",\n    pygame.K_r: \"resume\",\n    pygame.K_q: \"quit\",\n    pygame.K_f: \"faster\",",
         "detail": "geomaster_ai_challenge",
         "documentation": {}
     },
@@ -1153,7 +1288,7 @@
         "kind": 5,
         "importPath": "geomaster_ai_challenge",
         "description": "geomaster_ai_challenge",
-        "peekOfCode": "last_plot_update = 0\nstep_counter = 0\nwhile running:\n    for event in pygame.event.get():\n        if event.type == pygame.QUIT:\n            running = False\n    # Process commands from the queue\n    while not command_queue.empty():\n        command = command_queue.get()\n        if command == \"start\" and running_state == \"stopped\":",
+        "peekOfCode": "last_plot_update = 0\nstep_counter = 0\n# Command handling via Pygame keys\ncommand_keys = {\n    pygame.K_s: \"start\",\n    pygame.K_p: \"pause\",\n    pygame.K_r: \"resume\",\n    pygame.K_q: \"quit\",\n    pygame.K_f: \"faster\",\n    pygame.K_l: \"slower\",",
         "detail": "geomaster_ai_challenge",
         "documentation": {}
     },
@@ -1162,7 +1297,16 @@
         "kind": 5,
         "importPath": "geomaster_ai_challenge",
         "description": "geomaster_ai_challenge",
-        "peekOfCode": "step_counter = 0\nwhile running:\n    for event in pygame.event.get():\n        if event.type == pygame.QUIT:\n            running = False\n    # Process commands from the queue\n    while not command_queue.empty():\n        command = command_queue.get()\n        if command == \"start\" and running_state == \"stopped\":\n            running_state = \"running\"",
+        "peekOfCode": "step_counter = 0\n# Command handling via Pygame keys\ncommand_keys = {\n    pygame.K_s: \"start\",\n    pygame.K_p: \"pause\",\n    pygame.K_r: \"resume\",\n    pygame.K_q: \"quit\",\n    pygame.K_f: \"faster\",\n    pygame.K_l: \"slower\",\n    pygame.K_u: \"iters_up\",",
+        "detail": "geomaster_ai_challenge",
+        "documentation": {}
+    },
+    {
+        "label": "command_keys",
+        "kind": 5,
+        "importPath": "geomaster_ai_challenge",
+        "description": "geomaster_ai_challenge",
+        "peekOfCode": "command_keys = {\n    pygame.K_s: \"start\",\n    pygame.K_p: \"pause\",\n    pygame.K_r: \"resume\",\n    pygame.K_q: \"quit\",\n    pygame.K_f: \"faster\",\n    pygame.K_l: \"slower\",\n    pygame.K_u: \"iters_up\",\n    pygame.K_d: \"iters_down\",\n    pygame.K_b: \"toggle_debug\",",
         "detail": "geomaster_ai_challenge",
         "documentation": {}
     }
