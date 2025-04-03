@@ -909,7 +909,8 @@ def optimize_model():
     optimizer.step()
 
     # Train forward model for curiosity
-    predicted_next_state = forward_model(state_batch, action_batch.float())
+    action_batch_reshaped = action_batch.float().unsqueeze(1)  # Reshape to [64, 1]
+    predicted_next_state = forward_model(state_batch, action_batch_reshaped)
     fm_loss = nn.MSELoss()(predicted_next_state, next_state_batch)
     optimizer_fm.zero_grad()
     fm_loss.backward()
