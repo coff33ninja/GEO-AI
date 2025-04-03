@@ -115,6 +115,14 @@
         "documentation": {}
     },
     {
+        "label": "Queue",
+        "importPath": "queue",
+        "description": "queue",
+        "isExtraImport": true,
+        "detail": "queue",
+        "documentation": {}
+    },
+    {
         "label": "SumTree",
         "kind": 6,
         "importPath": "geomaster_ai_challenge",
@@ -173,7 +181,7 @@
         "kind": 2,
         "importPath": "geomaster_ai_challenge",
         "description": "geomaster_ai_challenge",
-        "peekOfCode": "def stereographic_projection(point, R=100):\n    x, y, z = point\n    if z == 2 * R:\n        return None\n    factor = 2 * R / (2 * R - z)\n    proj_x = factor * x + WIDTH / 2\n    proj_y = factor * y + HEIGHT / 2\n    return (proj_x, proj_y)\ndef poincare_disk_projection(point, R=100):\n    x, y = point",
+        "peekOfCode": "def stereographic_projection(point, R=100):\n    x, y, z = point\n    if z == 2 * R:\n        return (0, 0)  # Default point instead of None\n    factor = 2 * R / (2 * R - z)\n    proj_x = factor * x + WIDTH / 2\n    proj_y = factor * y + HEIGHT / 2\n    return (proj_x, proj_y)\ndef poincare_disk_projection(point, R=100):\n    x, y = point",
         "detail": "geomaster_ai_challenge",
         "documentation": {}
     },
@@ -182,7 +190,7 @@
         "kind": 2,
         "importPath": "geomaster_ai_challenge",
         "description": "geomaster_ai_challenge",
-        "peekOfCode": "def poincare_disk_projection(point, R=100):\n    x, y = point\n    dist = np.sqrt(x**2 + y**2)\n    if dist >= R:\n        return None\n    factor = R * np.tanh(dist / R)\n    angle = np.arctan2(y, x)\n    proj_x = factor * np.cos(angle) + WIDTH / 2\n    proj_y = factor * np.sin(angle) + HEIGHT / 2\n    return (proj_x, proj_y)",
+        "peekOfCode": "def poincare_disk_projection(point, R=100):\n    x, y = point\n    dist = np.sqrt(x**2 + y**2)\n    if dist >= R:\n        return (WIDTH / 2, HEIGHT / 2)  # Center of disk as default\n    factor = R * np.tanh(dist / R)\n    angle = np.arctan2(y, x)\n    proj_x = factor * np.cos(angle) + WIDTH / 2\n    proj_y = factor * np.sin(angle) + HEIGHT / 2\n    return (proj_x, proj_y)",
         "detail": "geomaster_ai_challenge",
         "documentation": {}
     },
@@ -191,7 +199,7 @@
         "kind": 2,
         "importPath": "geomaster_ai_challenge",
         "description": "geomaster_ai_challenge",
-        "peekOfCode": "def elliptical_projection(point, a=150, b=100):\n    x, y = point\n    proj_x = (x / a) * (WIDTH / 2) + WIDTH / 2\n    proj_y = (y / b) * (HEIGHT / 2) + HEIGHT / 2\n    return (proj_x, proj_y)\ndef projective_projection(point, fov=90, near=1):\n    x, y = point\n    z = 100\n    if z <= 0:\n        return None",
+        "peekOfCode": "def elliptical_projection(point, a=150, b=100):\n    x, y = point\n    proj_x = (x / a) * (WIDTH / 2) + WIDTH / 2\n    proj_y = (y / b) * (HEIGHT / 2) + HEIGHT / 2\n    return (proj_x, proj_y)\ndef projective_projection(point, fov=90, near=1):\n    x, y = point\n    z = 100\n    if z <= 0:\n        return (WIDTH / 2, HEIGHT / 2)  # Center as default",
         "detail": "geomaster_ai_challenge",
         "documentation": {}
     },
@@ -200,7 +208,7 @@
         "kind": 2,
         "importPath": "geomaster_ai_challenge",
         "description": "geomaster_ai_challenge",
-        "peekOfCode": "def projective_projection(point, fov=90, near=1):\n    x, y = point\n    z = 100\n    if z <= 0:\n        return None\n    proj_x = (x * near / z) * (WIDTH / 2) + WIDTH / 2\n    proj_y = (y * near / z) * (HEIGHT / 2) + HEIGHT / 2\n    return (proj_x, proj_y)\ndef fractal_projection(point, iterations=3):\n    x, y = point",
+        "peekOfCode": "def projective_projection(point, fov=90, near=1):\n    x, y = point\n    z = 100\n    if z <= 0:\n        return (WIDTH / 2, HEIGHT / 2)  # Center as default\n    proj_x = (x * near / z) * (WIDTH / 2) + WIDTH / 2\n    proj_y = (y * near / z) * (HEIGHT / 2) + HEIGHT / 2\n    return (proj_x, proj_y)\ndef fractal_projection(point, iterations=3):\n    x, y = point",
         "detail": "geomaster_ai_challenge",
         "documentation": {}
     },
@@ -218,7 +226,7 @@
         "kind": 2,
         "importPath": "geomaster_ai_challenge",
         "description": "geomaster_ai_challenge",
-        "peekOfCode": "def project_point(point, world):\n    x, y = point\n    if world == WORLD_EUCLIDEAN:\n        return (x + WIDTH / 2, y + HEIGHT / 2)\n    elif world == WORLD_SPHERICAL:\n        z = np.sqrt(max(0, 100**2 - x**2 - y**2))\n        return stereographic_projection((x, y, z))\n    elif world == WORLD_HYPERBOLIC:\n        return poincare_disk_projection((x - WIDTH / 2, y - HEIGHT / 2))\n    elif world == WORLD_ELLIPTICAL:",
+        "peekOfCode": "def project_point(point, world):\n    x, y = point\n    if world == WORLD_EUCLIDEAN:\n        proj = (x + WIDTH / 2, y + HEIGHT / 2)\n    elif world == WORLD_SPHERICAL:\n        z = np.sqrt(max(0, 100**2 - x**2 - y**2))\n        proj = stereographic_projection((x, y, z))\n    elif world == WORLD_HYPERBOLIC:\n        proj = poincare_disk_projection((x - WIDTH / 2, y - HEIGHT / 2))\n    elif world == WORLD_ELLIPTICAL:",
         "detail": "geomaster_ai_challenge",
         "documentation": {}
     },
@@ -281,7 +289,7 @@
         "kind": 2,
         "importPath": "geomaster_ai_challenge",
         "description": "geomaster_ai_challenge",
-        "peekOfCode": "def draw_tessellation(points, world):\n    if len(points) < 3:\n        return points\n    base_triangle = points[:3]\n    tessellation = [base_triangle]\n    center_x = sum(p[0] for p in base_triangle) / 3\n    center_y = sum(p[1] for p in base_triangle) / 3\n    for i in range(3):\n        p1 = base_triangle[i]\n        p2 = base_triangle[(i + 1) % 3]",
+        "peekOfCode": "def draw_tessellation(points, world):\n    if len(points) < 3:\n        return [points]  # Return as a single triangle list\n    base_triangle = points[:3]\n    tessellation = [base_triangle]\n    center_x = sum(p[0] for p in base_triangle) / 3\n    center_y = sum(p[1] for p in base_triangle) / 3\n    for i in range(3):\n        p1 = base_triangle[i]\n        p2 = base_triangle[(i + 1) % 3]",
         "detail": "geomaster_ai_challenge",
         "documentation": {}
     },
@@ -362,7 +370,7 @@
         "kind": 2,
         "importPath": "geomaster_ai_challenge",
         "description": "geomaster_ai_challenge",
-        "peekOfCode": "def console_input():\n    global command, running_state, tick_rate, train_iters\n    while True:\n        cmd = (\n            input(\n                \"Enter command (start, pause, resume, quit, faster, slower, iters_up, iters_down): \"\n            )\n            .strip()\n            .lower()\n        )",
+        "peekOfCode": "def console_input():\n    while True:\n        cmd = (\n            input(\n                \"Enter command (start, pause, resume, quit, faster, slower, iters_up, iters_down): \"\n            )\n            .strip()\n            .lower()\n        )\n        command_queue.put(cmd)",
         "detail": "geomaster_ai_challenge",
         "documentation": {}
     },
@@ -389,7 +397,7 @@
         "kind": 2,
         "importPath": "geomaster_ai_challenge",
         "description": "geomaster_ai_challenge",
-        "peekOfCode": "def reset_episode():\n    global start_point, triangle_points, circle_center, pentagon_points, tessellation_points, current_shape, game_state, ai_step\n    if current_task == TASK_LINE:\n        start_point = (random.randint(50, WIDTH - 50), random.randint(50, HEIGHT - 50))\n        current_shape = [start_point]\n    elif current_task == TASK_TRIANGLE:\n        triangle_points = [\n            (random.randint(50, WIDTH - 50), random.randint(50, HEIGHT - 50))\n            for _ in range(3)\n        ]",
+        "peekOfCode": "def reset_episode():\n    global start_point, triangle_points, circle_center, pentagon_points, tessellation_points, current_shape, game_state, ai_step\n    if current_task == TASK_LINE:\n        start_point = (random.randint(50, WIDTH-50), random.randint(50, HEIGHT-50))\n        current_shape = [start_point]\n    elif current_task == TASK_TRIANGLE:\n        triangle_points = [(random.randint(50, WIDTH-50), random.randint(50, HEIGHT-50)) for _ in range(3)]\n        current_shape = triangle_points.copy()\n    elif current_task == TASK_CIRCLE:\n        circle_center = (random.randint(50, WIDTH-50), random.randint(50, HEIGHT-50))",
         "detail": "geomaster_ai_challenge",
         "documentation": {}
     },
@@ -1091,7 +1099,16 @@
         "kind": 5,
         "importPath": "geomaster_ai_challenge",
         "description": "geomaster_ai_challenge",
-        "peekOfCode": "command = \"\"\ndef console_input():\n    global command, running_state, tick_rate, train_iters\n    while True:\n        cmd = (\n            input(\n                \"Enter command (start, pause, resume, quit, faster, slower, iters_up, iters_down): \"\n            )\n            .strip()\n            .lower()",
+        "peekOfCode": "command = \"\"\ncommand_queue = Queue()\ndef console_input():\n    while True:\n        cmd = (\n            input(\n                \"Enter command (start, pause, resume, quit, faster, slower, iters_up, iters_down): \"\n            )\n            .strip()\n            .lower()",
+        "detail": "geomaster_ai_challenge",
+        "documentation": {}
+    },
+    {
+        "label": "command_queue",
+        "kind": 5,
+        "importPath": "geomaster_ai_challenge",
+        "description": "geomaster_ai_challenge",
+        "peekOfCode": "command_queue = Queue()\ndef console_input():\n    while True:\n        cmd = (\n            input(\n                \"Enter command (start, pause, resume, quit, faster, slower, iters_up, iters_down): \"\n            )\n            .strip()\n            .lower()\n        )",
         "detail": "geomaster_ai_challenge",
         "documentation": {}
     },
@@ -1118,7 +1135,7 @@
         "kind": 5,
         "importPath": "geomaster_ai_challenge",
         "description": "geomaster_ai_challenge",
-        "peekOfCode": "clock = pygame.time.Clock()\nrunning = True\nlast_plot_update = 0\nstep_counter = 0\nwhile running:\n    for event in pygame.event.get():\n        if event.type == pygame.QUIT:\n            running = False\n    with lock:\n        if command == \"quit\":",
+        "peekOfCode": "clock = pygame.time.Clock()\nrunning = True\nlast_plot_update = 0\nstep_counter = 0\nwhile running:\n    for event in pygame.event.get():\n        if event.type == pygame.QUIT:\n            running = False\n    # Process commands from the queue\n    while not command_queue.empty():",
         "detail": "geomaster_ai_challenge",
         "documentation": {}
     },
@@ -1127,7 +1144,7 @@
         "kind": 5,
         "importPath": "geomaster_ai_challenge",
         "description": "geomaster_ai_challenge",
-        "peekOfCode": "running = True\nlast_plot_update = 0\nstep_counter = 0\nwhile running:\n    for event in pygame.event.get():\n        if event.type == pygame.QUIT:\n            running = False\n    with lock:\n        if command == \"quit\":\n            running = False",
+        "peekOfCode": "running = True\nlast_plot_update = 0\nstep_counter = 0\nwhile running:\n    for event in pygame.event.get():\n        if event.type == pygame.QUIT:\n            running = False\n    # Process commands from the queue\n    while not command_queue.empty():\n        command = command_queue.get()",
         "detail": "geomaster_ai_challenge",
         "documentation": {}
     },
@@ -1136,7 +1153,7 @@
         "kind": 5,
         "importPath": "geomaster_ai_challenge",
         "description": "geomaster_ai_challenge",
-        "peekOfCode": "last_plot_update = 0\nstep_counter = 0\nwhile running:\n    for event in pygame.event.get():\n        if event.type == pygame.QUIT:\n            running = False\n    with lock:\n        if command == \"quit\":\n            running = False\n    if running_state == \"running\" and game_state == \"waiting\":",
+        "peekOfCode": "last_plot_update = 0\nstep_counter = 0\nwhile running:\n    for event in pygame.event.get():\n        if event.type == pygame.QUIT:\n            running = False\n    # Process commands from the queue\n    while not command_queue.empty():\n        command = command_queue.get()\n        if command == \"start\" and running_state == \"stopped\":",
         "detail": "geomaster_ai_challenge",
         "documentation": {}
     },
@@ -1145,7 +1162,7 @@
         "kind": 5,
         "importPath": "geomaster_ai_challenge",
         "description": "geomaster_ai_challenge",
-        "peekOfCode": "step_counter = 0\nwhile running:\n    for event in pygame.event.get():\n        if event.type == pygame.QUIT:\n            running = False\n    with lock:\n        if command == \"quit\":\n            running = False\n    if running_state == \"running\" and game_state == \"waiting\":\n        reset_episode()",
+        "peekOfCode": "step_counter = 0\nwhile running:\n    for event in pygame.event.get():\n        if event.type == pygame.QUIT:\n            running = False\n    # Process commands from the queue\n    while not command_queue.empty():\n        command = command_queue.get()\n        if command == \"start\" and running_state == \"stopped\":\n            running_state = \"running\"",
         "detail": "geomaster_ai_challenge",
         "documentation": {}
     }

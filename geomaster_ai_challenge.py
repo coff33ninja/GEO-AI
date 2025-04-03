@@ -11,6 +11,7 @@ import threading
 import time
 import matplotlib.pyplot as plt
 from io import BytesIO
+from queue import Queue
 
 # Initialize Pygame
 pygame.init()
@@ -272,7 +273,7 @@ with open(log_file, mode="a", newline="") as f:
 def stereographic_projection(point, R=100):
     x, y, z = point
     if z == 2 * R:
-        return None
+        return (0, 0)  # Default point instead of None
     factor = 2 * R / (2 * R - z)
     proj_x = factor * x + WIDTH / 2
     proj_y = factor * y + HEIGHT / 2
@@ -283,7 +284,7 @@ def poincare_disk_projection(point, R=100):
     x, y = point
     dist = np.sqrt(x**2 + y**2)
     if dist >= R:
-        return None
+        return (WIDTH / 2, HEIGHT / 2)  # Center of disk as default
     factor = R * np.tanh(dist / R)
     angle = np.arctan2(y, x)
     proj_x = factor * np.cos(angle) + WIDTH / 2
@@ -302,7 +303,7 @@ def projective_projection(point, fov=90, near=1):
     x, y = point
     z = 100
     if z <= 0:
-        return None
+        return (WIDTH / 2, HEIGHT / 2)  # Center as default
     proj_x = (x * near / z) * (WIDTH / 2) + WIDTH / 2
     proj_y = (y * near / z) * (HEIGHT / 2) + HEIGHT / 2
     return (proj_x, proj_y)
@@ -319,25 +320,28 @@ def fractal_projection(point, iterations=3):
             x, y = (x + 1) / 2, y / 2
         else:
             x, y = x / 2, (y + 1) / 2
-    return (x * WIDTH, y * HEIGHT)
+    return (x * WIDTH, y * HEIGHT)  # Always returns a valid point
 
 
 def project_point(point, world):
     x, y = point
     if world == WORLD_EUCLIDEAN:
-        return (x + WIDTH / 2, y + HEIGHT / 2)
+        proj = (x + WIDTH / 2, y + HEIGHT / 2)
     elif world == WORLD_SPHERICAL:
         z = np.sqrt(max(0, 100**2 - x**2 - y**2))
-        return stereographic_projection((x, y, z))
+        proj = stereographic_projection((x, y, z))
     elif world == WORLD_HYPERBOLIC:
-        return poincare_disk_projection((x - WIDTH / 2, y - HEIGHT / 2))
+        proj = poincare_disk_projection((x - WIDTH / 2, y - HEIGHT / 2))
     elif world == WORLD_ELLIPTICAL:
-        return elliptical_projection((x, y))
+        proj = elliptical_projection((x, y))
     elif world == WORLD_PROJECTIVE:
-        return projective_projection((x, y))
+        proj = projective_projection((x, y))
     elif world == WORLD_FRACTAL:
-        return fractal_projection((x, y))
-    return (x, y)
+        proj = fractal_projection((x, y))
+    else:
+        proj = (x, y)
+    # Clamp coordinates to screen bounds
+    return (max(0, min(proj[0], WIDTH)), max(0, min(proj[1], HEIGHT)))
 
 
 def hyperbolic_geodesic(start, end, R=100):
@@ -505,12 +509,11 @@ def draw_line_segment(start, end, curvature, world):
                 x += offset * perp_x
                 y += offset * perp_y
             proj = project_point((x - WIDTH / 2, y - HEIGHT / 2), world)
-            if proj:
-                points.append(proj)
+            points.append(proj)
         return points
     except Exception as e:
         print(f"Error in draw_line_segment: {e}")
-        return []
+        return [start]  # Fallback to prevent empty lists
 
 
 def draw_triangle(points, angle_adjust, world):
@@ -570,7 +573,7 @@ def draw_pentagon(points, angle_adjust, world):
 
 def draw_tessellation(points, world):
     if len(points) < 3:
-        return points
+        return [points]  # Return as a single triangle list
     base_triangle = points[:3]
     tessellation = [base_triangle]
     center_x = sum(p[0] for p in base_triangle) / 3
@@ -581,10 +584,7 @@ def draw_tessellation(points, world):
         new_point = (center_x + (center_x - p1[0]), center_y + (center_y - p1[1]))
         new_triangle = [p1, p2, new_point]
         tessellation.append(new_triangle)
-    return [
-        [project_point((p[0] - WIDTH / 2, p[1] - HEIGHT / 2), world) for p in triangle]
-        for triangle in tessellation
-    ]
+    return [[project_point((p[0] - WIDTH / 2, p[1] - HEIGHT / 2), world) for p in triangle] for triangle in tessellation]
 
 
 # Macro Actions
@@ -886,10 +886,9 @@ def plan_actions(state_tensor, model, current_shape, target, task, world, steps=
 
 # Console Input Handler
 command = ""
-
+command_queue = Queue()
 
 def console_input():
-    global command, running_state, tick_rate, train_iters
     while True:
         cmd = (
             input(
@@ -898,31 +897,7 @@ def console_input():
             .strip()
             .lower()
         )
-        with lock:
-            command = cmd
-            if cmd == "start" and running_state == "stopped":
-                running_state = "running"
-            elif cmd == "pause" and running_state == "running":
-                running_state = "paused"
-            elif cmd == "resume" and running_state == "paused":
-                running_state = "running"
-            elif cmd == "quit":
-                running_state = "stopped"
-                pygame.quit()
-                os._exit(0)
-            elif cmd == "faster":
-                tick_rate = min(tick_rate + 10, 120)
-                print(f"Tick rate increased to {tick_rate}")
-            elif cmd == "slower":
-                tick_rate = max(tick_rate - 10, 10)
-                print(f"Tick rate decreased to {tick_rate}")
-            elif cmd == "iters_up":
-                train_iters = min(train_iters + 1, 10)
-                print(f"Training iterations increased to {train_iters}")
-            elif cmd == "iters_down":
-                train_iters = max(train_iters - 1, 1)
-                print(f"Training iterations decreased to {train_iters}")
-
+        command_queue.put(cmd)
 
 lock = threading.Lock()
 threading.Thread(target=console_input, daemon=True).start()
@@ -965,32 +940,20 @@ def predict_next_shape():
 def reset_episode():
     global start_point, triangle_points, circle_center, pentagon_points, tessellation_points, current_shape, game_state, ai_step
     if current_task == TASK_LINE:
-        start_point = (random.randint(50, WIDTH - 50), random.randint(50, HEIGHT - 50))
+        start_point = (random.randint(50, WIDTH-50), random.randint(50, HEIGHT-50))
         current_shape = [start_point]
     elif current_task == TASK_TRIANGLE:
-        triangle_points = [
-            (random.randint(50, WIDTH - 50), random.randint(50, HEIGHT - 50))
-            for _ in range(3)
-        ]
+        triangle_points = [(random.randint(50, WIDTH-50), random.randint(50, HEIGHT-50)) for _ in range(3)]
         current_shape = triangle_points.copy()
     elif current_task == TASK_CIRCLE:
-        circle_center = (
-            random.randint(50, WIDTH - 50),
-            random.randint(50, HEIGHT - 50),
-        )
+        circle_center = (random.randint(50, WIDTH-50), random.randint(50, HEIGHT-50))
         current_shape = []
     elif current_task == TASK_PENTAGON:
-        pentagon_points = [
-            (random.randint(50, WIDTH - 50), random.randint(50, HEIGHT - 50))
-            for _ in range(5)
-        ]
+        pentagon_points = [(random.randint(50, WIDTH-50), random.randint(50, HEIGHT-50)) for _ in range(5)]
         current_shape = pentagon_points.copy()
     elif current_task == TASK_TESSELLATION:
-        tessellation_points = [
-            (random.randint(50, WIDTH - 50), random.randint(50, HEIGHT - 50))
-            for _ in range(3)
-        ]
-        current_shape = [tessellation_points]
+        tessellation_points = [(random.randint(50, WIDTH-50), random.randint(50, HEIGHT-50)) for _ in range(3)]
+        current_shape = [tessellation_points.copy()]  # Initialize as a list containing one triangle
     game_state = "ai_drawing"
     ai_step = 0
 
@@ -1027,9 +990,29 @@ while running:
         if event.type == pygame.QUIT:
             running = False
 
-    with lock:
-        if command == "quit":
+    # Process commands from the queue
+    while not command_queue.empty():
+        command = command_queue.get()
+        if command == "start" and running_state == "stopped":
+            running_state = "running"
+        elif command == "pause" and running_state == "running":
+            running_state = "paused"
+        elif command == "resume" and running_state == "paused":
+            running_state = "running"
+        elif command == "quit":
             running = False
+        elif command == "faster":
+            tick_rate = min(tick_rate + 10, 120)
+            print(f"Tick rate increased to {tick_rate}")
+        elif command == "slower":
+            tick_rate = max(tick_rate - 10, 10)
+            print(f"Tick rate decreased to {tick_rate}")
+        elif command == "iters_up":
+            train_iters = min(train_iters + 1, 10)
+            print(f"Training iterations increased to {train_iters}")
+        elif command == "iters_down":
+            train_iters = max(train_iters - 1, 1)
+            print(f"Training iterations decreased to {train_iters}")
 
     if running_state == "running" and game_state == "waiting":
         reset_episode()
