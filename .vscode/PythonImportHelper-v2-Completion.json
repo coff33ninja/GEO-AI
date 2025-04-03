@@ -80,6 +80,41 @@
         "documentation": {}
     },
     {
+        "label": "threading",
+        "kind": 6,
+        "isExtraImport": true,
+        "importPath": "threading",
+        "description": "threading",
+        "detail": "threading",
+        "documentation": {}
+    },
+    {
+        "label": "time",
+        "kind": 6,
+        "isExtraImport": true,
+        "importPath": "time",
+        "description": "time",
+        "detail": "time",
+        "documentation": {}
+    },
+    {
+        "label": "matplotlib.pyplot",
+        "kind": 6,
+        "isExtraImport": true,
+        "importPath": "matplotlib.pyplot",
+        "description": "matplotlib.pyplot",
+        "detail": "matplotlib.pyplot",
+        "documentation": {}
+    },
+    {
+        "label": "BytesIO",
+        "importPath": "io",
+        "description": "io",
+        "isExtraImport": true,
+        "detail": "io",
+        "documentation": {}
+    },
+    {
         "label": "SumTree",
         "kind": 6,
         "importPath": "geomaster_ai_challenge",
@@ -102,7 +137,7 @@
         "kind": 6,
         "importPath": "geomaster_ai_challenge",
         "description": "geomaster_ai_challenge",
-        "peekOfCode": "class ForwardModel(nn.Module):\n    def __init__(self, state_dim, action_dim):\n        super().__init__()\n        self.fc1 = nn.Linear(state_dim + 1, 128)  # Action is a scalar\n        self.fc2 = nn.Linear(128, state_dim)\n    def forward(self, state, action):\n        try:\n            # Check input dimensions\n            if state.dim() != 2 or action.dim() != 2:\n                raise ValueError(",
+        "peekOfCode": "class ForwardModel(nn.Module):\n    def __init__(self, state_dim, action_dim):\n        super().__init__()\n        self.fc1 = nn.Linear(state_dim + 1, 128)  # Action is a scalar\n        self.fc2 = nn.Linear(128, state_dim)\n    def forward(self, state, action):\n        try:\n            if state.dim() != 2 or action.dim() != 2:\n                raise ValueError(\n                    f\"Expected 2D tensors, got state shape {state.shape}, action shape {action.shape}\"",
         "detail": "geomaster_ai_challenge",
         "documentation": {}
     },
@@ -111,7 +146,16 @@
         "kind": 6,
         "importPath": "geomaster_ai_challenge",
         "description": "geomaster_ai_challenge",
-        "peekOfCode": "class WorldModel(nn.Module):\n    def __init__(self, state_dim, action_dim):\n        super().__init__()\n        self.fc1 = nn.Linear(state_dim + 1, 128)\n        self.fc2 = nn.Linear(128, state_dim)\n    def forward(self, state, action):\n        try:\n            # Check input dimensions\n            if state.dim() != 2 or action.dim() != 2:\n                raise ValueError(",
+        "peekOfCode": "class WorldModel(nn.Module):\n    def __init__(self, state_dim, action_dim):\n        super().__init__()\n        self.fc1 = nn.Linear(state_dim + 1, 128)\n        self.fc2 = nn.Linear(128, state_dim)\n    def forward(self, state, action):\n        try:\n            if state.dim() != 2 or action.dim() != 2:\n                raise ValueError(\n                    f\"Expected 2D tensors, got state shape {state.shape}, action shape {action.shape}\"",
+        "detail": "geomaster_ai_challenge",
+        "documentation": {}
+    },
+    {
+        "label": "NextShapePredictor",
+        "kind": 6,
+        "importPath": "geomaster_ai_challenge",
+        "description": "geomaster_ai_challenge",
+        "peekOfCode": "class NextShapePredictor(nn.Module):\n    def __init__(self, input_dim, output_dim):\n        super(NextShapePredictor, self).__init__()\n        self.fc1 = nn.Linear(input_dim, 64)\n        self.fc2 = nn.Linear(64, 32)\n        self.fc3 = nn.Linear(32, output_dim)\n    def forward(self, x):\n        x = torch.relu(self.fc1(x))\n        x = torch.relu(self.fc2(x))\n        return self.fc3(x)",
         "detail": "geomaster_ai_challenge",
         "documentation": {}
     },
@@ -120,7 +164,7 @@
         "kind": 2,
         "importPath": "geomaster_ai_challenge",
         "description": "geomaster_ai_challenge",
-        "peekOfCode": "def to_int_point(point):\n    if (\n        not isinstance(point, (tuple, list))\n        or len(point) != 2\n        or not all(isinstance(coord, (int, float)) for coord in point)\n    ):\n        print(f\"Invalid point detected: {point}\")\n        return (0, 0)  # Default to origin to avoid crashing\n    return (int(point[0]), int(point[1]))\n# Geometric Worlds",
+        "peekOfCode": "def to_int_point(point):\n    if (\n        not isinstance(point, (tuple, list))\n        or len(point) != 2\n        or not all(isinstance(coord, (int, float)) for coord in point)\n    ):\n        print(f\"Invalid point detected: {point}\")\n        return (0, 0)\n    return (int(point[0]), int(point[1]))\n# Geometric Worlds and Tasks",
         "detail": "geomaster_ai_challenge",
         "documentation": {}
     },
@@ -147,7 +191,7 @@
         "kind": 2,
         "importPath": "geomaster_ai_challenge",
         "description": "geomaster_ai_challenge",
-        "peekOfCode": "def elliptical_projection(point, a=150, b=100):\n    x, y = point\n    proj_x = (x / a) * (WIDTH / 2) + WIDTH / 2\n    proj_y = (y / b) * (HEIGHT / 2) + HEIGHT / 2\n    return (proj_x, proj_y)\ndef projective_projection(point, fov=90, near=1):\n    x, y = point\n    z = 100  # Fixed z for simplicity\n    if z <= 0:\n        return None",
+        "peekOfCode": "def elliptical_projection(point, a=150, b=100):\n    x, y = point\n    proj_x = (x / a) * (WIDTH / 2) + WIDTH / 2\n    proj_y = (y / b) * (HEIGHT / 2) + HEIGHT / 2\n    return (proj_x, proj_y)\ndef projective_projection(point, fov=90, near=1):\n    x, y = point\n    z = 100\n    if z <= 0:\n        return None",
         "detail": "geomaster_ai_challenge",
         "documentation": {}
     },
@@ -156,7 +200,7 @@
         "kind": 2,
         "importPath": "geomaster_ai_challenge",
         "description": "geomaster_ai_challenge",
-        "peekOfCode": "def projective_projection(point, fov=90, near=1):\n    x, y = point\n    z = 100  # Fixed z for simplicity\n    if z <= 0:\n        return None\n    proj_x = (x * near / z) * (WIDTH / 2) + WIDTH / 2\n    proj_y = (y * near / z) * (HEIGHT / 2) + HEIGHT / 2\n    return (proj_x, proj_y)\ndef fractal_projection(point, iterations=3):\n    x, y = point",
+        "peekOfCode": "def projective_projection(point, fov=90, near=1):\n    x, y = point\n    z = 100\n    if z <= 0:\n        return None\n    proj_x = (x * near / z) * (WIDTH / 2) + WIDTH / 2\n    proj_y = (y * near / z) * (HEIGHT / 2) + HEIGHT / 2\n    return (proj_x, proj_y)\ndef fractal_projection(point, iterations=3):\n    x, y = point",
         "detail": "geomaster_ai_challenge",
         "documentation": {}
     },
@@ -165,7 +209,7 @@
         "kind": 2,
         "importPath": "geomaster_ai_challenge",
         "description": "geomaster_ai_challenge",
-        "peekOfCode": "def fractal_projection(point, iterations=3):\n    x, y = point\n    x, y = x / WIDTH, y / HEIGHT  # Normalize to [0, 1]\n    for _ in range(iterations):\n        r = np.random.randint(3)\n        if r == 0:\n            x, y = x / 2, y / 2\n        elif r == 1:\n            x, y = (x + 1) / 2, y / 2\n        else:",
+        "peekOfCode": "def fractal_projection(point, iterations=3):\n    x, y = point\n    x, y = x / WIDTH, y / HEIGHT\n    for _ in range(iterations):\n        r = np.random.randint(3)\n        if r == 0:\n            x, y = x / 2, y / 2\n        elif r == 1:\n            x, y = (x + 1) / 2, y / 2\n        else:",
         "detail": "geomaster_ai_challenge",
         "documentation": {}
     },
@@ -246,7 +290,7 @@
         "kind": 2,
         "importPath": "geomaster_ai_challenge",
         "description": "geomaster_ai_challenge",
-        "peekOfCode": "def macro_action_draw_triangle(current_shape, world):\n    actions = []\n    if len(current_shape) < 3:\n        for _ in range(3 - len(current_shape)):\n            actions.append(3)  # angle_adjust_right to simulate drawing a side\n    return actions\ndef macro_action_draw_circle(center, radius, world):\n    actions = []\n    for _ in range(3):  # Simulate drawing a circle in 3 steps\n        actions.append(4)  # radius_adjust",
+        "peekOfCode": "def macro_action_draw_triangle(current_shape, world):\n    actions = []\n    if len(current_shape) < 3:\n        for _ in range(3 - len(current_shape)):\n            actions.append(3)\n    return actions\ndef macro_action_draw_circle(center, radius, world):\n    actions = []\n    for _ in range(3):\n        actions.append(4)",
         "detail": "geomaster_ai_challenge",
         "documentation": {}
     },
@@ -255,16 +299,7 @@
         "kind": 2,
         "importPath": "geomaster_ai_challenge",
         "description": "geomaster_ai_challenge",
-        "peekOfCode": "def macro_action_draw_circle(center, radius, world):\n    actions = []\n    for _ in range(3):  # Simulate drawing a circle in 3 steps\n        actions.append(4)  # radius_adjust\n    return actions\n# Model-Based Planning\nclass WorldModel(nn.Module):\n    def __init__(self, state_dim, action_dim):\n        super().__init__()\n        self.fc1 = nn.Linear(state_dim + 1, 128)",
-        "detail": "geomaster_ai_challenge",
-        "documentation": {}
-    },
-    {
-        "label": "plan_actions",
-        "kind": 2,
-        "importPath": "geomaster_ai_challenge",
-        "description": "geomaster_ai_challenge",
-        "peekOfCode": "def plan_actions(state_tensor, model, current_shape, target, task, world, steps=3):\n    best_sequence = []\n    best_reward = -float(\"inf\")\n    # Convert state_tensor to numpy for easier manipulation\n    state = state_tensor.squeeze(0).cpu().numpy()  # Remove batch dimension\n    for _ in range(10):  # Try 10 random sequences\n        sequence = [np.random.randint(action_dim) for _ in range(steps)]\n        sim_state = state.copy()\n        sim_shape = current_shape.copy()  # Simulate shape updates\n        total_reward = 0",
+        "peekOfCode": "def macro_action_draw_circle(center, radius, world):\n    actions = []\n    for _ in range(3):\n        actions.append(4)\n    return actions\n# Helper Functions\ndef calculate_triangle_angle(points):\n    if len(points) < 3:\n        return 0\n    p1, p2, p3 = points",
         "detail": "geomaster_ai_challenge",
         "documentation": {}
     },
@@ -291,7 +326,7 @@
         "kind": 2,
         "importPath": "geomaster_ai_challenge",
         "description": "geomaster_ai_challenge",
-        "peekOfCode": "def calculate_reward(shape, target, task, world):\n    try:\n        reward = 0\n        if task == TASK_LINE:\n            if not shape:\n                return -10  # Penalize empty shape\n            current_pos = shape[-1] if shape else (0, 0)\n            if not (isinstance(current_pos, (tuple, list)) and len(current_pos) == 2):\n                raise ValueError(f\"Invalid current_pos: {current_pos}\")\n            if not (isinstance(target, (tuple, list)) and len(target) == 2):",
+        "peekOfCode": "def calculate_reward(shape, target, task, world):\n    try:\n        reward = 0\n        if task == TASK_LINE:\n            if not shape:\n                return -10\n            current_pos = shape[-1] if shape else (0, 0)\n            if not (isinstance(current_pos, (tuple, list)) and len(current_pos) == 2):\n                raise ValueError(f\"Invalid current_pos: {current_pos}\")\n            if not (isinstance(target, (tuple, list)) and len(target) == 2):",
         "detail": "geomaster_ai_challenge",
         "documentation": {}
     },
@@ -300,7 +335,7 @@
         "kind": 2,
         "importPath": "geomaster_ai_challenge",
         "description": "geomaster_ai_challenge",
-        "peekOfCode": "def optimize_model():\n    if memory.n_entries < batch_size:\n        return\n    # Sample transitions based on priority\n    total_priority = memory.tree[0]\n    batch = []\n    idxs = []\n    priorities = []\n    segment = total_priority / batch_size\n    for i in range(batch_size):",
+        "peekOfCode": "def optimize_model():\n    if memory.n_entries < batch_size:\n        return\n    total_priority = memory.tree[0]\n    batch = []\n    idxs = []\n    priorities = []\n    segment = total_priority / batch_size\n    for i in range(batch_size):\n        a = segment * i",
         "detail": "geomaster_ai_challenge",
         "documentation": {}
     },
@@ -309,7 +344,61 @@
         "kind": 2,
         "importPath": "geomaster_ai_challenge",
         "description": "geomaster_ai_challenge",
-        "peekOfCode": "def store_transition(transition):\n    n_step_buffer.append(transition)\n    if len(n_step_buffer) < n_step:\n        return\n    cumulative_reward = sum([(gamma**i) * t[2] for i, t in enumerate(n_step_buffer)])\n    state, action = n_step_buffer[0][0], n_step_buffer[0][1]\n    next_state, done = n_step_buffer[-1][3], n_step_buffer[-1][4]\n    memory.add(\n        1.0, (state, action, cumulative_reward, next_state, done)\n    )  # Initial priority",
+        "peekOfCode": "def store_transition(transition):\n    n_step_buffer.append(transition)\n    if len(n_step_buffer) < n_step:\n        return\n    cumulative_reward = sum([(gamma**i) * t[2] for i, t in enumerate(n_step_buffer)])\n    state, action = n_step_buffer[0][0], n_step_buffer[0][1]\n    next_state, done = n_step_buffer[-1][3], n_step_buffer[-1][4]\n    memory.add(1.0, (state, action, cumulative_reward, next_state, done))\n    n_step_buffer.pop(0)\ndef plan_actions(state_tensor, model, current_shape, target, task, world, steps=3):",
+        "detail": "geomaster_ai_challenge",
+        "documentation": {}
+    },
+    {
+        "label": "plan_actions",
+        "kind": 2,
+        "importPath": "geomaster_ai_challenge",
+        "description": "geomaster_ai_challenge",
+        "peekOfCode": "def plan_actions(state_tensor, model, current_shape, target, task, world, steps=3):\n    best_sequence = []\n    best_reward = -float(\"inf\")\n    state = state_tensor.squeeze(0).cpu().numpy()\n    for _ in range(10):\n        sequence = [np.random.randint(action_dim) for _ in range(steps)]\n        sim_state = state.copy()\n        sim_shape = current_shape.copy()\n        total_reward = 0\n        for action in sequence:",
+        "detail": "geomaster_ai_challenge",
+        "documentation": {}
+    },
+    {
+        "label": "console_input",
+        "kind": 2,
+        "importPath": "geomaster_ai_challenge",
+        "description": "geomaster_ai_challenge",
+        "peekOfCode": "def console_input():\n    global command, running_state, tick_rate, train_iters\n    while True:\n        cmd = (\n            input(\n                \"Enter command (start, pause, resume, quit, faster, slower, iters_up, iters_down): \"\n            )\n            .strip()\n            .lower()\n        )",
+        "detail": "geomaster_ai_challenge",
+        "documentation": {}
+    },
+    {
+        "label": "adjust_learning_rate",
+        "kind": 2,
+        "importPath": "geomaster_ai_challenge",
+        "description": "geomaster_ai_challenge",
+        "peekOfCode": "def adjust_learning_rate(fps):\n    global optimizer\n    avg_reward = sum(episode_rewards) / len(episode_rewards) if episode_rewards else 0\n    current_lr = base_lr\n    if avg_reward > 10:\n        current_lr = min(base_lr * 2, 0.01)\n    elif avg_reward < -5:\n        current_lr = max(base_lr * 0.5, 0.0001)\n    if fps < 20:\n        current_lr *= 0.8",
+        "detail": "geomaster_ai_challenge",
+        "documentation": {}
+    },
+    {
+        "label": "predict_next_shape",
+        "kind": 2,
+        "importPath": "geomaster_ai_challenge",
+        "description": "geomaster_ai_challenge",
+        "peekOfCode": "def predict_next_shape():\n    global current_task, reward_history\n    avg_reward = sum(episode_rewards) / len(episode_rewards) if episode_rewards else 0\n    state = np.array(\n        [tasks.index(current_task), worlds.index(current_world), avg_reward]\n        + list(reward_history)\n        + [0] * (10 - len(reward_history))\n    )\n    state_tensor = torch.FloatTensor(state).unsqueeze(0).to(device)\n    with torch.no_grad():",
+        "detail": "geomaster_ai_challenge",
+        "documentation": {}
+    },
+    {
+        "label": "reset_episode",
+        "kind": 2,
+        "importPath": "geomaster_ai_challenge",
+        "description": "geomaster_ai_challenge",
+        "peekOfCode": "def reset_episode():\n    global start_point, triangle_points, circle_center, pentagon_points, tessellation_points, current_shape, game_state, ai_step\n    if current_task == TASK_LINE:\n        start_point = (random.randint(50, WIDTH - 50), random.randint(50, HEIGHT - 50))\n        current_shape = [start_point]\n    elif current_task == TASK_TRIANGLE:\n        triangle_points = [\n            (random.randint(50, WIDTH - 50), random.randint(50, HEIGHT - 50))\n            for _ in range(3)\n        ]",
+        "detail": "geomaster_ai_challenge",
+        "documentation": {}
+    },
+    {
+        "label": "update_reward_plot",
+        "kind": 2,
+        "importPath": "geomaster_ai_challenge",
+        "description": "geomaster_ai_challenge",
+        "peekOfCode": "def update_reward_plot():\n    global plot_surface, episode_rewards\n    plt.figure(figsize=(4, 2))\n    plt.plot(list(episode_rewards), label=\"Reward\", color=\"cyan\")\n    plt.xlabel(\"Episode\")\n    plt.ylabel(\"Avg Reward\")\n    plt.title(\"Reward Trend\")\n    plt.legend()\n    buf = BytesIO()\n    plt.savefig(buf, format=\"png\", bbox_inches=\"tight\")",
         "detail": "geomaster_ai_challenge",
         "documentation": {}
     },
@@ -318,7 +407,7 @@
         "kind": 5,
         "importPath": "geomaster_ai_challenge",
         "description": "geomaster_ai_challenge",
-        "peekOfCode": "WIDTH = 800\nHEIGHT = 600\nscreen = pygame.display.set_mode((WIDTH, HEIGHT))\npygame.display.set_caption(\"GeoMaster AI Challenge\")\n# Colors\nBLACK = (0, 0, 0)\nWHITE = (255, 255, 255)\nRED = (255, 0, 0)\nBLUE = (0, 0, 255)\nCYAN = (0, 255, 255)",
+        "peekOfCode": "WIDTH = 800\nHEIGHT = 600\nscreen = pygame.display.set_mode((WIDTH, HEIGHT))\npygame.display.set_caption(\"GeoMaster AI Challenge - Next Shape Predictor\")\n# Colors\nBLACK = (0, 0, 0)\nWHITE = (255, 255, 255)\nRED = (255, 0, 0)\nBLUE = (0, 0, 255)\nCYAN = (0, 255, 255)",
         "detail": "geomaster_ai_challenge",
         "documentation": {}
     },
@@ -327,7 +416,7 @@
         "kind": 5,
         "importPath": "geomaster_ai_challenge",
         "description": "geomaster_ai_challenge",
-        "peekOfCode": "HEIGHT = 600\nscreen = pygame.display.set_mode((WIDTH, HEIGHT))\npygame.display.set_caption(\"GeoMaster AI Challenge\")\n# Colors\nBLACK = (0, 0, 0)\nWHITE = (255, 255, 255)\nRED = (255, 0, 0)\nBLUE = (0, 0, 255)\nCYAN = (0, 255, 255)\nGREEN = (0, 255, 0)",
+        "peekOfCode": "HEIGHT = 600\nscreen = pygame.display.set_mode((WIDTH, HEIGHT))\npygame.display.set_caption(\"GeoMaster AI Challenge - Next Shape Predictor\")\n# Colors\nBLACK = (0, 0, 0)\nWHITE = (255, 255, 255)\nRED = (255, 0, 0)\nBLUE = (0, 0, 255)\nCYAN = (0, 255, 255)\nGREEN = (0, 255, 0)",
         "detail": "geomaster_ai_challenge",
         "documentation": {}
     },
@@ -336,7 +425,7 @@
         "kind": 5,
         "importPath": "geomaster_ai_challenge",
         "description": "geomaster_ai_challenge",
-        "peekOfCode": "screen = pygame.display.set_mode((WIDTH, HEIGHT))\npygame.display.set_caption(\"GeoMaster AI Challenge\")\n# Colors\nBLACK = (0, 0, 0)\nWHITE = (255, 255, 255)\nRED = (255, 0, 0)\nBLUE = (0, 0, 255)\nCYAN = (0, 255, 255)\nGREEN = (0, 255, 0)\n# Font for text",
+        "peekOfCode": "screen = pygame.display.set_mode((WIDTH, HEIGHT))\npygame.display.set_caption(\"GeoMaster AI Challenge - Next Shape Predictor\")\n# Colors\nBLACK = (0, 0, 0)\nWHITE = (255, 255, 255)\nRED = (255, 0, 0)\nBLUE = (0, 0, 255)\nCYAN = (0, 255, 255)\nGREEN = (0, 255, 0)\n# Font",
         "detail": "geomaster_ai_challenge",
         "documentation": {}
     },
@@ -345,7 +434,7 @@
         "kind": 5,
         "importPath": "geomaster_ai_challenge",
         "description": "geomaster_ai_challenge",
-        "peekOfCode": "BLACK = (0, 0, 0)\nWHITE = (255, 255, 255)\nRED = (255, 0, 0)\nBLUE = (0, 0, 255)\nCYAN = (0, 255, 255)\nGREEN = (0, 255, 0)\n# Font for text\nfont = pygame.font.SysFont(\"monospace\", 20)\n# Helper function: ensure point coordinates are integers for Pygame drawing\ndef to_int_point(point):",
+        "peekOfCode": "BLACK = (0, 0, 0)\nWHITE = (255, 255, 255)\nRED = (255, 0, 0)\nBLUE = (0, 0, 255)\nCYAN = (0, 255, 255)\nGREEN = (0, 255, 0)\n# Font\nfont = pygame.font.SysFont(\"monospace\", 20)\n# Helper function\ndef to_int_point(point):",
         "detail": "geomaster_ai_challenge",
         "documentation": {}
     },
@@ -354,7 +443,7 @@
         "kind": 5,
         "importPath": "geomaster_ai_challenge",
         "description": "geomaster_ai_challenge",
-        "peekOfCode": "WHITE = (255, 255, 255)\nRED = (255, 0, 0)\nBLUE = (0, 0, 255)\nCYAN = (0, 255, 255)\nGREEN = (0, 255, 0)\n# Font for text\nfont = pygame.font.SysFont(\"monospace\", 20)\n# Helper function: ensure point coordinates are integers for Pygame drawing\ndef to_int_point(point):\n    if (",
+        "peekOfCode": "WHITE = (255, 255, 255)\nRED = (255, 0, 0)\nBLUE = (0, 0, 255)\nCYAN = (0, 255, 255)\nGREEN = (0, 255, 0)\n# Font\nfont = pygame.font.SysFont(\"monospace\", 20)\n# Helper function\ndef to_int_point(point):\n    if (",
         "detail": "geomaster_ai_challenge",
         "documentation": {}
     },
@@ -363,7 +452,7 @@
         "kind": 5,
         "importPath": "geomaster_ai_challenge",
         "description": "geomaster_ai_challenge",
-        "peekOfCode": "RED = (255, 0, 0)\nBLUE = (0, 0, 255)\nCYAN = (0, 255, 255)\nGREEN = (0, 255, 0)\n# Font for text\nfont = pygame.font.SysFont(\"monospace\", 20)\n# Helper function: ensure point coordinates are integers for Pygame drawing\ndef to_int_point(point):\n    if (\n        not isinstance(point, (tuple, list))",
+        "peekOfCode": "RED = (255, 0, 0)\nBLUE = (0, 0, 255)\nCYAN = (0, 255, 255)\nGREEN = (0, 255, 0)\n# Font\nfont = pygame.font.SysFont(\"monospace\", 20)\n# Helper function\ndef to_int_point(point):\n    if (\n        not isinstance(point, (tuple, list))",
         "detail": "geomaster_ai_challenge",
         "documentation": {}
     },
@@ -372,7 +461,7 @@
         "kind": 5,
         "importPath": "geomaster_ai_challenge",
         "description": "geomaster_ai_challenge",
-        "peekOfCode": "BLUE = (0, 0, 255)\nCYAN = (0, 255, 255)\nGREEN = (0, 255, 0)\n# Font for text\nfont = pygame.font.SysFont(\"monospace\", 20)\n# Helper function: ensure point coordinates are integers for Pygame drawing\ndef to_int_point(point):\n    if (\n        not isinstance(point, (tuple, list))\n        or len(point) != 2",
+        "peekOfCode": "BLUE = (0, 0, 255)\nCYAN = (0, 255, 255)\nGREEN = (0, 255, 0)\n# Font\nfont = pygame.font.SysFont(\"monospace\", 20)\n# Helper function\ndef to_int_point(point):\n    if (\n        not isinstance(point, (tuple, list))\n        or len(point) != 2",
         "detail": "geomaster_ai_challenge",
         "documentation": {}
     },
@@ -381,7 +470,7 @@
         "kind": 5,
         "importPath": "geomaster_ai_challenge",
         "description": "geomaster_ai_challenge",
-        "peekOfCode": "CYAN = (0, 255, 255)\nGREEN = (0, 255, 0)\n# Font for text\nfont = pygame.font.SysFont(\"monospace\", 20)\n# Helper function: ensure point coordinates are integers for Pygame drawing\ndef to_int_point(point):\n    if (\n        not isinstance(point, (tuple, list))\n        or len(point) != 2\n        or not all(isinstance(coord, (int, float)) for coord in point)",
+        "peekOfCode": "CYAN = (0, 255, 255)\nGREEN = (0, 255, 0)\n# Font\nfont = pygame.font.SysFont(\"monospace\", 20)\n# Helper function\ndef to_int_point(point):\n    if (\n        not isinstance(point, (tuple, list))\n        or len(point) != 2\n        or not all(isinstance(coord, (int, float)) for coord in point)",
         "detail": "geomaster_ai_challenge",
         "documentation": {}
     },
@@ -390,7 +479,7 @@
         "kind": 5,
         "importPath": "geomaster_ai_challenge",
         "description": "geomaster_ai_challenge",
-        "peekOfCode": "GREEN = (0, 255, 0)\n# Font for text\nfont = pygame.font.SysFont(\"monospace\", 20)\n# Helper function: ensure point coordinates are integers for Pygame drawing\ndef to_int_point(point):\n    if (\n        not isinstance(point, (tuple, list))\n        or len(point) != 2\n        or not all(isinstance(coord, (int, float)) for coord in point)\n    ):",
+        "peekOfCode": "GREEN = (0, 255, 0)\n# Font\nfont = pygame.font.SysFont(\"monospace\", 20)\n# Helper function\ndef to_int_point(point):\n    if (\n        not isinstance(point, (tuple, list))\n        or len(point) != 2\n        or not all(isinstance(coord, (int, float)) for coord in point)\n    ):",
         "detail": "geomaster_ai_challenge",
         "documentation": {}
     },
@@ -399,7 +488,7 @@
         "kind": 5,
         "importPath": "geomaster_ai_challenge",
         "description": "geomaster_ai_challenge",
-        "peekOfCode": "font = pygame.font.SysFont(\"monospace\", 20)\n# Helper function: ensure point coordinates are integers for Pygame drawing\ndef to_int_point(point):\n    if (\n        not isinstance(point, (tuple, list))\n        or len(point) != 2\n        or not all(isinstance(coord, (int, float)) for coord in point)\n    ):\n        print(f\"Invalid point detected: {point}\")\n        return (0, 0)  # Default to origin to avoid crashing",
+        "peekOfCode": "font = pygame.font.SysFont(\"monospace\", 20)\n# Helper function\ndef to_int_point(point):\n    if (\n        not isinstance(point, (tuple, list))\n        or len(point) != 2\n        or not all(isinstance(coord, (int, float)) for coord in point)\n    ):\n        print(f\"Invalid point detected: {point}\")\n        return (0, 0)",
         "detail": "geomaster_ai_challenge",
         "documentation": {}
     },
@@ -462,7 +551,7 @@
         "kind": 5,
         "importPath": "geomaster_ai_challenge",
         "description": "geomaster_ai_challenge",
-        "peekOfCode": "worlds = [\n    WORLD_EUCLIDEAN,\n    WORLD_SPHERICAL,\n    WORLD_HYPERBOLIC,\n    WORLD_ELLIPTICAL,\n    WORLD_PROJECTIVE,\n    WORLD_FRACTAL,\n]\ncurrent_world = WORLD_EUCLIDEAN\n# Game Modes",
+        "peekOfCode": "worlds = [\n    WORLD_EUCLIDEAN,\n    WORLD_SPHERICAL,\n    WORLD_HYPERBOLIC,\n    WORLD_ELLIPTICAL,\n    WORLD_PROJECTIVE,\n    WORLD_FRACTAL,\n]\ncurrent_world = WORLD_EUCLIDEAN\nTASK_LINE = \"Draw Line\"",
         "detail": "geomaster_ai_challenge",
         "documentation": {}
     },
@@ -471,34 +560,7 @@
         "kind": 5,
         "importPath": "geomaster_ai_challenge",
         "description": "geomaster_ai_challenge",
-        "peekOfCode": "current_world = WORLD_EUCLIDEAN\n# Game Modes\nMODE_AUTONOMOUS = \"Autonomous\"\nMODE_GUIDANCE = \"Guidance\"\ncurrent_mode = MODE_AUTONOMOUS\n# Task Types\nTASK_LINE = \"Draw Line\"\nTASK_TRIANGLE = \"Draw Triangle\"\nTASK_CIRCLE = \"Draw Circle\"\nTASK_PENTAGON = \"Draw Pentagon\"",
-        "detail": "geomaster_ai_challenge",
-        "documentation": {}
-    },
-    {
-        "label": "MODE_AUTONOMOUS",
-        "kind": 5,
-        "importPath": "geomaster_ai_challenge",
-        "description": "geomaster_ai_challenge",
-        "peekOfCode": "MODE_AUTONOMOUS = \"Autonomous\"\nMODE_GUIDANCE = \"Guidance\"\ncurrent_mode = MODE_AUTONOMOUS\n# Task Types\nTASK_LINE = \"Draw Line\"\nTASK_TRIANGLE = \"Draw Triangle\"\nTASK_CIRCLE = \"Draw Circle\"\nTASK_PENTAGON = \"Draw Pentagon\"\nTASK_TESSELLATION = \"Draw Tessellation\"\ntasks = [TASK_LINE, TASK_TRIANGLE, TASK_CIRCLE, TASK_PENTAGON, TASK_TESSELLATION]",
-        "detail": "geomaster_ai_challenge",
-        "documentation": {}
-    },
-    {
-        "label": "MODE_GUIDANCE",
-        "kind": 5,
-        "importPath": "geomaster_ai_challenge",
-        "description": "geomaster_ai_challenge",
-        "peekOfCode": "MODE_GUIDANCE = \"Guidance\"\ncurrent_mode = MODE_AUTONOMOUS\n# Task Types\nTASK_LINE = \"Draw Line\"\nTASK_TRIANGLE = \"Draw Triangle\"\nTASK_CIRCLE = \"Draw Circle\"\nTASK_PENTAGON = \"Draw Pentagon\"\nTASK_TESSELLATION = \"Draw Tessellation\"\ntasks = [TASK_LINE, TASK_TRIANGLE, TASK_CIRCLE, TASK_PENTAGON, TASK_TESSELLATION]\ncurrent_task = TASK_LINE",
-        "detail": "geomaster_ai_challenge",
-        "documentation": {}
-    },
-    {
-        "label": "current_mode",
-        "kind": 5,
-        "importPath": "geomaster_ai_challenge",
-        "description": "geomaster_ai_challenge",
-        "peekOfCode": "current_mode = MODE_AUTONOMOUS\n# Task Types\nTASK_LINE = \"Draw Line\"\nTASK_TRIANGLE = \"Draw Triangle\"\nTASK_CIRCLE = \"Draw Circle\"\nTASK_PENTAGON = \"Draw Pentagon\"\nTASK_TESSELLATION = \"Draw Tessellation\"\ntasks = [TASK_LINE, TASK_TRIANGLE, TASK_CIRCLE, TASK_PENTAGON, TASK_TESSELLATION]\ncurrent_task = TASK_LINE\n# --- Prioritized Experience Replay with SumTree ---",
+        "peekOfCode": "current_world = WORLD_EUCLIDEAN\nTASK_LINE = \"Draw Line\"\nTASK_TRIANGLE = \"Draw Triangle\"\nTASK_CIRCLE = \"Draw Circle\"\nTASK_PENTAGON = \"Draw Pentagon\"\nTASK_TESSELLATION = \"Draw Tessellation\"\ntasks = [TASK_LINE, TASK_TRIANGLE, TASK_CIRCLE, TASK_PENTAGON, TASK_TESSELLATION]\ncurrent_task = TASK_LINE\n# --- SumTree for Prioritized Experience Replay ---\nclass SumTree:",
         "detail": "geomaster_ai_challenge",
         "documentation": {}
     },
@@ -507,7 +569,7 @@
         "kind": 5,
         "importPath": "geomaster_ai_challenge",
         "description": "geomaster_ai_challenge",
-        "peekOfCode": "TASK_LINE = \"Draw Line\"\nTASK_TRIANGLE = \"Draw Triangle\"\nTASK_CIRCLE = \"Draw Circle\"\nTASK_PENTAGON = \"Draw Pentagon\"\nTASK_TESSELLATION = \"Draw Tessellation\"\ntasks = [TASK_LINE, TASK_TRIANGLE, TASK_CIRCLE, TASK_PENTAGON, TASK_TESSELLATION]\ncurrent_task = TASK_LINE\n# --- Prioritized Experience Replay with SumTree ---\nclass SumTree:\n    def __init__(self, capacity):",
+        "peekOfCode": "TASK_LINE = \"Draw Line\"\nTASK_TRIANGLE = \"Draw Triangle\"\nTASK_CIRCLE = \"Draw Circle\"\nTASK_PENTAGON = \"Draw Pentagon\"\nTASK_TESSELLATION = \"Draw Tessellation\"\ntasks = [TASK_LINE, TASK_TRIANGLE, TASK_CIRCLE, TASK_PENTAGON, TASK_TESSELLATION]\ncurrent_task = TASK_LINE\n# --- SumTree for Prioritized Experience Replay ---\nclass SumTree:\n    def __init__(self, capacity):",
         "detail": "geomaster_ai_challenge",
         "documentation": {}
     },
@@ -516,7 +578,7 @@
         "kind": 5,
         "importPath": "geomaster_ai_challenge",
         "description": "geomaster_ai_challenge",
-        "peekOfCode": "TASK_TRIANGLE = \"Draw Triangle\"\nTASK_CIRCLE = \"Draw Circle\"\nTASK_PENTAGON = \"Draw Pentagon\"\nTASK_TESSELLATION = \"Draw Tessellation\"\ntasks = [TASK_LINE, TASK_TRIANGLE, TASK_CIRCLE, TASK_PENTAGON, TASK_TESSELLATION]\ncurrent_task = TASK_LINE\n# --- Prioritized Experience Replay with SumTree ---\nclass SumTree:\n    def __init__(self, capacity):\n        self.capacity = capacity",
+        "peekOfCode": "TASK_TRIANGLE = \"Draw Triangle\"\nTASK_CIRCLE = \"Draw Circle\"\nTASK_PENTAGON = \"Draw Pentagon\"\nTASK_TESSELLATION = \"Draw Tessellation\"\ntasks = [TASK_LINE, TASK_TRIANGLE, TASK_CIRCLE, TASK_PENTAGON, TASK_TESSELLATION]\ncurrent_task = TASK_LINE\n# --- SumTree for Prioritized Experience Replay ---\nclass SumTree:\n    def __init__(self, capacity):\n        self.capacity = capacity",
         "detail": "geomaster_ai_challenge",
         "documentation": {}
     },
@@ -525,7 +587,7 @@
         "kind": 5,
         "importPath": "geomaster_ai_challenge",
         "description": "geomaster_ai_challenge",
-        "peekOfCode": "TASK_CIRCLE = \"Draw Circle\"\nTASK_PENTAGON = \"Draw Pentagon\"\nTASK_TESSELLATION = \"Draw Tessellation\"\ntasks = [TASK_LINE, TASK_TRIANGLE, TASK_CIRCLE, TASK_PENTAGON, TASK_TESSELLATION]\ncurrent_task = TASK_LINE\n# --- Prioritized Experience Replay with SumTree ---\nclass SumTree:\n    def __init__(self, capacity):\n        self.capacity = capacity\n        self.tree = np.zeros(2 * capacity - 1)",
+        "peekOfCode": "TASK_CIRCLE = \"Draw Circle\"\nTASK_PENTAGON = \"Draw Pentagon\"\nTASK_TESSELLATION = \"Draw Tessellation\"\ntasks = [TASK_LINE, TASK_TRIANGLE, TASK_CIRCLE, TASK_PENTAGON, TASK_TESSELLATION]\ncurrent_task = TASK_LINE\n# --- SumTree for Prioritized Experience Replay ---\nclass SumTree:\n    def __init__(self, capacity):\n        self.capacity = capacity\n        self.tree = np.zeros(2 * capacity - 1)",
         "detail": "geomaster_ai_challenge",
         "documentation": {}
     },
@@ -534,7 +596,7 @@
         "kind": 5,
         "importPath": "geomaster_ai_challenge",
         "description": "geomaster_ai_challenge",
-        "peekOfCode": "TASK_PENTAGON = \"Draw Pentagon\"\nTASK_TESSELLATION = \"Draw Tessellation\"\ntasks = [TASK_LINE, TASK_TRIANGLE, TASK_CIRCLE, TASK_PENTAGON, TASK_TESSELLATION]\ncurrent_task = TASK_LINE\n# --- Prioritized Experience Replay with SumTree ---\nclass SumTree:\n    def __init__(self, capacity):\n        self.capacity = capacity\n        self.tree = np.zeros(2 * capacity - 1)\n        self.data = np.zeros(capacity, dtype=object)",
+        "peekOfCode": "TASK_PENTAGON = \"Draw Pentagon\"\nTASK_TESSELLATION = \"Draw Tessellation\"\ntasks = [TASK_LINE, TASK_TRIANGLE, TASK_CIRCLE, TASK_PENTAGON, TASK_TESSELLATION]\ncurrent_task = TASK_LINE\n# --- SumTree for Prioritized Experience Replay ---\nclass SumTree:\n    def __init__(self, capacity):\n        self.capacity = capacity\n        self.tree = np.zeros(2 * capacity - 1)\n        self.data = np.zeros(capacity, dtype=object)",
         "detail": "geomaster_ai_challenge",
         "documentation": {}
     },
@@ -543,7 +605,7 @@
         "kind": 5,
         "importPath": "geomaster_ai_challenge",
         "description": "geomaster_ai_challenge",
-        "peekOfCode": "TASK_TESSELLATION = \"Draw Tessellation\"\ntasks = [TASK_LINE, TASK_TRIANGLE, TASK_CIRCLE, TASK_PENTAGON, TASK_TESSELLATION]\ncurrent_task = TASK_LINE\n# --- Prioritized Experience Replay with SumTree ---\nclass SumTree:\n    def __init__(self, capacity):\n        self.capacity = capacity\n        self.tree = np.zeros(2 * capacity - 1)\n        self.data = np.zeros(capacity, dtype=object)\n        self.write = 0",
+        "peekOfCode": "TASK_TESSELLATION = \"Draw Tessellation\"\ntasks = [TASK_LINE, TASK_TRIANGLE, TASK_CIRCLE, TASK_PENTAGON, TASK_TESSELLATION]\ncurrent_task = TASK_LINE\n# --- SumTree for Prioritized Experience Replay ---\nclass SumTree:\n    def __init__(self, capacity):\n        self.capacity = capacity\n        self.tree = np.zeros(2 * capacity - 1)\n        self.data = np.zeros(capacity, dtype=object)\n        self.write = 0",
         "detail": "geomaster_ai_challenge",
         "documentation": {}
     },
@@ -552,7 +614,7 @@
         "kind": 5,
         "importPath": "geomaster_ai_challenge",
         "description": "geomaster_ai_challenge",
-        "peekOfCode": "tasks = [TASK_LINE, TASK_TRIANGLE, TASK_CIRCLE, TASK_PENTAGON, TASK_TESSELLATION]\ncurrent_task = TASK_LINE\n# --- Prioritized Experience Replay with SumTree ---\nclass SumTree:\n    def __init__(self, capacity):\n        self.capacity = capacity\n        self.tree = np.zeros(2 * capacity - 1)\n        self.data = np.zeros(capacity, dtype=object)\n        self.write = 0\n        self.n_entries = 0",
+        "peekOfCode": "tasks = [TASK_LINE, TASK_TRIANGLE, TASK_CIRCLE, TASK_PENTAGON, TASK_TESSELLATION]\ncurrent_task = TASK_LINE\n# --- SumTree for Prioritized Experience Replay ---\nclass SumTree:\n    def __init__(self, capacity):\n        self.capacity = capacity\n        self.tree = np.zeros(2 * capacity - 1)\n        self.data = np.zeros(capacity, dtype=object)\n        self.write = 0\n        self.n_entries = 0",
         "detail": "geomaster_ai_challenge",
         "documentation": {}
     },
@@ -561,7 +623,7 @@
         "kind": 5,
         "importPath": "geomaster_ai_challenge",
         "description": "geomaster_ai_challenge",
-        "peekOfCode": "current_task = TASK_LINE\n# --- Prioritized Experience Replay with SumTree ---\nclass SumTree:\n    def __init__(self, capacity):\n        self.capacity = capacity\n        self.tree = np.zeros(2 * capacity - 1)\n        self.data = np.zeros(capacity, dtype=object)\n        self.write = 0\n        self.n_entries = 0\n    def add(self, priority, data):",
+        "peekOfCode": "current_task = TASK_LINE\n# --- SumTree for Prioritized Experience Replay ---\nclass SumTree:\n    def __init__(self, capacity):\n        self.capacity = capacity\n        self.tree = np.zeros(2 * capacity - 1)\n        self.data = np.zeros(capacity, dtype=object)\n        self.write = 0\n        self.n_entries = 0\n    def add(self, priority, data):",
         "detail": "geomaster_ai_challenge",
         "documentation": {}
     },
@@ -570,7 +632,7 @@
         "kind": 5,
         "importPath": "geomaster_ai_challenge",
         "description": "geomaster_ai_challenge",
-        "peekOfCode": "state_dim = 10  # [x, y, dx, dy, task_id, world_id, shape_progress, num_vertices, angle, dist_to_close]\naction_dim = 6  # [curvature_left, curvature_right, angle_adjust_left, angle_adjust_right, radius_adjust, add_vertex]\ngamma = 0.99\nepsilon_start = 1.0\nepsilon_end = 0.01\nepsilon_decay = 5000  # Increased for more exploration\nepsilon = epsilon_start\nbatch_size = 64\nmemory_size = 10000\ntarget_update = 10",
+        "peekOfCode": "state_dim = 10\naction_dim = 6\npredictor_input_dim = 13  # task_id, world_id, avg_reward, last 10 rewards\npredictor_output_dim = len(tasks)\ngamma = 0.99\nepsilon_start = 1.0\nepsilon_end = 0.01\nepsilon_decay = 5000\nepsilon = epsilon_start\nbatch_size = 64",
         "detail": "geomaster_ai_challenge",
         "documentation": {}
     },
@@ -579,7 +641,25 @@
         "kind": 5,
         "importPath": "geomaster_ai_challenge",
         "description": "geomaster_ai_challenge",
-        "peekOfCode": "action_dim = 6  # [curvature_left, curvature_right, angle_adjust_left, angle_adjust_right, radius_adjust, add_vertex]\ngamma = 0.99\nepsilon_start = 1.0\nepsilon_end = 0.01\nepsilon_decay = 5000  # Increased for more exploration\nepsilon = epsilon_start\nbatch_size = 64\nmemory_size = 10000\ntarget_update = 10\nn_step = 3  # For N-Step Returns",
+        "peekOfCode": "action_dim = 6\npredictor_input_dim = 13  # task_id, world_id, avg_reward, last 10 rewards\npredictor_output_dim = len(tasks)\ngamma = 0.99\nepsilon_start = 1.0\nepsilon_end = 0.01\nepsilon_decay = 5000\nepsilon = epsilon_start\nbatch_size = 64\nmemory_size = 10000",
+        "detail": "geomaster_ai_challenge",
+        "documentation": {}
+    },
+    {
+        "label": "predictor_input_dim",
+        "kind": 5,
+        "importPath": "geomaster_ai_challenge",
+        "description": "geomaster_ai_challenge",
+        "peekOfCode": "predictor_input_dim = 13  # task_id, world_id, avg_reward, last 10 rewards\npredictor_output_dim = len(tasks)\ngamma = 0.99\nepsilon_start = 1.0\nepsilon_end = 0.01\nepsilon_decay = 5000\nepsilon = epsilon_start\nbatch_size = 64\nmemory_size = 10000\ntarget_update = 10",
+        "detail": "geomaster_ai_challenge",
+        "documentation": {}
+    },
+    {
+        "label": "predictor_output_dim",
+        "kind": 5,
+        "importPath": "geomaster_ai_challenge",
+        "description": "geomaster_ai_challenge",
+        "peekOfCode": "predictor_output_dim = len(tasks)\ngamma = 0.99\nepsilon_start = 1.0\nepsilon_end = 0.01\nepsilon_decay = 5000\nepsilon = epsilon_start\nbatch_size = 64\nmemory_size = 10000\ntarget_update = 10\nn_step = 3",
         "detail": "geomaster_ai_challenge",
         "documentation": {}
     },
@@ -588,7 +668,7 @@
         "kind": 5,
         "importPath": "geomaster_ai_challenge",
         "description": "geomaster_ai_challenge",
-        "peekOfCode": "gamma = 0.99\nepsilon_start = 1.0\nepsilon_end = 0.01\nepsilon_decay = 5000  # Increased for more exploration\nepsilon = epsilon_start\nbatch_size = 64\nmemory_size = 10000\ntarget_update = 10\nn_step = 3  # For N-Step Returns\nalpha = 0.7  # Increased for more prioritization",
+        "peekOfCode": "gamma = 0.99\nepsilon_start = 1.0\nepsilon_end = 0.01\nepsilon_decay = 5000\nepsilon = epsilon_start\nbatch_size = 64\nmemory_size = 10000\ntarget_update = 10\nn_step = 3\nalpha = 0.7",
         "detail": "geomaster_ai_challenge",
         "documentation": {}
     },
@@ -597,7 +677,7 @@
         "kind": 5,
         "importPath": "geomaster_ai_challenge",
         "description": "geomaster_ai_challenge",
-        "peekOfCode": "epsilon_start = 1.0\nepsilon_end = 0.01\nepsilon_decay = 5000  # Increased for more exploration\nepsilon = epsilon_start\nbatch_size = 64\nmemory_size = 10000\ntarget_update = 10\nn_step = 3  # For N-Step Returns\nalpha = 0.7  # Increased for more prioritization\nbeta = 0.5  # Increased for better importance sampling",
+        "peekOfCode": "epsilon_start = 1.0\nepsilon_end = 0.01\nepsilon_decay = 5000\nepsilon = epsilon_start\nbatch_size = 64\nmemory_size = 10000\ntarget_update = 10\nn_step = 3\nalpha = 0.7\nbeta = 0.5",
         "detail": "geomaster_ai_challenge",
         "documentation": {}
     },
@@ -606,7 +686,7 @@
         "kind": 5,
         "importPath": "geomaster_ai_challenge",
         "description": "geomaster_ai_challenge",
-        "peekOfCode": "epsilon_end = 0.01\nepsilon_decay = 5000  # Increased for more exploration\nepsilon = epsilon_start\nbatch_size = 64\nmemory_size = 10000\ntarget_update = 10\nn_step = 3  # For N-Step Returns\nalpha = 0.7  # Increased for more prioritization\nbeta = 0.5  # Increased for better importance sampling\n# Initialize DQN and Forward Model",
+        "peekOfCode": "epsilon_end = 0.01\nepsilon_decay = 5000\nepsilon = epsilon_start\nbatch_size = 64\nmemory_size = 10000\ntarget_update = 10\nn_step = 3\nalpha = 0.7\nbeta = 0.5\nbase_lr = 0.001",
         "detail": "geomaster_ai_challenge",
         "documentation": {}
     },
@@ -615,7 +695,7 @@
         "kind": 5,
         "importPath": "geomaster_ai_challenge",
         "description": "geomaster_ai_challenge",
-        "peekOfCode": "epsilon_decay = 5000  # Increased for more exploration\nepsilon = epsilon_start\nbatch_size = 64\nmemory_size = 10000\ntarget_update = 10\nn_step = 3  # For N-Step Returns\nalpha = 0.7  # Increased for more prioritization\nbeta = 0.5  # Increased for better importance sampling\n# Initialize DQN and Forward Model\ndevice = torch.device(\"cuda\" if torch.cuda.is_available() else \"cpu\")",
+        "peekOfCode": "epsilon_decay = 5000\nepsilon = epsilon_start\nbatch_size = 64\nmemory_size = 10000\ntarget_update = 10\nn_step = 3\nalpha = 0.7\nbeta = 0.5\nbase_lr = 0.001\ndevice = torch.device(\"cuda\" if torch.cuda.is_available() else \"cpu\")",
         "detail": "geomaster_ai_challenge",
         "documentation": {}
     },
@@ -624,7 +704,7 @@
         "kind": 5,
         "importPath": "geomaster_ai_challenge",
         "description": "geomaster_ai_challenge",
-        "peekOfCode": "epsilon = epsilon_start\nbatch_size = 64\nmemory_size = 10000\ntarget_update = 10\nn_step = 3  # For N-Step Returns\nalpha = 0.7  # Increased for more prioritization\nbeta = 0.5  # Increased for better importance sampling\n# Initialize DQN and Forward Model\ndevice = torch.device(\"cuda\" if torch.cuda.is_available() else \"cpu\")\npolicy_net = DQN(state_dim, action_dim).to(device)",
+        "peekOfCode": "epsilon = epsilon_start\nbatch_size = 64\nmemory_size = 10000\ntarget_update = 10\nn_step = 3\nalpha = 0.7\nbeta = 0.5\nbase_lr = 0.001\ndevice = torch.device(\"cuda\" if torch.cuda.is_available() else \"cpu\")\npolicy_net = DQN(state_dim, action_dim).to(device)",
         "detail": "geomaster_ai_challenge",
         "documentation": {}
     },
@@ -633,7 +713,7 @@
         "kind": 5,
         "importPath": "geomaster_ai_challenge",
         "description": "geomaster_ai_challenge",
-        "peekOfCode": "batch_size = 64\nmemory_size = 10000\ntarget_update = 10\nn_step = 3  # For N-Step Returns\nalpha = 0.7  # Increased for more prioritization\nbeta = 0.5  # Increased for better importance sampling\n# Initialize DQN and Forward Model\ndevice = torch.device(\"cuda\" if torch.cuda.is_available() else \"cpu\")\npolicy_net = DQN(state_dim, action_dim).to(device)\ntarget_net = DQN(state_dim, action_dim).to(device)",
+        "peekOfCode": "batch_size = 64\nmemory_size = 10000\ntarget_update = 10\nn_step = 3\nalpha = 0.7\nbeta = 0.5\nbase_lr = 0.001\ndevice = torch.device(\"cuda\" if torch.cuda.is_available() else \"cpu\")\npolicy_net = DQN(state_dim, action_dim).to(device)\ntarget_net = DQN(state_dim, action_dim).to(device)",
         "detail": "geomaster_ai_challenge",
         "documentation": {}
     },
@@ -642,7 +722,7 @@
         "kind": 5,
         "importPath": "geomaster_ai_challenge",
         "description": "geomaster_ai_challenge",
-        "peekOfCode": "memory_size = 10000\ntarget_update = 10\nn_step = 3  # For N-Step Returns\nalpha = 0.7  # Increased for more prioritization\nbeta = 0.5  # Increased for better importance sampling\n# Initialize DQN and Forward Model\ndevice = torch.device(\"cuda\" if torch.cuda.is_available() else \"cpu\")\npolicy_net = DQN(state_dim, action_dim).to(device)\ntarget_net = DQN(state_dim, action_dim).to(device)\ntarget_net.load_state_dict(policy_net.state_dict())",
+        "peekOfCode": "memory_size = 10000\ntarget_update = 10\nn_step = 3\nalpha = 0.7\nbeta = 0.5\nbase_lr = 0.001\ndevice = torch.device(\"cuda\" if torch.cuda.is_available() else \"cpu\")\npolicy_net = DQN(state_dim, action_dim).to(device)\ntarget_net = DQN(state_dim, action_dim).to(device)\ntarget_net.load_state_dict(policy_net.state_dict())",
         "detail": "geomaster_ai_challenge",
         "documentation": {}
     },
@@ -651,7 +731,7 @@
         "kind": 5,
         "importPath": "geomaster_ai_challenge",
         "description": "geomaster_ai_challenge",
-        "peekOfCode": "target_update = 10\nn_step = 3  # For N-Step Returns\nalpha = 0.7  # Increased for more prioritization\nbeta = 0.5  # Increased for better importance sampling\n# Initialize DQN and Forward Model\ndevice = torch.device(\"cuda\" if torch.cuda.is_available() else \"cpu\")\npolicy_net = DQN(state_dim, action_dim).to(device)\ntarget_net = DQN(state_dim, action_dim).to(device)\ntarget_net.load_state_dict(policy_net.state_dict())\noptimizer = optim.Adam(policy_net.parameters(), lr=0.001)",
+        "peekOfCode": "target_update = 10\nn_step = 3\nalpha = 0.7\nbeta = 0.5\nbase_lr = 0.001\ndevice = torch.device(\"cuda\" if torch.cuda.is_available() else \"cpu\")\npolicy_net = DQN(state_dim, action_dim).to(device)\ntarget_net = DQN(state_dim, action_dim).to(device)\ntarget_net.load_state_dict(policy_net.state_dict())\noptimizer = optim.Adam(policy_net.parameters(), lr=base_lr)",
         "detail": "geomaster_ai_challenge",
         "documentation": {}
     },
@@ -660,7 +740,7 @@
         "kind": 5,
         "importPath": "geomaster_ai_challenge",
         "description": "geomaster_ai_challenge",
-        "peekOfCode": "n_step = 3  # For N-Step Returns\nalpha = 0.7  # Increased for more prioritization\nbeta = 0.5  # Increased for better importance sampling\n# Initialize DQN and Forward Model\ndevice = torch.device(\"cuda\" if torch.cuda.is_available() else \"cpu\")\npolicy_net = DQN(state_dim, action_dim).to(device)\ntarget_net = DQN(state_dim, action_dim).to(device)\ntarget_net.load_state_dict(policy_net.state_dict())\noptimizer = optim.Adam(policy_net.parameters(), lr=0.001)\nforward_model = ForwardModel(state_dim, action_dim).to(device)",
+        "peekOfCode": "n_step = 3\nalpha = 0.7\nbeta = 0.5\nbase_lr = 0.001\ndevice = torch.device(\"cuda\" if torch.cuda.is_available() else \"cpu\")\npolicy_net = DQN(state_dim, action_dim).to(device)\ntarget_net = DQN(state_dim, action_dim).to(device)\ntarget_net.load_state_dict(policy_net.state_dict())\noptimizer = optim.Adam(policy_net.parameters(), lr=base_lr)\nforward_model = ForwardModel(state_dim, action_dim).to(device)",
         "detail": "geomaster_ai_challenge",
         "documentation": {}
     },
@@ -669,7 +749,7 @@
         "kind": 5,
         "importPath": "geomaster_ai_challenge",
         "description": "geomaster_ai_challenge",
-        "peekOfCode": "alpha = 0.7  # Increased for more prioritization\nbeta = 0.5  # Increased for better importance sampling\n# Initialize DQN and Forward Model\ndevice = torch.device(\"cuda\" if torch.cuda.is_available() else \"cpu\")\npolicy_net = DQN(state_dim, action_dim).to(device)\ntarget_net = DQN(state_dim, action_dim).to(device)\ntarget_net.load_state_dict(policy_net.state_dict())\noptimizer = optim.Adam(policy_net.parameters(), lr=0.001)\nforward_model = ForwardModel(state_dim, action_dim).to(device)\noptimizer_fm = optim.Adam(forward_model.parameters(), lr=0.001)",
+        "peekOfCode": "alpha = 0.7\nbeta = 0.5\nbase_lr = 0.001\ndevice = torch.device(\"cuda\" if torch.cuda.is_available() else \"cpu\")\npolicy_net = DQN(state_dim, action_dim).to(device)\ntarget_net = DQN(state_dim, action_dim).to(device)\ntarget_net.load_state_dict(policy_net.state_dict())\noptimizer = optim.Adam(policy_net.parameters(), lr=base_lr)\nforward_model = ForwardModel(state_dim, action_dim).to(device)\noptimizer_fm = optim.Adam(forward_model.parameters(), lr=base_lr)",
         "detail": "geomaster_ai_challenge",
         "documentation": {}
     },
@@ -678,7 +758,16 @@
         "kind": 5,
         "importPath": "geomaster_ai_challenge",
         "description": "geomaster_ai_challenge",
-        "peekOfCode": "beta = 0.5  # Increased for better importance sampling\n# Initialize DQN and Forward Model\ndevice = torch.device(\"cuda\" if torch.cuda.is_available() else \"cpu\")\npolicy_net = DQN(state_dim, action_dim).to(device)\ntarget_net = DQN(state_dim, action_dim).to(device)\ntarget_net.load_state_dict(policy_net.state_dict())\noptimizer = optim.Adam(policy_net.parameters(), lr=0.001)\nforward_model = ForwardModel(state_dim, action_dim).to(device)\noptimizer_fm = optim.Adam(forward_model.parameters(), lr=0.001)\n# Initialize memory for Prioritized Experience Replay",
+        "peekOfCode": "beta = 0.5\nbase_lr = 0.001\ndevice = torch.device(\"cuda\" if torch.cuda.is_available() else \"cpu\")\npolicy_net = DQN(state_dim, action_dim).to(device)\ntarget_net = DQN(state_dim, action_dim).to(device)\ntarget_net.load_state_dict(policy_net.state_dict())\noptimizer = optim.Adam(policy_net.parameters(), lr=base_lr)\nforward_model = ForwardModel(state_dim, action_dim).to(device)\noptimizer_fm = optim.Adam(forward_model.parameters(), lr=base_lr)\nworld_model = WorldModel(state_dim, action_dim).to(device)",
+        "detail": "geomaster_ai_challenge",
+        "documentation": {}
+    },
+    {
+        "label": "base_lr",
+        "kind": 5,
+        "importPath": "geomaster_ai_challenge",
+        "description": "geomaster_ai_challenge",
+        "peekOfCode": "base_lr = 0.001\ndevice = torch.device(\"cuda\" if torch.cuda.is_available() else \"cpu\")\npolicy_net = DQN(state_dim, action_dim).to(device)\ntarget_net = DQN(state_dim, action_dim).to(device)\ntarget_net.load_state_dict(policy_net.state_dict())\noptimizer = optim.Adam(policy_net.parameters(), lr=base_lr)\nforward_model = ForwardModel(state_dim, action_dim).to(device)\noptimizer_fm = optim.Adam(forward_model.parameters(), lr=base_lr)\nworld_model = WorldModel(state_dim, action_dim).to(device)\noptimizer_wm = optim.Adam(world_model.parameters(), lr=base_lr)",
         "detail": "geomaster_ai_challenge",
         "documentation": {}
     },
@@ -687,7 +776,7 @@
         "kind": 5,
         "importPath": "geomaster_ai_challenge",
         "description": "geomaster_ai_challenge",
-        "peekOfCode": "device = torch.device(\"cuda\" if torch.cuda.is_available() else \"cpu\")\npolicy_net = DQN(state_dim, action_dim).to(device)\ntarget_net = DQN(state_dim, action_dim).to(device)\ntarget_net.load_state_dict(policy_net.state_dict())\noptimizer = optim.Adam(policy_net.parameters(), lr=0.001)\nforward_model = ForwardModel(state_dim, action_dim).to(device)\noptimizer_fm = optim.Adam(forward_model.parameters(), lr=0.001)\n# Initialize memory for Prioritized Experience Replay\nmemory = SumTree(memory_size)\nn_step_buffer = []  # For N-Step Returns",
+        "peekOfCode": "device = torch.device(\"cuda\" if torch.cuda.is_available() else \"cpu\")\npolicy_net = DQN(state_dim, action_dim).to(device)\ntarget_net = DQN(state_dim, action_dim).to(device)\ntarget_net.load_state_dict(policy_net.state_dict())\noptimizer = optim.Adam(policy_net.parameters(), lr=base_lr)\nforward_model = ForwardModel(state_dim, action_dim).to(device)\noptimizer_fm = optim.Adam(forward_model.parameters(), lr=base_lr)\nworld_model = WorldModel(state_dim, action_dim).to(device)\noptimizer_wm = optim.Adam(world_model.parameters(), lr=base_lr)\nshape_predictor = NextShapePredictor(predictor_input_dim, predictor_output_dim).to(",
         "detail": "geomaster_ai_challenge",
         "documentation": {}
     },
@@ -696,7 +785,7 @@
         "kind": 5,
         "importPath": "geomaster_ai_challenge",
         "description": "geomaster_ai_challenge",
-        "peekOfCode": "policy_net = DQN(state_dim, action_dim).to(device)\ntarget_net = DQN(state_dim, action_dim).to(device)\ntarget_net.load_state_dict(policy_net.state_dict())\noptimizer = optim.Adam(policy_net.parameters(), lr=0.001)\nforward_model = ForwardModel(state_dim, action_dim).to(device)\noptimizer_fm = optim.Adam(forward_model.parameters(), lr=0.001)\n# Initialize memory for Prioritized Experience Replay\nmemory = SumTree(memory_size)\nn_step_buffer = []  # For N-Step Returns\n# Game State",
+        "peekOfCode": "policy_net = DQN(state_dim, action_dim).to(device)\ntarget_net = DQN(state_dim, action_dim).to(device)\ntarget_net.load_state_dict(policy_net.state_dict())\noptimizer = optim.Adam(policy_net.parameters(), lr=base_lr)\nforward_model = ForwardModel(state_dim, action_dim).to(device)\noptimizer_fm = optim.Adam(forward_model.parameters(), lr=base_lr)\nworld_model = WorldModel(state_dim, action_dim).to(device)\noptimizer_wm = optim.Adam(world_model.parameters(), lr=base_lr)\nshape_predictor = NextShapePredictor(predictor_input_dim, predictor_output_dim).to(\n    device",
         "detail": "geomaster_ai_challenge",
         "documentation": {}
     },
@@ -705,7 +794,7 @@
         "kind": 5,
         "importPath": "geomaster_ai_challenge",
         "description": "geomaster_ai_challenge",
-        "peekOfCode": "target_net = DQN(state_dim, action_dim).to(device)\ntarget_net.load_state_dict(policy_net.state_dict())\noptimizer = optim.Adam(policy_net.parameters(), lr=0.001)\nforward_model = ForwardModel(state_dim, action_dim).to(device)\noptimizer_fm = optim.Adam(forward_model.parameters(), lr=0.001)\n# Initialize memory for Prioritized Experience Replay\nmemory = SumTree(memory_size)\nn_step_buffer = []  # For N-Step Returns\n# Game State\nstart_point = None",
+        "peekOfCode": "target_net = DQN(state_dim, action_dim).to(device)\ntarget_net.load_state_dict(policy_net.state_dict())\noptimizer = optim.Adam(policy_net.parameters(), lr=base_lr)\nforward_model = ForwardModel(state_dim, action_dim).to(device)\noptimizer_fm = optim.Adam(forward_model.parameters(), lr=base_lr)\nworld_model = WorldModel(state_dim, action_dim).to(device)\noptimizer_wm = optim.Adam(world_model.parameters(), lr=base_lr)\nshape_predictor = NextShapePredictor(predictor_input_dim, predictor_output_dim).to(\n    device\n)",
         "detail": "geomaster_ai_challenge",
         "documentation": {}
     },
@@ -714,7 +803,7 @@
         "kind": 5,
         "importPath": "geomaster_ai_challenge",
         "description": "geomaster_ai_challenge",
-        "peekOfCode": "optimizer = optim.Adam(policy_net.parameters(), lr=0.001)\nforward_model = ForwardModel(state_dim, action_dim).to(device)\noptimizer_fm = optim.Adam(forward_model.parameters(), lr=0.001)\n# Initialize memory for Prioritized Experience Replay\nmemory = SumTree(memory_size)\nn_step_buffer = []  # For N-Step Returns\n# Game State\nstart_point = None\nend_point = (WIDTH - 50, HEIGHT - 50)\ntriangle_points = []",
+        "peekOfCode": "optimizer = optim.Adam(policy_net.parameters(), lr=base_lr)\nforward_model = ForwardModel(state_dim, action_dim).to(device)\noptimizer_fm = optim.Adam(forward_model.parameters(), lr=base_lr)\nworld_model = WorldModel(state_dim, action_dim).to(device)\noptimizer_wm = optim.Adam(world_model.parameters(), lr=base_lr)\nshape_predictor = NextShapePredictor(predictor_input_dim, predictor_output_dim).to(\n    device\n)\noptimizer_sp = optim.Adam(shape_predictor.parameters(), lr=0.001)\nmemory = SumTree(memory_size)",
         "detail": "geomaster_ai_challenge",
         "documentation": {}
     },
@@ -723,7 +812,7 @@
         "kind": 5,
         "importPath": "geomaster_ai_challenge",
         "description": "geomaster_ai_challenge",
-        "peekOfCode": "forward_model = ForwardModel(state_dim, action_dim).to(device)\noptimizer_fm = optim.Adam(forward_model.parameters(), lr=0.001)\n# Initialize memory for Prioritized Experience Replay\nmemory = SumTree(memory_size)\nn_step_buffer = []  # For N-Step Returns\n# Game State\nstart_point = None\nend_point = (WIDTH - 50, HEIGHT - 50)\ntriangle_points = []\ncircle_center = None",
+        "peekOfCode": "forward_model = ForwardModel(state_dim, action_dim).to(device)\noptimizer_fm = optim.Adam(forward_model.parameters(), lr=base_lr)\nworld_model = WorldModel(state_dim, action_dim).to(device)\noptimizer_wm = optim.Adam(world_model.parameters(), lr=base_lr)\nshape_predictor = NextShapePredictor(predictor_input_dim, predictor_output_dim).to(\n    device\n)\noptimizer_sp = optim.Adam(shape_predictor.parameters(), lr=0.001)\nmemory = SumTree(memory_size)\nn_step_buffer = []",
         "detail": "geomaster_ai_challenge",
         "documentation": {}
     },
@@ -732,7 +821,43 @@
         "kind": 5,
         "importPath": "geomaster_ai_challenge",
         "description": "geomaster_ai_challenge",
-        "peekOfCode": "optimizer_fm = optim.Adam(forward_model.parameters(), lr=0.001)\n# Initialize memory for Prioritized Experience Replay\nmemory = SumTree(memory_size)\nn_step_buffer = []  # For N-Step Returns\n# Game State\nstart_point = None\nend_point = (WIDTH - 50, HEIGHT - 50)\ntriangle_points = []\ncircle_center = None\ncircle_radius = 50",
+        "peekOfCode": "optimizer_fm = optim.Adam(forward_model.parameters(), lr=base_lr)\nworld_model = WorldModel(state_dim, action_dim).to(device)\noptimizer_wm = optim.Adam(world_model.parameters(), lr=base_lr)\nshape_predictor = NextShapePredictor(predictor_input_dim, predictor_output_dim).to(\n    device\n)\noptimizer_sp = optim.Adam(shape_predictor.parameters(), lr=0.001)\nmemory = SumTree(memory_size)\nn_step_buffer = []\n# Game State",
+        "detail": "geomaster_ai_challenge",
+        "documentation": {}
+    },
+    {
+        "label": "world_model",
+        "kind": 5,
+        "importPath": "geomaster_ai_challenge",
+        "description": "geomaster_ai_challenge",
+        "peekOfCode": "world_model = WorldModel(state_dim, action_dim).to(device)\noptimizer_wm = optim.Adam(world_model.parameters(), lr=base_lr)\nshape_predictor = NextShapePredictor(predictor_input_dim, predictor_output_dim).to(\n    device\n)\noptimizer_sp = optim.Adam(shape_predictor.parameters(), lr=0.001)\nmemory = SumTree(memory_size)\nn_step_buffer = []\n# Game State\nstart_point = None",
+        "detail": "geomaster_ai_challenge",
+        "documentation": {}
+    },
+    {
+        "label": "optimizer_wm",
+        "kind": 5,
+        "importPath": "geomaster_ai_challenge",
+        "description": "geomaster_ai_challenge",
+        "peekOfCode": "optimizer_wm = optim.Adam(world_model.parameters(), lr=base_lr)\nshape_predictor = NextShapePredictor(predictor_input_dim, predictor_output_dim).to(\n    device\n)\noptimizer_sp = optim.Adam(shape_predictor.parameters(), lr=0.001)\nmemory = SumTree(memory_size)\nn_step_buffer = []\n# Game State\nstart_point = None\nend_point = (WIDTH - 50, HEIGHT - 50)",
+        "detail": "geomaster_ai_challenge",
+        "documentation": {}
+    },
+    {
+        "label": "shape_predictor",
+        "kind": 5,
+        "importPath": "geomaster_ai_challenge",
+        "description": "geomaster_ai_challenge",
+        "peekOfCode": "shape_predictor = NextShapePredictor(predictor_input_dim, predictor_output_dim).to(\n    device\n)\noptimizer_sp = optim.Adam(shape_predictor.parameters(), lr=0.001)\nmemory = SumTree(memory_size)\nn_step_buffer = []\n# Game State\nstart_point = None\nend_point = (WIDTH - 50, HEIGHT - 50)\ntriangle_points = []",
+        "detail": "geomaster_ai_challenge",
+        "documentation": {}
+    },
+    {
+        "label": "optimizer_sp",
+        "kind": 5,
+        "importPath": "geomaster_ai_challenge",
+        "description": "geomaster_ai_challenge",
+        "peekOfCode": "optimizer_sp = optim.Adam(shape_predictor.parameters(), lr=0.001)\nmemory = SumTree(memory_size)\nn_step_buffer = []\n# Game State\nstart_point = None\nend_point = (WIDTH - 50, HEIGHT - 50)\ntriangle_points = []\ncircle_center = None\ncircle_radius = 50\npentagon_points = []",
         "detail": "geomaster_ai_challenge",
         "documentation": {}
     },
@@ -741,7 +866,7 @@
         "kind": 5,
         "importPath": "geomaster_ai_challenge",
         "description": "geomaster_ai_challenge",
-        "peekOfCode": "memory = SumTree(memory_size)\nn_step_buffer = []  # For N-Step Returns\n# Game State\nstart_point = None\nend_point = (WIDTH - 50, HEIGHT - 50)\ntriangle_points = []\ncircle_center = None\ncircle_radius = 50\npentagon_points = []\ntessellation_points = []",
+        "peekOfCode": "memory = SumTree(memory_size)\nn_step_buffer = []\n# Game State\nstart_point = None\nend_point = (WIDTH - 50, HEIGHT - 50)\ntriangle_points = []\ncircle_center = None\ncircle_radius = 50\npentagon_points = []\ntessellation_points = []",
         "detail": "geomaster_ai_challenge",
         "documentation": {}
     },
@@ -750,7 +875,7 @@
         "kind": 5,
         "importPath": "geomaster_ai_challenge",
         "description": "geomaster_ai_challenge",
-        "peekOfCode": "n_step_buffer = []  # For N-Step Returns\n# Game State\nstart_point = None\nend_point = (WIDTH - 50, HEIGHT - 50)\ntriangle_points = []\ncircle_center = None\ncircle_radius = 50\npentagon_points = []\ntessellation_points = []\ncurrent_shape = []",
+        "peekOfCode": "n_step_buffer = []\n# Game State\nstart_point = None\nend_point = (WIDTH - 50, HEIGHT - 50)\ntriangle_points = []\ncircle_center = None\ncircle_radius = 50\npentagon_points = []\ntessellation_points = []\ncurrent_shape = []",
         "detail": "geomaster_ai_challenge",
         "documentation": {}
     },
@@ -768,7 +893,7 @@
         "kind": 5,
         "importPath": "geomaster_ai_challenge",
         "description": "geomaster_ai_challenge",
-        "peekOfCode": "end_point = (WIDTH - 50, HEIGHT - 50)\ntriangle_points = []\ncircle_center = None\ncircle_radius = 50\npentagon_points = []\ntessellation_points = []\ncurrent_shape = []\nai_step = 0\nmax_steps = 50\ngame_state = \"waiting_for_start\"",
+        "peekOfCode": "end_point = (WIDTH - 50, HEIGHT - 50)\ntriangle_points = []\ncircle_center = None\ncircle_radius = 50\npentagon_points = []\ntessellation_points = []\ncurrent_shape = []\nai_step = 0\nmax_steps = 50\ngame_state = \"waiting\"",
         "detail": "geomaster_ai_challenge",
         "documentation": {}
     },
@@ -777,7 +902,7 @@
         "kind": 5,
         "importPath": "geomaster_ai_challenge",
         "description": "geomaster_ai_challenge",
-        "peekOfCode": "triangle_points = []\ncircle_center = None\ncircle_radius = 50\npentagon_points = []\ntessellation_points = []\ncurrent_shape = []\nai_step = 0\nmax_steps = 50\ngame_state = \"waiting_for_start\"\nplayer_hint = None",
+        "peekOfCode": "triangle_points = []\ncircle_center = None\ncircle_radius = 50\npentagon_points = []\ntessellation_points = []\ncurrent_shape = []\nai_step = 0\nmax_steps = 50\ngame_state = \"waiting\"\nrunning_state = \"stopped\"",
         "detail": "geomaster_ai_challenge",
         "documentation": {}
     },
@@ -786,7 +911,7 @@
         "kind": 5,
         "importPath": "geomaster_ai_challenge",
         "description": "geomaster_ai_challenge",
-        "peekOfCode": "circle_center = None\ncircle_radius = 50\npentagon_points = []\ntessellation_points = []\ncurrent_shape = []\nai_step = 0\nmax_steps = 50\ngame_state = \"waiting_for_start\"\nplayer_hint = None\nrewards = deque(maxlen=100)  # For tracking average reward",
+        "peekOfCode": "circle_center = None\ncircle_radius = 50\npentagon_points = []\ntessellation_points = []\ncurrent_shape = []\nai_step = 0\nmax_steps = 50\ngame_state = \"waiting\"\nrunning_state = \"stopped\"\nrewards = deque(maxlen=100)",
         "detail": "geomaster_ai_challenge",
         "documentation": {}
     },
@@ -795,7 +920,7 @@
         "kind": 5,
         "importPath": "geomaster_ai_challenge",
         "description": "geomaster_ai_challenge",
-        "peekOfCode": "circle_radius = 50\npentagon_points = []\ntessellation_points = []\ncurrent_shape = []\nai_step = 0\nmax_steps = 50\ngame_state = \"waiting_for_start\"\nplayer_hint = None\nrewards = deque(maxlen=100)  # For tracking average reward\ncurrent_reward = 0",
+        "peekOfCode": "circle_radius = 50\npentagon_points = []\ntessellation_points = []\ncurrent_shape = []\nai_step = 0\nmax_steps = 50\ngame_state = \"waiting\"\nrunning_state = \"stopped\"\nrewards = deque(maxlen=100)\nepisode_rewards = deque(maxlen=100)",
         "detail": "geomaster_ai_challenge",
         "documentation": {}
     },
@@ -804,7 +929,7 @@
         "kind": 5,
         "importPath": "geomaster_ai_challenge",
         "description": "geomaster_ai_challenge",
-        "peekOfCode": "pentagon_points = []\ntessellation_points = []\ncurrent_shape = []\nai_step = 0\nmax_steps = 50\ngame_state = \"waiting_for_start\"\nplayer_hint = None\nrewards = deque(maxlen=100)  # For tracking average reward\ncurrent_reward = 0\nglobal_step = 0  # For logging",
+        "peekOfCode": "pentagon_points = []\ntessellation_points = []\ncurrent_shape = []\nai_step = 0\nmax_steps = 50\ngame_state = \"waiting\"\nrunning_state = \"stopped\"\nrewards = deque(maxlen=100)\nepisode_rewards = deque(maxlen=100)\nreward_history = deque(maxlen=10)",
         "detail": "geomaster_ai_challenge",
         "documentation": {}
     },
@@ -813,7 +938,7 @@
         "kind": 5,
         "importPath": "geomaster_ai_challenge",
         "description": "geomaster_ai_challenge",
-        "peekOfCode": "tessellation_points = []\ncurrent_shape = []\nai_step = 0\nmax_steps = 50\ngame_state = \"waiting_for_start\"\nplayer_hint = None\nrewards = deque(maxlen=100)  # For tracking average reward\ncurrent_reward = 0\nglobal_step = 0  # For logging\n# Setup CSV file for logging",
+        "peekOfCode": "tessellation_points = []\ncurrent_shape = []\nai_step = 0\nmax_steps = 50\ngame_state = \"waiting\"\nrunning_state = \"stopped\"\nrewards = deque(maxlen=100)\nepisode_rewards = deque(maxlen=100)\nreward_history = deque(maxlen=10)\ncurrent_reward = 0",
         "detail": "geomaster_ai_challenge",
         "documentation": {}
     },
@@ -822,7 +947,7 @@
         "kind": 5,
         "importPath": "geomaster_ai_challenge",
         "description": "geomaster_ai_challenge",
-        "peekOfCode": "current_shape = []\nai_step = 0\nmax_steps = 50\ngame_state = \"waiting_for_start\"\nplayer_hint = None\nrewards = deque(maxlen=100)  # For tracking average reward\ncurrent_reward = 0\nglobal_step = 0  # For logging\n# Setup CSV file for logging\nlog_file = \"ai_calculations.csv\"",
+        "peekOfCode": "current_shape = []\nai_step = 0\nmax_steps = 50\ngame_state = \"waiting\"\nrunning_state = \"stopped\"\nrewards = deque(maxlen=100)\nepisode_rewards = deque(maxlen=100)\nreward_history = deque(maxlen=10)\ncurrent_reward = 0\nglobal_step = 0",
         "detail": "geomaster_ai_challenge",
         "documentation": {}
     },
@@ -831,7 +956,7 @@
         "kind": 5,
         "importPath": "geomaster_ai_challenge",
         "description": "geomaster_ai_challenge",
-        "peekOfCode": "ai_step = 0\nmax_steps = 50\ngame_state = \"waiting_for_start\"\nplayer_hint = None\nrewards = deque(maxlen=100)  # For tracking average reward\ncurrent_reward = 0\nglobal_step = 0  # For logging\n# Setup CSV file for logging\nlog_file = \"ai_calculations.csv\"\nfile_exists = os.path.isfile(log_file)",
+        "peekOfCode": "ai_step = 0\nmax_steps = 50\ngame_state = \"waiting\"\nrunning_state = \"stopped\"\nrewards = deque(maxlen=100)\nepisode_rewards = deque(maxlen=100)\nreward_history = deque(maxlen=10)\ncurrent_reward = 0\nglobal_step = 0\nepisode_count = 0",
         "detail": "geomaster_ai_challenge",
         "documentation": {}
     },
@@ -840,7 +965,7 @@
         "kind": 5,
         "importPath": "geomaster_ai_challenge",
         "description": "geomaster_ai_challenge",
-        "peekOfCode": "max_steps = 50\ngame_state = \"waiting_for_start\"\nplayer_hint = None\nrewards = deque(maxlen=100)  # For tracking average reward\ncurrent_reward = 0\nglobal_step = 0  # For logging\n# Setup CSV file for logging\nlog_file = \"ai_calculations.csv\"\nfile_exists = os.path.isfile(log_file)\nwith open(log_file, mode=\"a\", newline=\"\") as f:",
+        "peekOfCode": "max_steps = 50\ngame_state = \"waiting\"\nrunning_state = \"stopped\"\nrewards = deque(maxlen=100)\nepisode_rewards = deque(maxlen=100)\nreward_history = deque(maxlen=10)\ncurrent_reward = 0\nglobal_step = 0\nepisode_count = 0\ntick_rate = 30",
         "detail": "geomaster_ai_challenge",
         "documentation": {}
     },
@@ -849,16 +974,16 @@
         "kind": 5,
         "importPath": "geomaster_ai_challenge",
         "description": "geomaster_ai_challenge",
-        "peekOfCode": "game_state = \"waiting_for_start\"\nplayer_hint = None\nrewards = deque(maxlen=100)  # For tracking average reward\ncurrent_reward = 0\nglobal_step = 0  # For logging\n# Setup CSV file for logging\nlog_file = \"ai_calculations.csv\"\nfile_exists = os.path.isfile(log_file)\nwith open(log_file, mode=\"a\", newline=\"\") as f:\n    writer = csv.writer(f)",
+        "peekOfCode": "game_state = \"waiting\"\nrunning_state = \"stopped\"\nrewards = deque(maxlen=100)\nepisode_rewards = deque(maxlen=100)\nreward_history = deque(maxlen=10)\ncurrent_reward = 0\nglobal_step = 0\nepisode_count = 0\ntick_rate = 30\ntrain_iters = 1",
         "detail": "geomaster_ai_challenge",
         "documentation": {}
     },
     {
-        "label": "player_hint",
+        "label": "running_state",
         "kind": 5,
         "importPath": "geomaster_ai_challenge",
         "description": "geomaster_ai_challenge",
-        "peekOfCode": "player_hint = None\nrewards = deque(maxlen=100)  # For tracking average reward\ncurrent_reward = 0\nglobal_step = 0  # For logging\n# Setup CSV file for logging\nlog_file = \"ai_calculations.csv\"\nfile_exists = os.path.isfile(log_file)\nwith open(log_file, mode=\"a\", newline=\"\") as f:\n    writer = csv.writer(f)\n    if not file_exists:",
+        "peekOfCode": "running_state = \"stopped\"\nrewards = deque(maxlen=100)\nepisode_rewards = deque(maxlen=100)\nreward_history = deque(maxlen=10)\ncurrent_reward = 0\nglobal_step = 0\nepisode_count = 0\ntick_rate = 30\ntrain_iters = 1\n# Logging",
         "detail": "geomaster_ai_challenge",
         "documentation": {}
     },
@@ -867,7 +992,25 @@
         "kind": 5,
         "importPath": "geomaster_ai_challenge",
         "description": "geomaster_ai_challenge",
-        "peekOfCode": "rewards = deque(maxlen=100)  # For tracking average reward\ncurrent_reward = 0\nglobal_step = 0  # For logging\n# Setup CSV file for logging\nlog_file = \"ai_calculations.csv\"\nfile_exists = os.path.isfile(log_file)\nwith open(log_file, mode=\"a\", newline=\"\") as f:\n    writer = csv.writer(f)\n    if not file_exists:\n        writer.writerow(",
+        "peekOfCode": "rewards = deque(maxlen=100)\nepisode_rewards = deque(maxlen=100)\nreward_history = deque(maxlen=10)\ncurrent_reward = 0\nglobal_step = 0\nepisode_count = 0\ntick_rate = 30\ntrain_iters = 1\n# Logging\nlog_file = \"ai_calculations.csv\"",
+        "detail": "geomaster_ai_challenge",
+        "documentation": {}
+    },
+    {
+        "label": "episode_rewards",
+        "kind": 5,
+        "importPath": "geomaster_ai_challenge",
+        "description": "geomaster_ai_challenge",
+        "peekOfCode": "episode_rewards = deque(maxlen=100)\nreward_history = deque(maxlen=10)\ncurrent_reward = 0\nglobal_step = 0\nepisode_count = 0\ntick_rate = 30\ntrain_iters = 1\n# Logging\nlog_file = \"ai_calculations.csv\"\nfile_exists = os.path.isfile(log_file)",
+        "detail": "geomaster_ai_challenge",
+        "documentation": {}
+    },
+    {
+        "label": "reward_history",
+        "kind": 5,
+        "importPath": "geomaster_ai_challenge",
+        "description": "geomaster_ai_challenge",
+        "peekOfCode": "reward_history = deque(maxlen=10)\ncurrent_reward = 0\nglobal_step = 0\nepisode_count = 0\ntick_rate = 30\ntrain_iters = 1\n# Logging\nlog_file = \"ai_calculations.csv\"\nfile_exists = os.path.isfile(log_file)\nwith open(log_file, mode=\"a\", newline=\"\") as f:",
         "detail": "geomaster_ai_challenge",
         "documentation": {}
     },
@@ -876,7 +1019,7 @@
         "kind": 5,
         "importPath": "geomaster_ai_challenge",
         "description": "geomaster_ai_challenge",
-        "peekOfCode": "current_reward = 0\nglobal_step = 0  # For logging\n# Setup CSV file for logging\nlog_file = \"ai_calculations.csv\"\nfile_exists = os.path.isfile(log_file)\nwith open(log_file, mode=\"a\", newline=\"\") as f:\n    writer = csv.writer(f)\n    if not file_exists:\n        writer.writerow(\n            [\"Step\", \"State\", \"Action\", \"Reward\", \"Average Reward\", \"Learning Message\"]",
+        "peekOfCode": "current_reward = 0\nglobal_step = 0\nepisode_count = 0\ntick_rate = 30\ntrain_iters = 1\n# Logging\nlog_file = \"ai_calculations.csv\"\nfile_exists = os.path.isfile(log_file)\nwith open(log_file, mode=\"a\", newline=\"\") as f:\n    writer = csv.writer(f)",
         "detail": "geomaster_ai_challenge",
         "documentation": {}
     },
@@ -885,7 +1028,34 @@
         "kind": 5,
         "importPath": "geomaster_ai_challenge",
         "description": "geomaster_ai_challenge",
-        "peekOfCode": "global_step = 0  # For logging\n# Setup CSV file for logging\nlog_file = \"ai_calculations.csv\"\nfile_exists = os.path.isfile(log_file)\nwith open(log_file, mode=\"a\", newline=\"\") as f:\n    writer = csv.writer(f)\n    if not file_exists:\n        writer.writerow(\n            [\"Step\", \"State\", \"Action\", \"Reward\", \"Average Reward\", \"Learning Message\"]\n        )",
+        "peekOfCode": "global_step = 0\nepisode_count = 0\ntick_rate = 30\ntrain_iters = 1\n# Logging\nlog_file = \"ai_calculations.csv\"\nfile_exists = os.path.isfile(log_file)\nwith open(log_file, mode=\"a\", newline=\"\") as f:\n    writer = csv.writer(f)\n    if not file_exists:",
+        "detail": "geomaster_ai_challenge",
+        "documentation": {}
+    },
+    {
+        "label": "episode_count",
+        "kind": 5,
+        "importPath": "geomaster_ai_challenge",
+        "description": "geomaster_ai_challenge",
+        "peekOfCode": "episode_count = 0\ntick_rate = 30\ntrain_iters = 1\n# Logging\nlog_file = \"ai_calculations.csv\"\nfile_exists = os.path.isfile(log_file)\nwith open(log_file, mode=\"a\", newline=\"\") as f:\n    writer = csv.writer(f)\n    if not file_exists:\n        writer.writerow(",
+        "detail": "geomaster_ai_challenge",
+        "documentation": {}
+    },
+    {
+        "label": "tick_rate",
+        "kind": 5,
+        "importPath": "geomaster_ai_challenge",
+        "description": "geomaster_ai_challenge",
+        "peekOfCode": "tick_rate = 30\ntrain_iters = 1\n# Logging\nlog_file = \"ai_calculations.csv\"\nfile_exists = os.path.isfile(log_file)\nwith open(log_file, mode=\"a\", newline=\"\") as f:\n    writer = csv.writer(f)\n    if not file_exists:\n        writer.writerow(\n            [",
+        "detail": "geomaster_ai_challenge",
+        "documentation": {}
+    },
+    {
+        "label": "train_iters",
+        "kind": 5,
+        "importPath": "geomaster_ai_challenge",
+        "description": "geomaster_ai_challenge",
+        "peekOfCode": "train_iters = 1\n# Logging\nlog_file = \"ai_calculations.csv\"\nfile_exists = os.path.isfile(log_file)\nwith open(log_file, mode=\"a\", newline=\"\") as f:\n    writer = csv.writer(f)\n    if not file_exists:\n        writer.writerow(\n            [\n                \"Episode\",",
         "detail": "geomaster_ai_challenge",
         "documentation": {}
     },
@@ -894,7 +1064,7 @@
         "kind": 5,
         "importPath": "geomaster_ai_challenge",
         "description": "geomaster_ai_challenge",
-        "peekOfCode": "log_file = \"ai_calculations.csv\"\nfile_exists = os.path.isfile(log_file)\nwith open(log_file, mode=\"a\", newline=\"\") as f:\n    writer = csv.writer(f)\n    if not file_exists:\n        writer.writerow(\n            [\"Step\", \"State\", \"Action\", \"Reward\", \"Average Reward\", \"Learning Message\"]\n        )\n# Geometric Projections\ndef stereographic_projection(point, R=100):",
+        "peekOfCode": "log_file = \"ai_calculations.csv\"\nfile_exists = os.path.isfile(log_file)\nwith open(log_file, mode=\"a\", newline=\"\") as f:\n    writer = csv.writer(f)\n    if not file_exists:\n        writer.writerow(\n            [\n                \"Episode\",\n                \"Step\",\n                \"State\",",
         "detail": "geomaster_ai_challenge",
         "documentation": {}
     },
@@ -903,7 +1073,7 @@
         "kind": 5,
         "importPath": "geomaster_ai_challenge",
         "description": "geomaster_ai_challenge",
-        "peekOfCode": "file_exists = os.path.isfile(log_file)\nwith open(log_file, mode=\"a\", newline=\"\") as f:\n    writer = csv.writer(f)\n    if not file_exists:\n        writer.writerow(\n            [\"Step\", \"State\", \"Action\", \"Reward\", \"Average Reward\", \"Learning Message\"]\n        )\n# Geometric Projections\ndef stereographic_projection(point, R=100):\n    x, y, z = point",
+        "peekOfCode": "file_exists = os.path.isfile(log_file)\nwith open(log_file, mode=\"a\", newline=\"\") as f:\n    writer = csv.writer(f)\n    if not file_exists:\n        writer.writerow(\n            [\n                \"Episode\",\n                \"Step\",\n                \"State\",\n                \"Action\",",
         "detail": "geomaster_ai_challenge",
         "documentation": {}
     },
@@ -917,20 +1087,29 @@
         "documentation": {}
     },
     {
-        "label": "world_model",
+        "label": "command",
         "kind": 5,
         "importPath": "geomaster_ai_challenge",
         "description": "geomaster_ai_challenge",
-        "peekOfCode": "world_model = WorldModel(state_dim, action_dim).to(device)\noptimizer_wm = optim.Adam(world_model.parameters(), lr=0.001)\ndef plan_actions(state_tensor, model, current_shape, target, task, world, steps=3):\n    best_sequence = []\n    best_reward = -float(\"inf\")\n    # Convert state_tensor to numpy for easier manipulation\n    state = state_tensor.squeeze(0).cpu().numpy()  # Remove batch dimension\n    for _ in range(10):  # Try 10 random sequences\n        sequence = [np.random.randint(action_dim) for _ in range(steps)]\n        sim_state = state.copy()",
+        "peekOfCode": "command = \"\"\ndef console_input():\n    global command, running_state, tick_rate, train_iters\n    while True:\n        cmd = (\n            input(\n                \"Enter command (start, pause, resume, quit, faster, slower, iters_up, iters_down): \"\n            )\n            .strip()\n            .lower()",
         "detail": "geomaster_ai_challenge",
         "documentation": {}
     },
     {
-        "label": "optimizer_wm",
+        "label": "lock",
         "kind": 5,
         "importPath": "geomaster_ai_challenge",
         "description": "geomaster_ai_challenge",
-        "peekOfCode": "optimizer_wm = optim.Adam(world_model.parameters(), lr=0.001)\ndef plan_actions(state_tensor, model, current_shape, target, task, world, steps=3):\n    best_sequence = []\n    best_reward = -float(\"inf\")\n    # Convert state_tensor to numpy for easier manipulation\n    state = state_tensor.squeeze(0).cpu().numpy()  # Remove batch dimension\n    for _ in range(10):  # Try 10 random sequences\n        sequence = [np.random.randint(action_dim) for _ in range(steps)]\n        sim_state = state.copy()\n        sim_shape = current_shape.copy()  # Simulate shape updates",
+        "peekOfCode": "lock = threading.Lock()\nthreading.Thread(target=console_input, daemon=True).start()\n# Adaptive Learning Rate\ndef adjust_learning_rate(fps):\n    global optimizer\n    avg_reward = sum(episode_rewards) / len(episode_rewards) if episode_rewards else 0\n    current_lr = base_lr\n    if avg_reward > 10:\n        current_lr = min(base_lr * 2, 0.01)\n    elif avg_reward < -5:",
+        "detail": "geomaster_ai_challenge",
+        "documentation": {}
+    },
+    {
+        "label": "plot_surface",
+        "kind": 5,
+        "importPath": "geomaster_ai_challenge",
+        "description": "geomaster_ai_challenge",
+        "peekOfCode": "plot_surface = None\ndef update_reward_plot():\n    global plot_surface, episode_rewards\n    plt.figure(figsize=(4, 2))\n    plt.plot(list(episode_rewards), label=\"Reward\", color=\"cyan\")\n    plt.xlabel(\"Episode\")\n    plt.ylabel(\"Avg Reward\")\n    plt.title(\"Reward Trend\")\n    plt.legend()\n    buf = BytesIO()",
         "detail": "geomaster_ai_challenge",
         "documentation": {}
     },
@@ -939,7 +1118,7 @@
         "kind": 5,
         "importPath": "geomaster_ai_challenge",
         "description": "geomaster_ai_challenge",
-        "peekOfCode": "clock = pygame.time.Clock()\nrunning = True\nstep_counter = 0\nwhile running:\n    for event in pygame.event.get():\n        if event.type == pygame.QUIT:\n            running = False\n        elif event.type == pygame.MOUSEBUTTONDOWN and game_state == \"waiting_for_start\":\n            if current_task == TASK_LINE:\n                start_point = event.pos",
+        "peekOfCode": "clock = pygame.time.Clock()\nrunning = True\nlast_plot_update = 0\nstep_counter = 0\nwhile running:\n    for event in pygame.event.get():\n        if event.type == pygame.QUIT:\n            running = False\n    with lock:\n        if command == \"quit\":",
         "detail": "geomaster_ai_challenge",
         "documentation": {}
     },
@@ -948,7 +1127,16 @@
         "kind": 5,
         "importPath": "geomaster_ai_challenge",
         "description": "geomaster_ai_challenge",
-        "peekOfCode": "running = True\nstep_counter = 0\nwhile running:\n    for event in pygame.event.get():\n        if event.type == pygame.QUIT:\n            running = False\n        elif event.type == pygame.MOUSEBUTTONDOWN and game_state == \"waiting_for_start\":\n            if current_task == TASK_LINE:\n                start_point = event.pos\n                current_shape = [event.pos]",
+        "peekOfCode": "running = True\nlast_plot_update = 0\nstep_counter = 0\nwhile running:\n    for event in pygame.event.get():\n        if event.type == pygame.QUIT:\n            running = False\n    with lock:\n        if command == \"quit\":\n            running = False",
+        "detail": "geomaster_ai_challenge",
+        "documentation": {}
+    },
+    {
+        "label": "last_plot_update",
+        "kind": 5,
+        "importPath": "geomaster_ai_challenge",
+        "description": "geomaster_ai_challenge",
+        "peekOfCode": "last_plot_update = 0\nstep_counter = 0\nwhile running:\n    for event in pygame.event.get():\n        if event.type == pygame.QUIT:\n            running = False\n    with lock:\n        if command == \"quit\":\n            running = False\n    if running_state == \"running\" and game_state == \"waiting\":",
         "detail": "geomaster_ai_challenge",
         "documentation": {}
     },
@@ -957,7 +1145,7 @@
         "kind": 5,
         "importPath": "geomaster_ai_challenge",
         "description": "geomaster_ai_challenge",
-        "peekOfCode": "step_counter = 0\nwhile running:\n    for event in pygame.event.get():\n        if event.type == pygame.QUIT:\n            running = False\n        elif event.type == pygame.MOUSEBUTTONDOWN and game_state == \"waiting_for_start\":\n            if current_task == TASK_LINE:\n                start_point = event.pos\n                current_shape = [event.pos]\n            elif current_task == TASK_TRIANGLE:",
+        "peekOfCode": "step_counter = 0\nwhile running:\n    for event in pygame.event.get():\n        if event.type == pygame.QUIT:\n            running = False\n    with lock:\n        if command == \"quit\":\n            running = False\n    if running_state == \"running\" and game_state == \"waiting\":\n        reset_episode()",
         "detail": "geomaster_ai_challenge",
         "documentation": {}
     }
