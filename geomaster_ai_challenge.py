@@ -1138,7 +1138,9 @@ def load_model_weights(task, world):
 def explain_decision(state_tensor):
     with torch.no_grad():
         q_values = policy_net(state_tensor).cpu().numpy().flatten()
-    action_probabilities = np.exp(q_values) / np.sum(np.exp(q_values))
+    # Numerically stable softmax
+    q_values_exp = np.exp(q_values - np.max(q_values))
+    action_probabilities = q_values_exp / np.sum(q_values_exp)
     explanation = {
         "action_probabilities": action_probabilities.tolist(),
         "q_values": q_values.tolist(),

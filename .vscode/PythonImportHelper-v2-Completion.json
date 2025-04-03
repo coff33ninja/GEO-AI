@@ -505,7 +505,7 @@
         "kind": 2,
         "importPath": "geomaster_ai_challenge",
         "description": "geomaster_ai_challenge",
-        "peekOfCode": "def explain_decision(state_tensor):\n    with torch.no_grad():\n        q_values = policy_net(state_tensor).cpu().numpy().flatten()\n    action_probabilities = np.exp(q_values) / np.sum(np.exp(q_values))\n    explanation = {\n        \"action_probabilities\": action_probabilities.tolist(),\n        \"q_values\": q_values.tolist(),\n    }\n    log_message(f\"Decision explanation: {explanation}\")\n    return explanation",
+        "peekOfCode": "def explain_decision(state_tensor):\n    with torch.no_grad():\n        q_values = policy_net(state_tensor).cpu().numpy().flatten()\n    # Numerically stable softmax\n    q_values_exp = np.exp(q_values - np.max(q_values))\n    action_probabilities = q_values_exp / np.sum(q_values_exp)\n    explanation = {\n        \"action_probabilities\": action_probabilities.tolist(),\n        \"q_values\": q_values.tolist(),\n    }",
         "detail": "geomaster_ai_challenge",
         "documentation": {}
     },
