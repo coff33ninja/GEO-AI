@@ -1115,7 +1115,9 @@ while running:
                 next_segment = draw_line_segment(
                     current_shape[-1], end_point, curvature, current_world
                 )
-                current_shape.extend(next_segment[1:])
+                current_shape.extend(
+                    [p for p in next_segment if p is not None]
+                )  # Filter out None
             elif current_task == TASK_TRIANGLE:
                 angle_adjust = 0
                 if action == 2:
@@ -1293,45 +1295,18 @@ while running:
             pygame.draw.circle(screen, RED, to_int_point(p), 5)
 
     if current_shape:
-        if current_task == TASK_LINE:
-            pygame.draw.circle(screen, BLUE, to_int_point(start_point), 5)
-            for i in range(len(current_shape) - 1):
-                start_pos = current_shape[i]
-                end_pos = current_shape[i + 1]
-                if start_pos and end_pos:
-                    pygame.draw.line(
-                        screen, CYAN, to_int_point(start_pos), to_int_point(end_pos), 2
-                    )
-        elif current_task == TASK_TRIANGLE and len(current_shape) == 3:
-            for i in range(3):
-                start_pos = current_shape[i]
-                end_pos = current_shape[(i + 1) % 3]
-                if start_pos and end_pos:
-                    pygame.draw.line(
-                        screen, CYAN, to_int_point(start_pos), to_int_point(end_pos), 2
-                    )
-        elif current_task == TASK_CIRCLE:
-            for i in range(len(current_shape) - 1):
-                start_pos = current_shape[i]
-                end_pos = current_shape[i + 1]
-                if start_pos and end_pos:
-                    pygame.draw.line(
-                        screen, CYAN, to_int_point(start_pos), to_int_point(end_pos), 2
-                    )
-        elif current_task == TASK_PENTAGON and len(current_shape) == 5:
-            for i in range(5):
-                start_pos = current_shape[i]
-                end_pos = current_shape[(i + 1) % 5]
-                if start_pos and end_pos:
-                    pygame.draw.line(
-                        screen, CYAN, to_int_point(start_pos), to_int_point(end_pos), 2
-                    )
-        elif current_task == TASK_TESSELLATION:
-            for triangle in current_shape:
-                for i in range(3):
-                    start_pos = triangle[i]
-                    end_pos = triangle[(i + 1) % 3]
-                    if start_pos and end_pos:
+        try:
+            if current_task == TASK_LINE:
+                pygame.draw.circle(screen, BLUE, to_int_point(start_point), 5)
+                for i in range(len(current_shape) - 1):
+                    start_pos = current_shape[i]
+                    end_pos = current_shape[i + 1]
+                    if (
+                        start_pos
+                        and end_pos
+                        and isinstance(start_pos, (tuple, list))
+                        and isinstance(end_pos, (tuple, list))
+                    ):
                         pygame.draw.line(
                             screen,
                             CYAN,
@@ -1339,6 +1314,100 @@ while running:
                             to_int_point(end_pos),
                             2,
                         )
+                    else:
+                        print(
+                            f"Invalid line segment at index {i}: start={start_pos}, end={end_pos}"
+                        )
+            elif current_task == TASK_TRIANGLE and len(current_shape) == 3:
+                for i in range(3):
+                    start_pos = current_shape[i]
+                    end_pos = current_shape[(i + 1) % 3]
+                    if (
+                        start_pos
+                        and end_pos
+                        and isinstance(start_pos, (tuple, list))
+                        and isinstance(end_pos, (tuple, list))
+                    ):
+                        pygame.draw.line(
+                            screen,
+                            CYAN,
+                            to_int_point(start_pos),
+                            to_int_point(end_pos),
+                            2,
+                        )
+                    else:
+                        print(
+                            f"Invalid triangle segment at index {i}: start={start_pos}, end={end_pos}"
+                        )
+            elif current_task == TASK_CIRCLE:
+                for i in range(len(current_shape) - 1):
+                    start_pos = current_shape[i]
+                    end_pos = current_shape[i + 1]
+                    if (
+                        start_pos
+                        and end_pos
+                        and isinstance(start_pos, (tuple, list))
+                        and isinstance(end_pos, (tuple, list))
+                    ):
+                        pygame.draw.line(
+                            screen,
+                            CYAN,
+                            to_int_point(start_pos),
+                            to_int_point(end_pos),
+                            2,
+                        )
+                    else:
+                        print(
+                            f"Invalid circle segment at index {i}: start={start_pos}, end={end_pos}"
+                        )
+            elif current_task == TASK_PENTAGON and len(current_shape) == 5:
+                for i in range(5):
+                    start_pos = current_shape[i]
+                    end_pos = current_shape[(i + 1) % 5]
+                    if (
+                        start_pos
+                        and end_pos
+                        and isinstance(start_pos, (tuple, list))
+                        and isinstance(end_pos, (tuple, list))
+                    ):
+                        pygame.draw.line(
+                            screen,
+                            CYAN,
+                            to_int_point(start_pos),
+                            to_int_point(end_pos),
+                            2,
+                        )
+                    else:
+                        print(
+                            f"Invalid pentagon segment at index {i}: start={start_pos}, end={end_pos}"
+                        )
+            elif current_task == TASK_TESSELLATION:
+                for triangle in current_shape:
+                    if not isinstance(triangle, (list, tuple)) or len(triangle) != 3:
+                        print(f"Invalid triangle in tessellation: {triangle}")
+                        continue
+                    for i in range(3):
+                        start_pos = triangle[i]
+                        end_pos = triangle[(i + 1) % 3]
+                        if (
+                            start_pos
+                            and end_pos
+                            and isinstance(start_pos, (tuple, list))
+                            and isinstance(end_pos, (tuple, list))
+                        ):
+                            pygame.draw.line(
+                                screen,
+                                CYAN,
+                                to_int_point(start_pos),
+                                to_int_point(end_pos),
+                                2,
+                            )
+                        else:
+                            print(
+                                f"Invalid tessellation segment: start={start_pos}, end={end_pos}"
+                            )
+        except Exception as e:
+            print(f"Error in drawing shape: {e}, current_shape={current_shape}")
 
     if time.time() - last_plot_update > 1:
         plot_surface = update_reward_plot()
