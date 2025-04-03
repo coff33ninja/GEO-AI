@@ -740,7 +740,7 @@ def plan_actions(state_tensor, model, current_shape, target, task, world, steps=
                 torch.tensor([action], dtype=torch.float).unsqueeze(0).to(device)
             )
             sim_state_tensor = model(sim_state_tensor, action_tensor)
-            sim_state = sim_state_tensor.squeeze(0).cpu().numpy()
+            sim_state = sim_state_tensor.detach().squeeze(0).cpu().numpy()
 
         if total_reward > best_reward:
             best_reward = total_reward
