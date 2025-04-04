@@ -131,6 +131,63 @@
         "documentation": {}
     },
     {
+        "label": "cv2",
+        "kind": 6,
+        "isExtraImport": true,
+        "importPath": "cv2",
+        "description": "cv2",
+        "detail": "cv2",
+        "documentation": {}
+    },
+    {
+        "label": "DQN",
+        "importPath": "geomaster_ai_challenge",
+        "description": "geomaster_ai_challenge",
+        "isExtraImport": true,
+        "detail": "geomaster_ai_challenge",
+        "documentation": {}
+    },
+    {
+        "label": "project_point",
+        "importPath": "geomaster_ai_challenge",
+        "description": "geomaster_ai_challenge",
+        "isExtraImport": true,
+        "detail": "geomaster_ai_challenge",
+        "documentation": {}
+    },
+    {
+        "label": "WORLD_EUCLIDEAN",
+        "importPath": "geomaster_ai_challenge",
+        "description": "geomaster_ai_challenge",
+        "isExtraImport": true,
+        "detail": "geomaster_ai_challenge",
+        "documentation": {}
+    },
+    {
+        "label": "WORLD_HYPERBOLIC",
+        "importPath": "geomaster_ai_challenge",
+        "description": "geomaster_ai_challenge",
+        "isExtraImport": true,
+        "detail": "geomaster_ai_challenge",
+        "documentation": {}
+    },
+    {
+        "label": "WORLD_FRACTAL",
+        "importPath": "geomaster_ai_challenge",
+        "description": "geomaster_ai_challenge",
+        "isExtraImport": true,
+        "detail": "geomaster_ai_challenge",
+        "documentation": {}
+    },
+    {
+        "label": "GeoMasterAIModel",
+        "importPath": "geomaster_ai_challenge",
+        "description": "geomaster_ai_challenge",
+        "isExtraImport": true,
+        "detail": "geomaster_ai_challenge",
+        "documentation": {}
+    },
+    {
         "label": "SumTree",
         "kind": 6,
         "importPath": "geomaster_ai_challenge",
@@ -1586,6 +1643,312 @@
         "description": "geomaster_ai_challenge",
         "peekOfCode": "command_keys = {\n    pygame.K_s: \"start\",\n    pygame.K_p: \"pause\",\n    pygame.K_r: \"resume\",\n    pygame.K_q: \"quit\",\n    pygame.K_f: \"faster\",\n    pygame.K_l: \"slower\",\n    pygame.K_u: \"iters_up\",\n    pygame.K_d: \"iters_down\",\n    pygame.K_b: \"toggle_debug\",",
         "detail": "geomaster_ai_challenge",
+        "documentation": {}
+    },
+    {
+        "label": "create_stick_figure",
+        "kind": 2,
+        "importPath": "geomaster_picture_drawer",
+        "description": "geomaster_picture_drawer",
+        "peekOfCode": "def create_stick_figure():\n    img = np.zeros((100, 100, 3), dtype=np.uint8)\n    cv2.circle(img, (50, 20), 10, (255, 255, 0), -1)  # Yellow head\n    cv2.line(img, (50, 30), (50, 60), (0, 255, 0), 2)  # Green body\n    cv2.line(img, (50, 40), (30, 50), (0, 0, 255), 2)  # Red left arm\n    cv2.line(img, (50, 40), (70, 50), (0, 0, 255), 2)  # Red right arm\n    cv2.line(img, (50, 60), (40, 80), (255, 0, 0), 2)  # Blue left leg\n    cv2.line(img, (50, 60), (60, 80), (255, 0, 0), 2)  # Blue right leg\n    return cv2.resize(img, (WIDTH, HEIGHT), interpolation=cv2.INTER_NEAREST)\ndef create_tree():",
+        "detail": "geomaster_picture_drawer",
+        "documentation": {}
+    },
+    {
+        "label": "create_tree",
+        "kind": 2,
+        "importPath": "geomaster_picture_drawer",
+        "description": "geomaster_picture_drawer",
+        "peekOfCode": "def create_tree():\n    img = np.zeros((100, 100, 3), dtype=np.uint8)\n    cv2.rectangle(img, (45, 60), (55, 100), (0, 165, 255), -1)  # Brown trunk\n    cv2.circle(img, (50, 40), 20, (0, 255, 0), -1)  # Green crown\n    return cv2.resize(img, (WIDTH, HEIGHT), interpolation=cv2.INTER_NEAREST)\ndef load_png(filename):\n    if os.path.exists(filename):\n        img = cv2.imread(filename)  # BGR\n        if img is None:\n            raise ValueError(f\"Failed to load {filename}\")",
+        "detail": "geomaster_picture_drawer",
+        "documentation": {}
+    },
+    {
+        "label": "load_png",
+        "kind": 2,
+        "importPath": "geomaster_picture_drawer",
+        "description": "geomaster_picture_drawer",
+        "peekOfCode": "def load_png(filename):\n    if os.path.exists(filename):\n        img = cv2.imread(filename)  # BGR\n        if img is None:\n            raise ValueError(f\"Failed to load {filename}\")\n        return cv2.resize(img, (WIDTH, HEIGHT), interpolation=cv2.INTER_NEAREST)\n    else:\n        raise FileNotFoundError(f\"{filename} not found\")\ntarget_images = [\n    (\"stick_figure\", create_stick_figure()),",
+        "detail": "geomaster_picture_drawer",
+        "documentation": {}
+    },
+    {
+        "label": "get_state",
+        "kind": 2,
+        "importPath": "geomaster_picture_drawer",
+        "description": "geomaster_picture_drawer",
+        "peekOfCode": "def get_state(canvas, pen_pos, target_img):\n    patch_size = 20\n    x, y = int(pen_pos[0]), int(pen_pos[1])\n    x_min, x_max = max(0, x - patch_size), min(WIDTH, x + patch_size)\n    y_min, y_max = max(0, y - patch_size), min(HEIGHT, y + patch_size)\n    canvas_patch = canvas[y_min:y_max, x_min:x_max]\n    target_patch = target_img[y_min:y_max, x_min:x_max]\n    similarity = -np.mean((canvas_patch - target_patch) ** 2) / 255.0\n    state = np.array([\n        pen_pos[0] / WIDTH, pen_pos[1] / HEIGHT,",
+        "detail": "geomaster_picture_drawer",
+        "documentation": {}
+    },
+    {
+        "label": "calculate_reward",
+        "kind": 2,
+        "importPath": "geomaster_picture_drawer",
+        "description": "geomaster_picture_drawer",
+        "peekOfCode": "def calculate_reward(canvas, target_img):\n    mse = np.mean((canvas - target_img) ** 2) / 255.0\n    return -mse\n# Load previous data for action bias\ndef load_previous_data(image_name, world):\n    action_rewards = {i: [] for i in range(action_dim)}\n    previous_data = []\n    if os.path.exists(log_file):\n        with open(log_file, mode=\"r\") as f:\n            reader = csv.DictReader(f)",
+        "detail": "geomaster_picture_drawer",
+        "documentation": {}
+    },
+    {
+        "label": "load_previous_data",
+        "kind": 2,
+        "importPath": "geomaster_picture_drawer",
+        "description": "geomaster_picture_drawer",
+        "peekOfCode": "def load_previous_data(image_name, world):\n    action_rewards = {i: [] for i in range(action_dim)}\n    previous_data = []\n    if os.path.exists(log_file):\n        with open(log_file, mode=\"r\") as f:\n            reader = csv.DictReader(f)\n            for row in reader:\n                if row[\"Image\"] == image_name and row[\"World\"] == world:\n                    action = int(row[\"Action\"])\n                    reward = float(row[\"Reward\"])",
+        "detail": "geomaster_picture_drawer",
+        "documentation": {}
+    },
+    {
+        "label": "apply_action",
+        "kind": 2,
+        "importPath": "geomaster_picture_drawer",
+        "description": "geomaster_picture_drawer",
+        "peekOfCode": "def apply_action(pen_pos, action, canvas, world):\n    dx, dy, draw, color, stroke_size = action_map[action]\n    new_x = max(0, min(WIDTH - 1, pen_pos[0] + dx))\n    new_y = max(0, min(HEIGHT - 1, pen_pos[1] + dy))\n    new_pos = [new_x, new_y]\n    proj_start = project_point((pen_pos[0] - WIDTH / 2, pen_pos[1] - HEIGHT / 2), world)\n    proj_end = project_point((new_x - WIDTH / 2, new_y - HEIGHT / 2), world)\n    if draw:\n        pygame.draw.line(screen, color, proj_start, proj_end, stroke_size)\n        cv2.line(canvas, (int(pen_pos[0]), int(pen_pos[1])), ",
+        "detail": "geomaster_picture_drawer",
+        "documentation": {}
+    },
+    {
+        "label": "WIDTH",
+        "kind": 5,
+        "importPath": "geomaster_picture_drawer",
+        "description": "geomaster_picture_drawer",
+        "peekOfCode": "WIDTH = 500\nHEIGHT = 500\nscreen = pygame.display.set_mode((WIDTH, HEIGHT))\npygame.display.set_caption(\"GeoMaster Picture Drawer\")\n# Colors\nBLACK = (0, 0, 0)\nWHITE = (255, 255, 255)\nRED = (255, 0, 0)\nCYAN = (0, 255, 255)\nGREEN = (0, 255, 0)",
+        "detail": "geomaster_picture_drawer",
+        "documentation": {}
+    },
+    {
+        "label": "HEIGHT",
+        "kind": 5,
+        "importPath": "geomaster_picture_drawer",
+        "description": "geomaster_picture_drawer",
+        "peekOfCode": "HEIGHT = 500\nscreen = pygame.display.set_mode((WIDTH, HEIGHT))\npygame.display.set_caption(\"GeoMaster Picture Drawer\")\n# Colors\nBLACK = (0, 0, 0)\nWHITE = (255, 255, 255)\nRED = (255, 0, 0)\nCYAN = (0, 255, 255)\nGREEN = (0, 255, 0)\nBLUE = (0, 0, 255)",
+        "detail": "geomaster_picture_drawer",
+        "documentation": {}
+    },
+    {
+        "label": "screen",
+        "kind": 5,
+        "importPath": "geomaster_picture_drawer",
+        "description": "geomaster_picture_drawer",
+        "peekOfCode": "screen = pygame.display.set_mode((WIDTH, HEIGHT))\npygame.display.set_caption(\"GeoMaster Picture Drawer\")\n# Colors\nBLACK = (0, 0, 0)\nWHITE = (255, 255, 255)\nRED = (255, 0, 0)\nCYAN = (0, 255, 255)\nGREEN = (0, 255, 0)\nBLUE = (0, 0, 255)\nYELLOW = (255, 255, 0)",
+        "detail": "geomaster_picture_drawer",
+        "documentation": {}
+    },
+    {
+        "label": "BLACK",
+        "kind": 5,
+        "importPath": "geomaster_picture_drawer",
+        "description": "geomaster_picture_drawer",
+        "peekOfCode": "BLACK = (0, 0, 0)\nWHITE = (255, 255, 255)\nRED = (255, 0, 0)\nCYAN = (0, 255, 255)\nGREEN = (0, 255, 0)\nBLUE = (0, 0, 255)\nYELLOW = (255, 255, 0)\nMAGENTA = (255, 0, 255)\n# Font\nfont = pygame.font.SysFont(\"monospace\", 20)",
+        "detail": "geomaster_picture_drawer",
+        "documentation": {}
+    },
+    {
+        "label": "WHITE",
+        "kind": 5,
+        "importPath": "geomaster_picture_drawer",
+        "description": "geomaster_picture_drawer",
+        "peekOfCode": "WHITE = (255, 255, 255)\nRED = (255, 0, 0)\nCYAN = (0, 255, 255)\nGREEN = (0, 255, 0)\nBLUE = (0, 0, 255)\nYELLOW = (255, 255, 0)\nMAGENTA = (255, 0, 255)\n# Font\nfont = pygame.font.SysFont(\"monospace\", 20)\n# Device",
+        "detail": "geomaster_picture_drawer",
+        "documentation": {}
+    },
+    {
+        "label": "RED",
+        "kind": 5,
+        "importPath": "geomaster_picture_drawer",
+        "description": "geomaster_picture_drawer",
+        "peekOfCode": "RED = (255, 0, 0)\nCYAN = (0, 255, 255)\nGREEN = (0, 255, 0)\nBLUE = (0, 0, 255)\nYELLOW = (255, 255, 0)\nMAGENTA = (255, 0, 255)\n# Font\nfont = pygame.font.SysFont(\"monospace\", 20)\n# Device\ndevice = torch.device(\"cuda\" if torch.cuda.is_available() else \"cpu\")",
+        "detail": "geomaster_picture_drawer",
+        "documentation": {}
+    },
+    {
+        "label": "CYAN",
+        "kind": 5,
+        "importPath": "geomaster_picture_drawer",
+        "description": "geomaster_picture_drawer",
+        "peekOfCode": "CYAN = (0, 255, 255)\nGREEN = (0, 255, 0)\nBLUE = (0, 0, 255)\nYELLOW = (255, 255, 0)\nMAGENTA = (255, 0, 255)\n# Font\nfont = pygame.font.SysFont(\"monospace\", 20)\n# Device\ndevice = torch.device(\"cuda\" if torch.cuda.is_available() else \"cpu\")\n# Load pre-trained GeoMasterAIModel",
+        "detail": "geomaster_picture_drawer",
+        "documentation": {}
+    },
+    {
+        "label": "GREEN",
+        "kind": 5,
+        "importPath": "geomaster_picture_drawer",
+        "description": "geomaster_picture_drawer",
+        "peekOfCode": "GREEN = (0, 255, 0)\nBLUE = (0, 0, 255)\nYELLOW = (255, 255, 0)\nMAGENTA = (255, 0, 255)\n# Font\nfont = pygame.font.SysFont(\"monospace\", 20)\n# Device\ndevice = torch.device(\"cuda\" if torch.cuda.is_available() else \"cpu\")\n# Load pre-trained GeoMasterAIModel\nstate_dim = 10  # Match 2D state from geomaster_ai_challenge.py",
+        "detail": "geomaster_picture_drawer",
+        "documentation": {}
+    },
+    {
+        "label": "BLUE",
+        "kind": 5,
+        "importPath": "geomaster_picture_drawer",
+        "description": "geomaster_picture_drawer",
+        "peekOfCode": "BLUE = (0, 0, 255)\nYELLOW = (255, 255, 0)\nMAGENTA = (255, 0, 255)\n# Font\nfont = pygame.font.SysFont(\"monospace\", 20)\n# Device\ndevice = torch.device(\"cuda\" if torch.cuda.is_available() else \"cpu\")\n# Load pre-trained GeoMasterAIModel\nstate_dim = 10  # Match 2D state from geomaster_ai_challenge.py\naction_dim = 36  # Expanded: 4 dirs (no draw) + 4 dirs x 4 colors x 3 stroke sizes",
+        "detail": "geomaster_picture_drawer",
+        "documentation": {}
+    },
+    {
+        "label": "YELLOW",
+        "kind": 5,
+        "importPath": "geomaster_picture_drawer",
+        "description": "geomaster_picture_drawer",
+        "peekOfCode": "YELLOW = (255, 255, 0)\nMAGENTA = (255, 0, 255)\n# Font\nfont = pygame.font.SysFont(\"monospace\", 20)\n# Device\ndevice = torch.device(\"cuda\" if torch.cuda.is_available() else \"cpu\")\n# Load pre-trained GeoMasterAIModel\nstate_dim = 10  # Match 2D state from geomaster_ai_challenge.py\naction_dim = 36  # Expanded: 4 dirs (no draw) + 4 dirs x 4 colors x 3 stroke sizes\ngeo_model = GeoMasterAIModel(state_dim, action_dim, gamma=0.99, base_lr=0.001).to(device)",
+        "detail": "geomaster_picture_drawer",
+        "documentation": {}
+    },
+    {
+        "label": "MAGENTA",
+        "kind": 5,
+        "importPath": "geomaster_picture_drawer",
+        "description": "geomaster_picture_drawer",
+        "peekOfCode": "MAGENTA = (255, 0, 255)\n# Font\nfont = pygame.font.SysFont(\"monospace\", 20)\n# Device\ndevice = torch.device(\"cuda\" if torch.cuda.is_available() else \"cpu\")\n# Load pre-trained GeoMasterAIModel\nstate_dim = 10  # Match 2D state from geomaster_ai_challenge.py\naction_dim = 36  # Expanded: 4 dirs (no draw) + 4 dirs x 4 colors x 3 stroke sizes\ngeo_model = GeoMasterAIModel(state_dim, action_dim, gamma=0.99, base_lr=0.001).to(device)\nweights_path = \"policy_net.pth\"",
+        "detail": "geomaster_picture_drawer",
+        "documentation": {}
+    },
+    {
+        "label": "font",
+        "kind": 5,
+        "importPath": "geomaster_picture_drawer",
+        "description": "geomaster_picture_drawer",
+        "peekOfCode": "font = pygame.font.SysFont(\"monospace\", 20)\n# Device\ndevice = torch.device(\"cuda\" if torch.cuda.is_available() else \"cpu\")\n# Load pre-trained GeoMasterAIModel\nstate_dim = 10  # Match 2D state from geomaster_ai_challenge.py\naction_dim = 36  # Expanded: 4 dirs (no draw) + 4 dirs x 4 colors x 3 stroke sizes\ngeo_model = GeoMasterAIModel(state_dim, action_dim, gamma=0.99, base_lr=0.001).to(device)\nweights_path = \"policy_net.pth\"\nif os.path.exists(weights_path):\n    # Load weights into policy_net directly",
+        "detail": "geomaster_picture_drawer",
+        "documentation": {}
+    },
+    {
+        "label": "device",
+        "kind": 5,
+        "importPath": "geomaster_picture_drawer",
+        "description": "geomaster_picture_drawer",
+        "peekOfCode": "device = torch.device(\"cuda\" if torch.cuda.is_available() else \"cpu\")\n# Load pre-trained GeoMasterAIModel\nstate_dim = 10  # Match 2D state from geomaster_ai_challenge.py\naction_dim = 36  # Expanded: 4 dirs (no draw) + 4 dirs x 4 colors x 3 stroke sizes\ngeo_model = GeoMasterAIModel(state_dim, action_dim, gamma=0.99, base_lr=0.001).to(device)\nweights_path = \"policy_net.pth\"\nif os.path.exists(weights_path):\n    # Load weights into policy_net directly\n    geo_model.policy_net.load_state_dict(torch.load(weights_path))\n    print(f\"Loaded weights from {weights_path} into policy_net\")",
+        "detail": "geomaster_picture_drawer",
+        "documentation": {}
+    },
+    {
+        "label": "state_dim",
+        "kind": 5,
+        "importPath": "geomaster_picture_drawer",
+        "description": "geomaster_picture_drawer",
+        "peekOfCode": "state_dim = 10  # Match 2D state from geomaster_ai_challenge.py\naction_dim = 36  # Expanded: 4 dirs (no draw) + 4 dirs x 4 colors x 3 stroke sizes\ngeo_model = GeoMasterAIModel(state_dim, action_dim, gamma=0.99, base_lr=0.001).to(device)\nweights_path = \"policy_net.pth\"\nif os.path.exists(weights_path):\n    # Load weights into policy_net directly\n    geo_model.policy_net.load_state_dict(torch.load(weights_path))\n    print(f\"Loaded weights from {weights_path} into policy_net\")\nelse:\n    print(f\"No weights found at {weights_path}; initializing with random weights\")",
+        "detail": "geomaster_picture_drawer",
+        "documentation": {}
+    },
+    {
+        "label": "action_dim",
+        "kind": 5,
+        "importPath": "geomaster_picture_drawer",
+        "description": "geomaster_picture_drawer",
+        "peekOfCode": "action_dim = 36  # Expanded: 4 dirs (no draw) + 4 dirs x 4 colors x 3 stroke sizes\ngeo_model = GeoMasterAIModel(state_dim, action_dim, gamma=0.99, base_lr=0.001).to(device)\nweights_path = \"policy_net.pth\"\nif os.path.exists(weights_path):\n    # Load weights into policy_net directly\n    geo_model.policy_net.load_state_dict(torch.load(weights_path))\n    print(f\"Loaded weights from {weights_path} into policy_net\")\nelse:\n    print(f\"No weights found at {weights_path}; initializing with random weights\")\ngeo_model.eval()",
+        "detail": "geomaster_picture_drawer",
+        "documentation": {}
+    },
+    {
+        "label": "geo_model",
+        "kind": 5,
+        "importPath": "geomaster_picture_drawer",
+        "description": "geomaster_picture_drawer",
+        "peekOfCode": "geo_model = GeoMasterAIModel(state_dim, action_dim, gamma=0.99, base_lr=0.001).to(device)\nweights_path = \"policy_net.pth\"\nif os.path.exists(weights_path):\n    # Load weights into policy_net directly\n    geo_model.policy_net.load_state_dict(torch.load(weights_path))\n    print(f\"Loaded weights from {weights_path} into policy_net\")\nelse:\n    print(f\"No weights found at {weights_path}; initializing with random weights\")\ngeo_model.eval()\npolicy_net = geo_model.policy_net  # Use the policy_net from GeoMasterAIModel",
+        "detail": "geomaster_picture_drawer",
+        "documentation": {}
+    },
+    {
+        "label": "weights_path",
+        "kind": 5,
+        "importPath": "geomaster_picture_drawer",
+        "description": "geomaster_picture_drawer",
+        "peekOfCode": "weights_path = \"policy_net.pth\"\nif os.path.exists(weights_path):\n    # Load weights into policy_net directly\n    geo_model.policy_net.load_state_dict(torch.load(weights_path))\n    print(f\"Loaded weights from {weights_path} into policy_net\")\nelse:\n    print(f\"No weights found at {weights_path}; initializing with random weights\")\ngeo_model.eval()\npolicy_net = geo_model.policy_net  # Use the policy_net from GeoMasterAIModel\n# Geometric worlds (subset from geomaster_ai_challenge.py)",
+        "detail": "geomaster_picture_drawer",
+        "documentation": {}
+    },
+    {
+        "label": "policy_net",
+        "kind": 5,
+        "importPath": "geomaster_picture_drawer",
+        "description": "geomaster_picture_drawer",
+        "peekOfCode": "policy_net = geo_model.policy_net  # Use the policy_net from GeoMasterAIModel\n# Geometric worlds (subset from geomaster_ai_challenge.py)\nworlds = [WORLD_EUCLIDEAN, WORLD_HYPERBOLIC, WORLD_FRACTAL]\n# Target images (RGB)\ndef create_stick_figure():\n    img = np.zeros((100, 100, 3), dtype=np.uint8)\n    cv2.circle(img, (50, 20), 10, (255, 255, 0), -1)  # Yellow head\n    cv2.line(img, (50, 30), (50, 60), (0, 255, 0), 2)  # Green body\n    cv2.line(img, (50, 40), (30, 50), (0, 0, 255), 2)  # Red left arm\n    cv2.line(img, (50, 40), (70, 50), (0, 0, 255), 2)  # Red right arm",
+        "detail": "geomaster_picture_drawer",
+        "documentation": {}
+    },
+    {
+        "label": "worlds",
+        "kind": 5,
+        "importPath": "geomaster_picture_drawer",
+        "description": "geomaster_picture_drawer",
+        "peekOfCode": "worlds = [WORLD_EUCLIDEAN, WORLD_HYPERBOLIC, WORLD_FRACTAL]\n# Target images (RGB)\ndef create_stick_figure():\n    img = np.zeros((100, 100, 3), dtype=np.uint8)\n    cv2.circle(img, (50, 20), 10, (255, 255, 0), -1)  # Yellow head\n    cv2.line(img, (50, 30), (50, 60), (0, 255, 0), 2)  # Green body\n    cv2.line(img, (50, 40), (30, 50), (0, 0, 255), 2)  # Red left arm\n    cv2.line(img, (50, 40), (70, 50), (0, 0, 255), 2)  # Red right arm\n    cv2.line(img, (50, 60), (40, 80), (255, 0, 0), 2)  # Blue left leg\n    cv2.line(img, (50, 60), (60, 80), (255, 0, 0), 2)  # Blue right leg",
+        "detail": "geomaster_picture_drawer",
+        "documentation": {}
+    },
+    {
+        "label": "target_images",
+        "kind": 5,
+        "importPath": "geomaster_picture_drawer",
+        "description": "geomaster_picture_drawer",
+        "peekOfCode": "target_images = [\n    (\"stick_figure\", create_stick_figure()),\n    (\"tree\", create_tree()),\n    (\"custom_star\", load_png(\"star.png\"))\n]\n# Logging\nlog_file = \"picture_drawer_log.csv\"\nfile_exists = os.path.isfile(log_file)\nwith open(log_file, mode=\"a\", newline=\"\") as f:\n    writer = csv.writer(f)",
+        "detail": "geomaster_picture_drawer",
+        "documentation": {}
+    },
+    {
+        "label": "log_file",
+        "kind": 5,
+        "importPath": "geomaster_picture_drawer",
+        "description": "geomaster_picture_drawer",
+        "peekOfCode": "log_file = \"picture_drawer_log.csv\"\nfile_exists = os.path.isfile(log_file)\nwith open(log_file, mode=\"a\", newline=\"\") as f:\n    writer = csv.writer(f)\n    if not file_exists:\n        writer.writerow([\"Image\", \"World\", \"Step\", \"Pen_X\", \"Pen_Y\", \"Action\", \"Reward\", \"Similarity\", \"Color_R\", \"Color_G\", \"Color_B\", \"Stroke_Size\"])\n# State and actions\ndef get_state(canvas, pen_pos, target_img):\n    patch_size = 20\n    x, y = int(pen_pos[0]), int(pen_pos[1])",
+        "detail": "geomaster_picture_drawer",
+        "documentation": {}
+    },
+    {
+        "label": "file_exists",
+        "kind": 5,
+        "importPath": "geomaster_picture_drawer",
+        "description": "geomaster_picture_drawer",
+        "peekOfCode": "file_exists = os.path.isfile(log_file)\nwith open(log_file, mode=\"a\", newline=\"\") as f:\n    writer = csv.writer(f)\n    if not file_exists:\n        writer.writerow([\"Image\", \"World\", \"Step\", \"Pen_X\", \"Pen_Y\", \"Action\", \"Reward\", \"Similarity\", \"Color_R\", \"Color_G\", \"Color_B\", \"Stroke_Size\"])\n# State and actions\ndef get_state(canvas, pen_pos, target_img):\n    patch_size = 20\n    x, y = int(pen_pos[0]), int(pen_pos[1])\n    x_min, x_max = max(0, x - patch_size), min(WIDTH, x + patch_size)",
+        "detail": "geomaster_picture_drawer",
+        "documentation": {}
+    },
+    {
+        "label": "action_map",
+        "kind": 5,
+        "importPath": "geomaster_picture_drawer",
+        "description": "geomaster_picture_drawer",
+        "peekOfCode": "action_map = {\n    # No draw (4 actions)\n    0: (-5, 0, False, (0, 0, 0), 1),  1: (5, 0, False, (0, 0, 0), 1),\n    2: (0, -5, False, (0, 0, 0), 1),  3: (0, 5, False, (0, 0, 0), 1),\n    # Cyan (1, 3, 5)\n    4: (-5, 0, True, CYAN, 1),  5: (5, 0, True, CYAN, 1),\n    6: (0, -5, True, CYAN, 1),  7: (0, 5, True, CYAN, 1),\n    8: (-5, 0, True, CYAN, 3),  9: (5, 0, True, CYAN, 3),\n    10: (0, -5, True, CYAN, 3), 11: (0, 5, True, CYAN, 3),\n    12: (-5, 0, True, CYAN, 5), 13: (5, 0, True, CYAN, 5),",
+        "detail": "geomaster_picture_drawer",
+        "documentation": {}
+    },
+    {
+        "label": "clock",
+        "kind": 5,
+        "importPath": "geomaster_picture_drawer",
+        "description": "geomaster_picture_drawer",
+        "peekOfCode": "clock = pygame.time.Clock()\nrunning = True\nmax_steps = 1000\nbias_strength = 0.5  # Starting value\nfor img_name, target_img in target_images:\n    for current_world in worlds:\n        if not running:\n            break\n        # Reset for new image/world\n        canvas = np.zeros((WIDTH, HEIGHT, 3), dtype=np.uint8)",
+        "detail": "geomaster_picture_drawer",
+        "documentation": {}
+    },
+    {
+        "label": "running",
+        "kind": 5,
+        "importPath": "geomaster_picture_drawer",
+        "description": "geomaster_picture_drawer",
+        "peekOfCode": "running = True\nmax_steps = 1000\nbias_strength = 0.5  # Starting value\nfor img_name, target_img in target_images:\n    for current_world in worlds:\n        if not running:\n            break\n        # Reset for new image/world\n        canvas = np.zeros((WIDTH, HEIGHT, 3), dtype=np.uint8)\n        pen_pos = [WIDTH // 2, HEIGHT // 2]",
+        "detail": "geomaster_picture_drawer",
+        "documentation": {}
+    },
+    {
+        "label": "max_steps",
+        "kind": 5,
+        "importPath": "geomaster_picture_drawer",
+        "description": "geomaster_picture_drawer",
+        "peekOfCode": "max_steps = 1000\nbias_strength = 0.5  # Starting value\nfor img_name, target_img in target_images:\n    for current_world in worlds:\n        if not running:\n            break\n        # Reset for new image/world\n        canvas = np.zeros((WIDTH, HEIGHT, 3), dtype=np.uint8)\n        pen_pos = [WIDTH // 2, HEIGHT // 2]\n        target_surface = pygame.surfarray.make_surface(cv2.cvtColor(target_img, cv2.COLOR_BGR2RGB))",
+        "detail": "geomaster_picture_drawer",
+        "documentation": {}
+    },
+    {
+        "label": "bias_strength",
+        "kind": 5,
+        "importPath": "geomaster_picture_drawer",
+        "description": "geomaster_picture_drawer",
+        "peekOfCode": "bias_strength = 0.5  # Starting value\nfor img_name, target_img in target_images:\n    for current_world in worlds:\n        if not running:\n            break\n        # Reset for new image/world\n        canvas = np.zeros((WIDTH, HEIGHT, 3), dtype=np.uint8)\n        pen_pos = [WIDTH // 2, HEIGHT // 2]\n        target_surface = pygame.surfarray.make_surface(cv2.cvtColor(target_img, cv2.COLOR_BGR2RGB))\n        step = 0",
+        "detail": "geomaster_picture_drawer",
         "documentation": {}
     }
 ]
