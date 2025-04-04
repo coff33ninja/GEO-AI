@@ -80,6 +80,11 @@ TASK_TESSELLATION = "Draw Tessellation"
 tasks = [TASK_LINE, TASK_TRIANGLE, TASK_CIRCLE, TASK_PENTAGON, TASK_TESSELLATION]
 current_task = TASK_LINE
 
+# Constants
+MAX_SCORE = 50000
+NEGATIVE_REWARD_RETRY_LIMIT = 3
+POSITIVE_REWARD_RETRY_LIMIT = 3  # Number of additional attempts after achieving positive rewards
+
 # --- SumTree for Prioritized Experience Replay ---
 class SumTree:
     def __init__(self, capacity):
@@ -252,6 +257,8 @@ global_step = 0
 episode_count = 0
 tick_rate = 30
 train_iters = 1
+negative_reward_attempts = 0  # Track retries for negative rewards
+positive_reward_attempts = 0  # Track retries for positive rewards
 
 # Logging
 log_file = "ai_calculations.csv"
@@ -850,6 +857,12 @@ def calculate_advanced_reward(shape, target, task, world):
 
         # Combine factors into the final reward
         reward = reward * efficiency_factor * creativity_factor + constraint_penalty
+
+        # Enforce maximum score limit
+        if sum(rewards) + reward > MAX_SCORE:
+            reward = MAX_SCORE - sum(rewards)
+            log_message(f"Score capped at {MAX_SCORE}.")
+
         return reward
     except Exception as e:
         log_message(f"Error in calculate_advanced_reward: {repr(e)}")
@@ -1104,7 +1117,29 @@ def generate_dynamic_task():
 
 # Reset Episode
 def reset_episode():
-    global start_point, triangle_points, circle_center, pentagon_points, tessellation_points, current_shape, game_state, ai_step, current_task, end_point, circle_radius
+    global start_point, triangle_points, circle_center, pentagon_points, tessellation_points, current_shape
+    global game_state, ai_step, current_task, end_point, circle_radius, negative_reward_attempts, positive_reward_attempts
+
+    if negative_reward_attempts >= NEGATIVE_REWARD_RETRY_LIMIT:
+        log_message("Max retries for negative rewards reached. Moving to next task.")
+        negative_reward_attempts = 0  # Reset retry counter
+        positive_reward_attempts = 0  # Reset positive retry counter
+    elif sum(rewards) < 0:
+        log_message(f"Negative reward detected. Retrying task. Attempt {negative_reward_attempts + 1}/{NEGATIVE_REWARD_RETRY_LIMIT}.")
+        negative_reward_attempts += 1
+        return  # Retry the current task
+
+    if sum(rewards) > 0 and positive_reward_attempts < POSITIVE_REWARD_RETRY_LIMIT:
+        log_message(f"Positive reward achieved. Reattempting task for additional training. Attempt {positive_reward_attempts + 1}/{POSITIVE_REWARD_RETRY_LIMIT}.")
+        positive_reward_attempts += 1
+        save_model_weights(current_task, current_world)  # Save progress
+        return  # Retry the current task
+
+    # Reset counters for the next task
+    negative_reward_attempts = 0
+    positive_reward_attempts = 0
+
+    # Generate a new task
     dynamic_task = generate_dynamic_task()
     current_task = dynamic_task["type"]
 
@@ -1141,6 +1176,7 @@ def reset_episode():
 
     game_state = "ai_drawing"
     ai_step = 0
+    rewards.clear()  # Reset rewards for the new episode
 
 # Matplotlib Plot
 plot_surface = None
