@@ -1,118 +1,45 @@
-Here are some features or enhancements you can add to the AI to improve its functionality or expand its capabilities:
+### Enhancements:
+1. **Dynamic Task Generation**:
+   - While tasks are generated dynamically, you could add more variability or complexity, such as tasks with time constraints or multi-step objectives.
 
-1. **Multi-Agent Collaboration**:
-   - Introduce multiple AI agents that collaborate or compete to complete tasks, enabling the study of multi-agent systems.
+2. **Multi-Agent Collaboration**:
+   - Introduce multiple agents that collaborate or compete in the same environment. This could involve shared goals or adversarial tasks.
 
-2. **Dynamic Task Generation**:
-   - Add a system to dynamically generate new tasks or challenges for the AI, increasing the variety and complexity of the environment.
+3. **3D Geometric Worlds**:
+   - While 3D support exists, you could expand it further by adding tasks like navigating 3D mazes or constructing 3D objects.
 
-3. **Transfer Learning**:
-   - Implement transfer learning to allow the AI to leverage knowledge from one task or world to perform better in another. - Done
+4. **Reinforcement Learning Visualization**:
+   - Add heatmaps or trajectory visualizations to better understand the AI's decision-making process.
 
-4. **Explainable AI (XAI)**:
-   - Add a module to explain the AI's decisions, such as why it chose a specific action or how it plans to complete a task. 
+5. **Natural Language Interface**:
+   - Allow users to set tasks or provide feedback using natural language commands.
 
-5. **Advanced Reward System**:
-   - Introduce more sophisticated reward functions that consider factors like efficiency, creativity, or adherence to specific constraints.
+6. **Leaderboard and Scoring System**:
+   - Introduce a scoring system to compare the performance of different AI models or human players.
 
-6. **Real-Time User Interaction**:
-   - Allow users to interact with the AI in real-time, such as guiding it, providing feedback, or setting custom goals.
+7. **Self-Play**:
+   - Implement self-play for tasks like tessellation, where the AI competes against itself to improve strategies.
 
-7. **3D Geometric Worlds**:
-   - Extend the game to support 3D geometric worlds, enabling tasks like drawing 3D shapes or navigating 3D spaces.
+8. **Advanced Reward Shaping**:
+   - Add intermediate rewards for partial progress, such as rewarding the AI for reaching closer to the target or forming valid angles.
 
-8. **Reinforcement Learning Visualization**:
-   - Add visualizations to show the AI's learning process, such as heatmaps of visited states or action probabilities.
+9. **Multi-Agent Training**:
+   - Train multiple agents simultaneously to encourage emergent behaviors and strategies.
 
-9. **Customizable AI Behavior**:
-   - Provide options for users to customize the AI's behavior, such as adjusting exploration-exploitation balance or modifying learning rates.
+10. **Task-Specific Policies**:
+    - Train separate policies for each task and world, then combine them into a meta-policy for generalization.
 
-10. **Integration with External Tools**:
-    - Integrate the AI with external tools like CAD software, enabling practical applications in design and engineering.
+11. **Dynamic Reward Scaling**:
+    - Normalize rewards across tasks and worlds to ensure consistent learning.
 
-11. **Enhanced Debugging Tools**:
-    - Add advanced debugging tools, such as step-by-step action replay or detailed logs of the AI's internal state.
+12. **Enhanced Debugging Tools**:
+    - Add step-by-step action replay or detailed logs of the AI's internal state for better debugging.
 
-12. **Leaderboard and Scoring System**:
-    - Introduce a scoring system and leaderboard to compare the performance of different AI models or human players.
+13. **Adaptive Difficulty**:
+    - Dynamically adjust task difficulty based on the AI's performance to maintain a balanced challenge.
 
-13. **Natural Language Interface**:
-    - Allow users to give commands or set tasks using natural language, making the system more accessible.
+14. **Integration with External Tools**:
+    - Connect the AI to external tools like CAD software for practical applications in design and engineering.
 
-14. **AI Personality**:
+15. **AI Personality**:
     - Add personality traits to the AI, such as cautious, aggressive, or creative behavior, to make it more engaging.
-
-15. **Adaptive Difficulty**:
-    - Implement a system to adjust the difficulty of tasks based on the AI's performance, ensuring a balanced challenge.
-
-If you'd like to implement any of these features, let me know, and I can guide you through the process!
-
-
-To improve training further, here are some suggestions:
-
-### 1. **Dynamic Reward Scaling**
-   - Normalize rewards to ensure consistent scaling across tasks and worlds. This prevents large rewards in one task from dominating the learning process.
-
-### 2. **Curriculum Learning**
-   - Start with simpler tasks and gradually increase complexity. For example:
-     - Begin with `TASK_LINE` in `WORLD_EUCLIDEAN`.
-     - Progress to more complex tasks like `TASK_TRIANGLE` or `TASK_TESSELLATION` in `WORLD_HYPERBOLIC`.
-
-### 3. **Augmented Replay Buffer**
-   - Add a mechanism to prioritize transitions with high TD errors or rare experiences to improve learning efficiency.
-
-### 4. **Adaptive Exploration**
-   - Use a more sophisticated exploration strategy like **epsilon-greedy with noise** or **soft actor-critic** to balance exploration and exploitation.
-
-### 5. **Reward Shaping**
-   - Provide intermediate rewards for partial progress, such as:
-     - Reward for reaching closer to the target in `TASK_LINE`.
-     - Reward for forming valid angles in `TASK_TRIANGLE`.
-
-### 6. **Transfer Learning**
-   - Pre-train the model on simpler tasks or worlds and transfer the learned weights to more complex scenarios.
-
-### 7. **Model Ensembles**
-   - Use an ensemble of models to reduce overfitting and improve decision-making by averaging predictions.
-
-### 8. **Visualization and Debugging**
-   - Add more visualizations to monitor training progress, such as:
-     - Heatmaps of action probabilities.
-     - Graphs of TD errors over time.
-
-### 9. **Regularization**
-   - Add techniques like dropout or weight decay to prevent overfitting.
-
-### 10. **Multi-Agent Training**
-   - Introduce multiple agents to collaborate or compete, which can lead to emergent strategies and better generalization.
-
-### 11. **Task-Specific Policies**
-   - Train separate policies for each task and world, then combine them into a meta-policy for generalization.
-
-### 12. **Data Augmentation**
-   - Augment training data by simulating variations in tasks, such as:
-     - Randomizing start and end points.
-     - Adding noise to geometric shapes.
-
-### 13. **Reward Clipping**
-   - Clip rewards to a fixed range (e.g., `[-1, 1]`) to stabilize training and prevent large gradients.
-
-### 14. **Learning Rate Scheduling**
-   - Use a learning rate scheduler to dynamically adjust the learning rate based on performance or training progress.
-
-### 15. **Self-Play**
-   - Allow the AI to compete against itself in tasks like tessellation, which can lead to better strategies.
-
-Would you like to implement any of these suggestions?
-
-It seems you've successfully implemented curriculum learning, prioritized experience replay, adaptive exploration, and other enhancements. If you're looking for further improvements, here are some suggestions:
-
-6. **Multi-Agent Collaboration:**
-   - Introduce multiple agents working together or competing in the same environment.
-   - Implement communication or shared learning mechanisms.
-
-7. **Performance Optimization:**
-   - Optimize the training loop for better GPU utilization.
-   - Use libraries like PyTorch Lightning for cleaner and more efficient training.
-
-Let me know if you'd like to implement any of these or have other ideas in mind!

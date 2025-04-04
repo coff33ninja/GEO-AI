@@ -234,7 +234,7 @@
         "kind": 2,
         "importPath": "geomaster_ai_challenge",
         "description": "geomaster_ai_challenge",
-        "peekOfCode": "def optimize_model():\n    \"\"\"Optimization is now handled by PyTorch Lightning.\"\"\"\n    trainer.fit(geo_model, geo_data)\n# Neural Networks\npolicy_net = geo_model.policy_net.to(device)\ntarget_net = geo_model.target_net.to(device)\ntarget_net.load_state_dict(policy_net.state_dict())\noptimizer = optim.Adam(policy_net.parameters(), lr=base_lr)\nforward_model = ForwardModel(state_dim, action_dim).to(device)\noptimizer_fm = optim.Adam(forward_model.parameters(), lr=base_lr)",
+        "peekOfCode": "def optimize_model():\n    \"\"\"Optimization is now handled by PyTorch Lightning.\"\"\"\n    trainer.fit(geo_model, geo_data)\n    for scheduler in trainer.optimizers[0].schedulers:\n        scheduler.step()  # Step the scheduler after each epoch\n# Neural Networks\npolicy_net = geo_model.policy_net.to(device)\ntarget_net = geo_model.target_net.to(device)\ntarget_net.load_state_dict(policy_net.state_dict())\noptimizer = optim.Adam(policy_net.parameters(), lr=base_lr)",
         "detail": "geomaster_ai_challenge",
         "documentation": {}
     },
@@ -1125,7 +1125,7 @@
         "kind": 5,
         "importPath": "geomaster_ai_challenge",
         "description": "geomaster_ai_challenge",
-        "peekOfCode": "geo_model = GeoMasterAIModel(state_dim, action_dim, gamma, base_lr)\nmemory = SumTree(memory_size)\ngeo_data = GeoMasterDataModule(memory, batch_size)\n# Replace the training loop with PyTorch Lightning Trainer\ntrainer = Trainer(max_epochs=100, gpus=1 if torch.cuda.is_available() else 0)\n# Train the model\ntrainer.fit(geo_model, geo_data)\n# Update the optimize_model function to use the Lightning module\ndef optimize_model():\n    \"\"\"Optimization is now handled by PyTorch Lightning.\"\"\"",
+        "peekOfCode": "geo_model = GeoMasterAIModel(state_dim, action_dim, gamma, base_lr)\nmemory = SumTree(memory_size)\ngeo_data = GeoMasterDataModule(memory, batch_size)\n# Replace the training loop with PyTorch Lightning Trainer\ntrainer = Trainer(max_epochs=100, gpus=1 if torch.cuda.is_available() else 0)\n# Train the model\ntrainer.fit(geo_model, geo_data)\n# Update the optimize_model function to include scheduler step\ndef optimize_model():\n    \"\"\"Optimization is now handled by PyTorch Lightning.\"\"\"",
         "detail": "geomaster_ai_challenge",
         "documentation": {}
     },
@@ -1134,7 +1134,7 @@
         "kind": 5,
         "importPath": "geomaster_ai_challenge",
         "description": "geomaster_ai_challenge",
-        "peekOfCode": "memory = SumTree(memory_size)\ngeo_data = GeoMasterDataModule(memory, batch_size)\n# Replace the training loop with PyTorch Lightning Trainer\ntrainer = Trainer(max_epochs=100, gpus=1 if torch.cuda.is_available() else 0)\n# Train the model\ntrainer.fit(geo_model, geo_data)\n# Update the optimize_model function to use the Lightning module\ndef optimize_model():\n    \"\"\"Optimization is now handled by PyTorch Lightning.\"\"\"\n    trainer.fit(geo_model, geo_data)",
+        "peekOfCode": "memory = SumTree(memory_size)\ngeo_data = GeoMasterDataModule(memory, batch_size)\n# Replace the training loop with PyTorch Lightning Trainer\ntrainer = Trainer(max_epochs=100, gpus=1 if torch.cuda.is_available() else 0)\n# Train the model\ntrainer.fit(geo_model, geo_data)\n# Update the optimize_model function to include scheduler step\ndef optimize_model():\n    \"\"\"Optimization is now handled by PyTorch Lightning.\"\"\"\n    trainer.fit(geo_model, geo_data)",
         "detail": "geomaster_ai_challenge",
         "documentation": {}
     },
@@ -1143,7 +1143,7 @@
         "kind": 5,
         "importPath": "geomaster_ai_challenge",
         "description": "geomaster_ai_challenge",
-        "peekOfCode": "geo_data = GeoMasterDataModule(memory, batch_size)\n# Replace the training loop with PyTorch Lightning Trainer\ntrainer = Trainer(max_epochs=100, gpus=1 if torch.cuda.is_available() else 0)\n# Train the model\ntrainer.fit(geo_model, geo_data)\n# Update the optimize_model function to use the Lightning module\ndef optimize_model():\n    \"\"\"Optimization is now handled by PyTorch Lightning.\"\"\"\n    trainer.fit(geo_model, geo_data)\n# Neural Networks",
+        "peekOfCode": "geo_data = GeoMasterDataModule(memory, batch_size)\n# Replace the training loop with PyTorch Lightning Trainer\ntrainer = Trainer(max_epochs=100, gpus=1 if torch.cuda.is_available() else 0)\n# Train the model\ntrainer.fit(geo_model, geo_data)\n# Update the optimize_model function to include scheduler step\ndef optimize_model():\n    \"\"\"Optimization is now handled by PyTorch Lightning.\"\"\"\n    trainer.fit(geo_model, geo_data)\n    for scheduler in trainer.optimizers[0].schedulers:",
         "detail": "geomaster_ai_challenge",
         "documentation": {}
     },
@@ -1152,7 +1152,7 @@
         "kind": 5,
         "importPath": "geomaster_ai_challenge",
         "description": "geomaster_ai_challenge",
-        "peekOfCode": "trainer = Trainer(max_epochs=100, gpus=1 if torch.cuda.is_available() else 0)\n# Train the model\ntrainer.fit(geo_model, geo_data)\n# Update the optimize_model function to use the Lightning module\ndef optimize_model():\n    \"\"\"Optimization is now handled by PyTorch Lightning.\"\"\"\n    trainer.fit(geo_model, geo_data)\n# Neural Networks\npolicy_net = geo_model.policy_net.to(device)\ntarget_net = geo_model.target_net.to(device)",
+        "peekOfCode": "trainer = Trainer(max_epochs=100, gpus=1 if torch.cuda.is_available() else 0)\n# Train the model\ntrainer.fit(geo_model, geo_data)\n# Update the optimize_model function to include scheduler step\ndef optimize_model():\n    \"\"\"Optimization is now handled by PyTorch Lightning.\"\"\"\n    trainer.fit(geo_model, geo_data)\n    for scheduler in trainer.optimizers[0].schedulers:\n        scheduler.step()  # Step the scheduler after each epoch\n# Neural Networks",
         "detail": "geomaster_ai_challenge",
         "documentation": {}
     },

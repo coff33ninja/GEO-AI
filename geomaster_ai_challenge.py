@@ -298,7 +298,9 @@ class GeoMasterAIModel(pl.LightningModule):
         return loss
 
     def configure_optimizers(self):
-        return optim.Adam(self.policy_net.parameters(), lr=self.base_lr)
+        optimizer = optim.Adam(self.policy_net.parameters(), lr=self.base_lr)
+        scheduler = optim.lr_scheduler.StepLR(optimizer, step_size=10, gamma=0.9)  # Reduce LR every 10 epochs
+        return [optimizer], [scheduler]
 
 # DataLoader for PyTorch Lightning
 class GeoMasterDataModule(pl.LightningDataModule):
@@ -332,10 +334,12 @@ trainer = Trainer(max_epochs=100, gpus=1 if torch.cuda.is_available() else 0)
 # Train the model
 trainer.fit(geo_model, geo_data)
 
-# Update the optimize_model function to use the Lightning module
+# Update the optimize_model function to include scheduler step
 def optimize_model():
     """Optimization is now handled by PyTorch Lightning."""
     trainer.fit(geo_model, geo_data)
+    for scheduler in trainer.optimizers[0].schedulers:
+        scheduler.step()  # Step the scheduler after each epoch
 
 # Neural Networks
 policy_net = geo_model.policy_net.to(device)
