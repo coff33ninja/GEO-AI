@@ -195,6 +195,15 @@
         "documentation": {}
     },
     {
+        "label": "select_action",
+        "kind": 2,
+        "importPath": "geomaster_ai_challenge",
+        "description": "geomaster_ai_challenge",
+        "peekOfCode": "def select_action(state_tensor, epsilon, action_dim):\n    \"\"\"Select an action using epsilon-greedy with noise.\"\"\"\n    if random.random() < epsilon:\n        # Exploration: Add noise to a random action\n        action = random.randint(0, action_dim - 1)\n        noise = np.random.normal(0, epsilon_noise_scale, size=action_dim)\n        noisy_action = np.clip(action + noise[action], 0, action_dim - 1)\n        return int(noisy_action)\n    else:\n        # Exploitation: Choose the best action",
+        "detail": "geomaster_ai_challenge",
+        "documentation": {}
+    },
+    {
         "label": "stereographic_projection",
         "kind": 2,
         "importPath": "geomaster_ai_challenge",
@@ -1054,7 +1063,7 @@
         "kind": 5,
         "importPath": "geomaster_ai_challenge",
         "description": "geomaster_ai_challenge",
-        "peekOfCode": "optimizer = optim.Adam(policy_net.parameters(), lr=base_lr)\nforward_model = ForwardModel(state_dim, action_dim).to(device)\noptimizer_fm = optim.Adam(forward_model.parameters(), lr=base_lr)\nworld_model = WorldModel(state_dim, action_dim).to(device)\noptimizer_wm = optim.Adam(world_model.parameters(), lr=base_lr)\nshape_predictor = NextShapePredictor(predictor_input_dim, predictor_output_dim).to(device)\noptimizer_sp = optim.Adam(shape_predictor.parameters(), lr=0.001)\nmemory = SumTree(memory_size)\nn_step_buffer = []\n# Game State",
+        "peekOfCode": "optimizer = optim.Adam(policy_net.parameters(), lr=base_lr)\nforward_model = ForwardModel(state_dim, action_dim).to(device)\noptimizer_fm = optim.Adam(forward_model.parameters(), lr=base_lr)\nworld_model = WorldModel(state_dim, action_dim).to(device)\noptimizer_wm = optim.Adam(world_model.parameters(), lr=base_lr)\nshape_predictor = NextShapePredictor(predictor_input_dim, predictor_output_dim).to(device)\noptimizer_sp = optim.Adam(shape_predictor.parameters(), lr=0.001)\nmemory = SumTree(memory_size)\nn_step_buffer = []\n# Adaptive exploration parameters",
         "detail": "geomaster_ai_challenge",
         "documentation": {}
     },
@@ -1063,7 +1072,7 @@
         "kind": 5,
         "importPath": "geomaster_ai_challenge",
         "description": "geomaster_ai_challenge",
-        "peekOfCode": "forward_model = ForwardModel(state_dim, action_dim).to(device)\noptimizer_fm = optim.Adam(forward_model.parameters(), lr=base_lr)\nworld_model = WorldModel(state_dim, action_dim).to(device)\noptimizer_wm = optim.Adam(world_model.parameters(), lr=base_lr)\nshape_predictor = NextShapePredictor(predictor_input_dim, predictor_output_dim).to(device)\noptimizer_sp = optim.Adam(shape_predictor.parameters(), lr=0.001)\nmemory = SumTree(memory_size)\nn_step_buffer = []\n# Game State\nstart_point = None",
+        "peekOfCode": "forward_model = ForwardModel(state_dim, action_dim).to(device)\noptimizer_fm = optim.Adam(forward_model.parameters(), lr=base_lr)\nworld_model = WorldModel(state_dim, action_dim).to(device)\noptimizer_wm = optim.Adam(world_model.parameters(), lr=base_lr)\nshape_predictor = NextShapePredictor(predictor_input_dim, predictor_output_dim).to(device)\noptimizer_sp = optim.Adam(shape_predictor.parameters(), lr=0.001)\nmemory = SumTree(memory_size)\nn_step_buffer = []\n# Adaptive exploration parameters\nepsilon_noise_scale = 0.1  # Scale of noise added to actions during exploration",
         "detail": "geomaster_ai_challenge",
         "documentation": {}
     },
@@ -1072,7 +1081,7 @@
         "kind": 5,
         "importPath": "geomaster_ai_challenge",
         "description": "geomaster_ai_challenge",
-        "peekOfCode": "optimizer_fm = optim.Adam(forward_model.parameters(), lr=base_lr)\nworld_model = WorldModel(state_dim, action_dim).to(device)\noptimizer_wm = optim.Adam(world_model.parameters(), lr=base_lr)\nshape_predictor = NextShapePredictor(predictor_input_dim, predictor_output_dim).to(device)\noptimizer_sp = optim.Adam(shape_predictor.parameters(), lr=0.001)\nmemory = SumTree(memory_size)\nn_step_buffer = []\n# Game State\nstart_point = None\nend_point = (WIDTH - 50, HEIGHT - 50)",
+        "peekOfCode": "optimizer_fm = optim.Adam(forward_model.parameters(), lr=base_lr)\nworld_model = WorldModel(state_dim, action_dim).to(device)\noptimizer_wm = optim.Adam(world_model.parameters(), lr=base_lr)\nshape_predictor = NextShapePredictor(predictor_input_dim, predictor_output_dim).to(device)\noptimizer_sp = optim.Adam(shape_predictor.parameters(), lr=0.001)\nmemory = SumTree(memory_size)\nn_step_buffer = []\n# Adaptive exploration parameters\nepsilon_noise_scale = 0.1  # Scale of noise added to actions during exploration\ndef select_action(state_tensor, epsilon, action_dim):",
         "detail": "geomaster_ai_challenge",
         "documentation": {}
     },
@@ -1081,7 +1090,7 @@
         "kind": 5,
         "importPath": "geomaster_ai_challenge",
         "description": "geomaster_ai_challenge",
-        "peekOfCode": "world_model = WorldModel(state_dim, action_dim).to(device)\noptimizer_wm = optim.Adam(world_model.parameters(), lr=base_lr)\nshape_predictor = NextShapePredictor(predictor_input_dim, predictor_output_dim).to(device)\noptimizer_sp = optim.Adam(shape_predictor.parameters(), lr=0.001)\nmemory = SumTree(memory_size)\nn_step_buffer = []\n# Game State\nstart_point = None\nend_point = (WIDTH - 50, HEIGHT - 50)\ntriangle_points = []",
+        "peekOfCode": "world_model = WorldModel(state_dim, action_dim).to(device)\noptimizer_wm = optim.Adam(world_model.parameters(), lr=base_lr)\nshape_predictor = NextShapePredictor(predictor_input_dim, predictor_output_dim).to(device)\noptimizer_sp = optim.Adam(shape_predictor.parameters(), lr=0.001)\nmemory = SumTree(memory_size)\nn_step_buffer = []\n# Adaptive exploration parameters\nepsilon_noise_scale = 0.1  # Scale of noise added to actions during exploration\ndef select_action(state_tensor, epsilon, action_dim):\n    \"\"\"Select an action using epsilon-greedy with noise.\"\"\"",
         "detail": "geomaster_ai_challenge",
         "documentation": {}
     },
@@ -1090,7 +1099,7 @@
         "kind": 5,
         "importPath": "geomaster_ai_challenge",
         "description": "geomaster_ai_challenge",
-        "peekOfCode": "optimizer_wm = optim.Adam(world_model.parameters(), lr=base_lr)\nshape_predictor = NextShapePredictor(predictor_input_dim, predictor_output_dim).to(device)\noptimizer_sp = optim.Adam(shape_predictor.parameters(), lr=0.001)\nmemory = SumTree(memory_size)\nn_step_buffer = []\n# Game State\nstart_point = None\nend_point = (WIDTH - 50, HEIGHT - 50)\ntriangle_points = []\ncircle_center = None",
+        "peekOfCode": "optimizer_wm = optim.Adam(world_model.parameters(), lr=base_lr)\nshape_predictor = NextShapePredictor(predictor_input_dim, predictor_output_dim).to(device)\noptimizer_sp = optim.Adam(shape_predictor.parameters(), lr=0.001)\nmemory = SumTree(memory_size)\nn_step_buffer = []\n# Adaptive exploration parameters\nepsilon_noise_scale = 0.1  # Scale of noise added to actions during exploration\ndef select_action(state_tensor, epsilon, action_dim):\n    \"\"\"Select an action using epsilon-greedy with noise.\"\"\"\n    if random.random() < epsilon:",
         "detail": "geomaster_ai_challenge",
         "documentation": {}
     },
@@ -1099,7 +1108,7 @@
         "kind": 5,
         "importPath": "geomaster_ai_challenge",
         "description": "geomaster_ai_challenge",
-        "peekOfCode": "shape_predictor = NextShapePredictor(predictor_input_dim, predictor_output_dim).to(device)\noptimizer_sp = optim.Adam(shape_predictor.parameters(), lr=0.001)\nmemory = SumTree(memory_size)\nn_step_buffer = []\n# Game State\nstart_point = None\nend_point = (WIDTH - 50, HEIGHT - 50)\ntriangle_points = []\ncircle_center = None\ncircle_radius = 50",
+        "peekOfCode": "shape_predictor = NextShapePredictor(predictor_input_dim, predictor_output_dim).to(device)\noptimizer_sp = optim.Adam(shape_predictor.parameters(), lr=0.001)\nmemory = SumTree(memory_size)\nn_step_buffer = []\n# Adaptive exploration parameters\nepsilon_noise_scale = 0.1  # Scale of noise added to actions during exploration\ndef select_action(state_tensor, epsilon, action_dim):\n    \"\"\"Select an action using epsilon-greedy with noise.\"\"\"\n    if random.random() < epsilon:\n        # Exploration: Add noise to a random action",
         "detail": "geomaster_ai_challenge",
         "documentation": {}
     },
@@ -1108,7 +1117,7 @@
         "kind": 5,
         "importPath": "geomaster_ai_challenge",
         "description": "geomaster_ai_challenge",
-        "peekOfCode": "optimizer_sp = optim.Adam(shape_predictor.parameters(), lr=0.001)\nmemory = SumTree(memory_size)\nn_step_buffer = []\n# Game State\nstart_point = None\nend_point = (WIDTH - 50, HEIGHT - 50)\ntriangle_points = []\ncircle_center = None\ncircle_radius = 50\npentagon_points = []",
+        "peekOfCode": "optimizer_sp = optim.Adam(shape_predictor.parameters(), lr=0.001)\nmemory = SumTree(memory_size)\nn_step_buffer = []\n# Adaptive exploration parameters\nepsilon_noise_scale = 0.1  # Scale of noise added to actions during exploration\ndef select_action(state_tensor, epsilon, action_dim):\n    \"\"\"Select an action using epsilon-greedy with noise.\"\"\"\n    if random.random() < epsilon:\n        # Exploration: Add noise to a random action\n        action = random.randint(0, action_dim - 1)",
         "detail": "geomaster_ai_challenge",
         "documentation": {}
     },
@@ -1117,7 +1126,7 @@
         "kind": 5,
         "importPath": "geomaster_ai_challenge",
         "description": "geomaster_ai_challenge",
-        "peekOfCode": "memory = SumTree(memory_size)\nn_step_buffer = []\n# Game State\nstart_point = None\nend_point = (WIDTH - 50, HEIGHT - 50)\ntriangle_points = []\ncircle_center = None\ncircle_radius = 50\npentagon_points = []\ntessellation_points = []",
+        "peekOfCode": "memory = SumTree(memory_size)\nn_step_buffer = []\n# Adaptive exploration parameters\nepsilon_noise_scale = 0.1  # Scale of noise added to actions during exploration\ndef select_action(state_tensor, epsilon, action_dim):\n    \"\"\"Select an action using epsilon-greedy with noise.\"\"\"\n    if random.random() < epsilon:\n        # Exploration: Add noise to a random action\n        action = random.randint(0, action_dim - 1)\n        noise = np.random.normal(0, epsilon_noise_scale, size=action_dim)",
         "detail": "geomaster_ai_challenge",
         "documentation": {}
     },
@@ -1126,7 +1135,16 @@
         "kind": 5,
         "importPath": "geomaster_ai_challenge",
         "description": "geomaster_ai_challenge",
-        "peekOfCode": "n_step_buffer = []\n# Game State\nstart_point = None\nend_point = (WIDTH - 50, HEIGHT - 50)\ntriangle_points = []\ncircle_center = None\ncircle_radius = 50\npentagon_points = []\ntessellation_points = []\ncurrent_shape = []",
+        "peekOfCode": "n_step_buffer = []\n# Adaptive exploration parameters\nepsilon_noise_scale = 0.1  # Scale of noise added to actions during exploration\ndef select_action(state_tensor, epsilon, action_dim):\n    \"\"\"Select an action using epsilon-greedy with noise.\"\"\"\n    if random.random() < epsilon:\n        # Exploration: Add noise to a random action\n        action = random.randint(0, action_dim - 1)\n        noise = np.random.normal(0, epsilon_noise_scale, size=action_dim)\n        noisy_action = np.clip(action + noise[action], 0, action_dim - 1)",
+        "detail": "geomaster_ai_challenge",
+        "documentation": {}
+    },
+    {
+        "label": "epsilon_noise_scale",
+        "kind": 5,
+        "importPath": "geomaster_ai_challenge",
+        "description": "geomaster_ai_challenge",
+        "peekOfCode": "epsilon_noise_scale = 0.1  # Scale of noise added to actions during exploration\ndef select_action(state_tensor, epsilon, action_dim):\n    \"\"\"Select an action using epsilon-greedy with noise.\"\"\"\n    if random.random() < epsilon:\n        # Exploration: Add noise to a random action\n        action = random.randint(0, action_dim - 1)\n        noise = np.random.normal(0, epsilon_noise_scale, size=action_dim)\n        noisy_action = np.clip(action + noise[action], 0, action_dim - 1)\n        return int(noisy_action)\n    else:",
         "detail": "geomaster_ai_challenge",
         "documentation": {}
     },

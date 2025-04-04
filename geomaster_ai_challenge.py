@@ -288,6 +288,23 @@ optimizer_sp = optim.Adam(shape_predictor.parameters(), lr=0.001)
 memory = SumTree(memory_size)
 n_step_buffer = []
 
+# Adaptive exploration parameters
+epsilon_noise_scale = 0.1  # Scale of noise added to actions during exploration
+
+def select_action(state_tensor, epsilon, action_dim):
+    """Select an action using epsilon-greedy with noise."""
+    if random.random() < epsilon:
+        # Exploration: Add noise to a random action
+        action = random.randint(0, action_dim - 1)
+        noise = np.random.normal(0, epsilon_noise_scale, size=action_dim)
+        noisy_action = np.clip(action + noise[action], 0, action_dim - 1)
+        return int(noisy_action)
+    else:
+        # Exploitation: Choose the best action
+        with torch.no_grad():
+            q_values = policy_net(state_tensor).cpu().numpy().flatten()
+            return int(np.argmax(q_values))
+
 # Game State
 start_point = None
 end_point = (WIDTH - 50, HEIGHT - 50)
@@ -1436,7 +1453,7 @@ while running:
             )
         else:
             if random.random() < epsilon:
-                actions = [random.randint(0, action_dim - 1)]
+                actions = [select_action(state_tensor, epsilon, action_dim)]
             else:
                 actions = plan_actions(
                     state_tensor,
