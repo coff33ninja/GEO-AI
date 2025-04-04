@@ -1638,6 +1638,15 @@
         "documentation": {}
     },
     {
+        "label": "ImageGenerator",
+        "kind": 6,
+        "importPath": "geomaster_picture_drawer",
+        "description": "geomaster_picture_drawer",
+        "peekOfCode": "class ImageGenerator(nn.Module):\n    def __init__(self, input_dim, output_dim):\n        super(ImageGenerator, self).__init__()\n        self.fc1 = nn.Linear(input_dim, 128)\n        self.fc2 = nn.Linear(128, 256)\n        self.fc3 = nn.Linear(256, output_dim)\n    def forward(self, x):\n        x = torch.relu(self.fc1(x))\n        x = torch.relu(self.fc2(x))\n        x = torch.sigmoid(self.fc3(x))  # Output values between 0 and 1",
+        "detail": "geomaster_picture_drawer",
+        "documentation": {}
+    },
+    {
         "label": "create_stick_figure",
         "kind": 2,
         "importPath": "geomaster_picture_drawer",
@@ -1697,6 +1706,15 @@
         "importPath": "geomaster_picture_drawer",
         "description": "geomaster_picture_drawer",
         "peekOfCode": "def apply_action(pen_pos, action, canvas, world):\n    dx, dy, draw, color, stroke_size = action_map[action]\n    new_x = max(0, min(WIDTH - 1, pen_pos[0] + dx))\n    new_y = max(0, min(HEIGHT - 1, pen_pos[1] + dy))\n    new_pos = [new_x, new_y]\n    proj_start = project_point((pen_pos[0] - WIDTH / 2, pen_pos[1] - HEIGHT / 2), world)\n    proj_end = project_point((new_x - WIDTH / 2, new_y - HEIGHT / 2), world)\n    if draw:\n        pygame.draw.line(screen, color, proj_start, proj_end, stroke_size)\n        cv2.line(canvas, (int(pen_pos[0]), int(pen_pos[1])), ",
+        "detail": "geomaster_picture_drawer",
+        "documentation": {}
+    },
+    {
+        "label": "generate_image",
+        "kind": 2,
+        "importPath": "geomaster_picture_drawer",
+        "description": "geomaster_picture_drawer",
+        "peekOfCode": "def generate_image(input_vector):\n    input_tensor = torch.FloatTensor(input_vector).unsqueeze(0).to(device)\n    with torch.no_grad():\n        output_tensor = image_generator(input_tensor)\n    output_image = output_tensor.cpu().numpy().reshape((HEIGHT, WIDTH, 3)) * 255\n    return output_image.astype(np.uint8)\n# Example usage of the image generator\ninput_vector = np.random.rand(input_dim)  # Random input vector\ngenerated_image = generate_image(input_vector)\n# Save the generated image",
         "detail": "geomaster_picture_drawer",
         "documentation": {}
     },
@@ -1904,6 +1922,60 @@
         "importPath": "geomaster_picture_drawer",
         "description": "geomaster_picture_drawer",
         "peekOfCode": "action_map = {\n    # No draw (4 actions)\n    0: (-5, 0, False, (0, 0, 0), 1),  1: (5, 0, False, (0, 0, 0), 1),\n    2: (0, -5, False, (0, 0, 0), 1),  3: (0, 5, False, (0, 0, 0), 1),\n    # Cyan (1, 3, 5)\n    4: (-5, 0, True, CYAN, 1),  5: (5, 0, True, CYAN, 1),\n    6: (0, -5, True, CYAN, 1),  7: (0, 5, True, CYAN, 1),\n    8: (-5, 0, True, CYAN, 3),  9: (5, 0, True, CYAN, 3),\n    10: (0, -5, True, CYAN, 3), 11: (0, 5, True, CYAN, 3),\n    12: (-5, 0, True, CYAN, 5), 13: (5, 0, True, CYAN, 5),",
+        "detail": "geomaster_picture_drawer",
+        "documentation": {}
+    },
+    {
+        "label": "input_dim",
+        "kind": 5,
+        "importPath": "geomaster_picture_drawer",
+        "description": "geomaster_picture_drawer",
+        "peekOfCode": "input_dim = 10  # Example input dimension\noutput_dim = WIDTH * HEIGHT * 3  # Output dimension for an RGB image\nimage_generator = ImageGenerator(input_dim, output_dim).to(device)\n# Generate an image using the neural network\ndef generate_image(input_vector):\n    input_tensor = torch.FloatTensor(input_vector).unsqueeze(0).to(device)\n    with torch.no_grad():\n        output_tensor = image_generator(input_tensor)\n    output_image = output_tensor.cpu().numpy().reshape((HEIGHT, WIDTH, 3)) * 255\n    return output_image.astype(np.uint8)",
+        "detail": "geomaster_picture_drawer",
+        "documentation": {}
+    },
+    {
+        "label": "output_dim",
+        "kind": 5,
+        "importPath": "geomaster_picture_drawer",
+        "description": "geomaster_picture_drawer",
+        "peekOfCode": "output_dim = WIDTH * HEIGHT * 3  # Output dimension for an RGB image\nimage_generator = ImageGenerator(input_dim, output_dim).to(device)\n# Generate an image using the neural network\ndef generate_image(input_vector):\n    input_tensor = torch.FloatTensor(input_vector).unsqueeze(0).to(device)\n    with torch.no_grad():\n        output_tensor = image_generator(input_tensor)\n    output_image = output_tensor.cpu().numpy().reshape((HEIGHT, WIDTH, 3)) * 255\n    return output_image.astype(np.uint8)\n# Example usage of the image generator",
+        "detail": "geomaster_picture_drawer",
+        "documentation": {}
+    },
+    {
+        "label": "image_generator",
+        "kind": 5,
+        "importPath": "geomaster_picture_drawer",
+        "description": "geomaster_picture_drawer",
+        "peekOfCode": "image_generator = ImageGenerator(input_dim, output_dim).to(device)\n# Generate an image using the neural network\ndef generate_image(input_vector):\n    input_tensor = torch.FloatTensor(input_vector).unsqueeze(0).to(device)\n    with torch.no_grad():\n        output_tensor = image_generator(input_tensor)\n    output_image = output_tensor.cpu().numpy().reshape((HEIGHT, WIDTH, 3)) * 255\n    return output_image.astype(np.uint8)\n# Example usage of the image generator\ninput_vector = np.random.rand(input_dim)  # Random input vector",
+        "detail": "geomaster_picture_drawer",
+        "documentation": {}
+    },
+    {
+        "label": "input_vector",
+        "kind": 5,
+        "importPath": "geomaster_picture_drawer",
+        "description": "geomaster_picture_drawer",
+        "peekOfCode": "input_vector = np.random.rand(input_dim)  # Random input vector\ngenerated_image = generate_image(input_vector)\n# Save the generated image\noutput_filename = \"generated_image.png\"\ncv2.imwrite(output_filename, generated_image)\nprint(f\"Generated image saved to {output_filename}\")\n# Main loop\nclock = pygame.time.Clock()\nrunning = True\nmax_steps = 1000",
+        "detail": "geomaster_picture_drawer",
+        "documentation": {}
+    },
+    {
+        "label": "generated_image",
+        "kind": 5,
+        "importPath": "geomaster_picture_drawer",
+        "description": "geomaster_picture_drawer",
+        "peekOfCode": "generated_image = generate_image(input_vector)\n# Save the generated image\noutput_filename = \"generated_image.png\"\ncv2.imwrite(output_filename, generated_image)\nprint(f\"Generated image saved to {output_filename}\")\n# Main loop\nclock = pygame.time.Clock()\nrunning = True\nmax_steps = 1000\nbias_strength = 0.5  # Starting value",
+        "detail": "geomaster_picture_drawer",
+        "documentation": {}
+    },
+    {
+        "label": "output_filename",
+        "kind": 5,
+        "importPath": "geomaster_picture_drawer",
+        "description": "geomaster_picture_drawer",
+        "peekOfCode": "output_filename = \"generated_image.png\"\ncv2.imwrite(output_filename, generated_image)\nprint(f\"Generated image saved to {output_filename}\")\n# Main loop\nclock = pygame.time.Clock()\nrunning = True\nmax_steps = 1000\nbias_strength = 0.5  # Starting value\nfor img_name, target_img in target_images:\n    for current_world in worlds:",
         "detail": "geomaster_picture_drawer",
         "documentation": {}
     },

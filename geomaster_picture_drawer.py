@@ -6,6 +6,7 @@ from geomaster_ai_challenge import project_point, WORLD_EUCLIDEAN, WORLD_HYPERBO
 import os
 import csv
 import time
+import torch.nn as nn
 
 # Initialize Pygame
 pygame.init()
@@ -178,6 +179,42 @@ def apply_action(pen_pos, action, canvas, world):
                  (int(new_x), int(new_y)), color[::-1], stroke_size)
     
     return new_pos, color if draw else (0, 0, 0), stroke_size
+
+# Define a simple neural network for image generation
+class ImageGenerator(nn.Module):
+    def __init__(self, input_dim, output_dim):
+        super(ImageGenerator, self).__init__()
+        self.fc1 = nn.Linear(input_dim, 128)
+        self.fc2 = nn.Linear(128, 256)
+        self.fc3 = nn.Linear(256, output_dim)
+
+    def forward(self, x):
+        x = torch.relu(self.fc1(x))
+        x = torch.relu(self.fc2(x))
+        x = torch.sigmoid(self.fc3(x))  # Output values between 0 and 1
+        return x
+
+# Initialize the image generator
+input_dim = 10  # Example input dimension
+output_dim = WIDTH * HEIGHT * 3  # Output dimension for an RGB image
+image_generator = ImageGenerator(input_dim, output_dim).to(device)
+
+# Generate an image using the neural network
+def generate_image(input_vector):
+    input_tensor = torch.FloatTensor(input_vector).unsqueeze(0).to(device)
+    with torch.no_grad():
+        output_tensor = image_generator(input_tensor)
+    output_image = output_tensor.cpu().numpy().reshape((HEIGHT, WIDTH, 3)) * 255
+    return output_image.astype(np.uint8)
+
+# Example usage of the image generator
+input_vector = np.random.rand(input_dim)  # Random input vector
+generated_image = generate_image(input_vector)
+
+# Save the generated image
+output_filename = "generated_image.png"
+cv2.imwrite(output_filename, generated_image)
+print(f"Generated image saved to {output_filename}")
 
 # Main loop
 clock = pygame.time.Clock()
