@@ -328,8 +328,26 @@ geo_model = GeoMasterAIModel(state_dim, action_dim, gamma, base_lr)
 memory = SumTree(memory_size)
 geo_data = GeoMasterDataModule(memory, batch_size)
 
+# Add a warm-up phase to populate the memory
+def populate_memory(memory, num_samples=100):
+    """Populate the memory with random transitions."""
+    for _ in range(num_samples):
+        state = np.random.rand(state_dim).tolist()  # Random state
+        action = random.randint(0, action_dim - 1)  # Random action
+        reward = random.uniform(-1, 1)  # Random reward
+        next_state = np.random.rand(state_dim).tolist()  # Random next state
+        done = random.choice([0, 1])  # Random done flag
+        memory.add(1.0, (state, action, reward, next_state, done))
+
+# Populate the memory before training
+populate_memory(memory, num_samples=100)
+
 # Replace the training loop with PyTorch Lightning Trainer
-trainer = Trainer(max_epochs=100, gpus=1 if torch.cuda.is_available() else 0)
+trainer = Trainer(
+    max_epochs=100,
+    accelerator="gpu" if torch.cuda.is_available() else "cpu",  # Use "gpu" or "cpu"
+    devices=1  # Ensure devices is set to 1 for both GPU and CPU
+)
 
 # Train the model
 trainer.fit(geo_model, geo_data)
@@ -1461,6 +1479,63 @@ def tune_hyperparameters(avg_reward, fps):
 
     log_message(f"Hyperparameters tuned: base_lr={base_lr:.6f}, epsilon_decay={epsilon_decay}, REWARD_MIN={REWARD_MIN}, REWARD_MAX={REWARD_MAX}")
 
+# Move the plan_actions function here
+def plan_actions(state_tensor, model, current_shape, target, task, world, steps=3):
+    """Plan a sequence of actions using a simple simulation."""
+    best_sequence = []
+    best_reward = -float("inf")
+
+    for _ in range(10):  # Try 10 random sequences
+        sequence = [np.random.randint(action_dim) for _ in range(steps)]
+        sim_shape = current_shape.copy() if isinstance(current_shape, list) else []
+        total_reward = 0
+
+        for action in sequence:
+            # Simulate the action
+            if task == TASK_LINE:
+                curvature = 0
+                if action == 0:
+                    curvature = -1
+                elif action == 1:
+                    curvature = 1
+                if sim_shape:
+                    next_segment = draw_line_segment(sim_shape[-1], target, curvature, world)
+                    sim_shape.extend(next_segment[1:])
+            elif task == TASK_TRIANGLE:
+                angle_adjust = 0
+                if action == 2:
+                    angle_adjust = -10
+                elif action == 3:
+                    angle_adjust = 10
+                sim_shape = draw_triangle(sim_shape, angle_adjust, world)
+            elif task == TASK_CIRCLE:
+                radius_adjust = 0
+                if action == 4:
+                    radius_adjust = 5
+                sim_shape, sim_radius = draw_circle(target[0], target[1], radius_adjust, world)
+                target = (target[0], sim_radius)
+            elif task == TASK_PENTAGON:
+                angle_adjust = 0
+                if action == 2:
+                    angle_adjust = -10
+                elif action == 3:
+                    angle_adjust = 10
+                sim_shape = draw_pentagon(sim_shape, angle_adjust, world)
+            elif task == TASK_TESSELLATION:
+                if action == 5:
+                    base_points = sim_shape[0] if sim_shape and isinstance(sim_shape[0], (list, tuple)) else [(0, 0), (50, 50), (100, 0)]
+                    sim_shape = draw_tessellation(base_points, world)
+
+            # Calculate reward
+            reward = calculate_advanced_reward(sim_shape, target, task, world)
+            total_reward += reward
+
+        if total_reward > best_reward:
+            best_reward = total_reward
+            best_sequence = sequence
+
+    return best_sequence
+
 # Main Game Loop
 clock = pygame.time.Clock()
 running = True
@@ -1480,6 +1555,18 @@ command_keys = {
     pygame.K_b: "toggle_debug",
     pygame.K_3: "toggle_3d_mode",
 }
+
+# Move the store_transition function here
+def store_transition(transition):
+    """Store a transition in the replay memory."""
+    n_step_buffer.append(transition)
+    if len(n_step_buffer) < n_step:
+        return
+    cumulative_reward = sum([(gamma**i) * t[2] for i, t in enumerate(n_step_buffer)])
+    state, action = n_step_buffer[0][0], n_step_buffer[0][1]
+    next_state, done = n_step_buffer[-1][3], n_step_buffer[-1][4]
+    memory.add(1.0, (state, action, cumulative_reward, next_state, done))
+    n_step_buffer.pop(0)
 
 while running:
     for event in pygame.event.get():
@@ -2034,70 +2121,3 @@ while running:
     clock.tick(tick_rate if running_state == "running" else 5)
 
 pygame.quit()
-
-def store_transition(transition):
-    """Store a transition in the replay memory."""
-    n_step_buffer.append(transition)
-    if len(n_step_buffer) < n_step:
-        return
-    cumulative_reward = sum([(gamma**i) * t[2] for i, t in enumerate(n_step_buffer)])
-    state, action = n_step_buffer[0][0], n_step_buffer[0][1]
-    next_state, done = n_step_buffer[-1][3], n_step_buffer[-1][4]
-    memory.add(1.0, (state, action, cumulative_reward, next_state, done))
-    n_step_buffer.pop(0)
-
-def plan_actions(state_tensor, model, current_shape, target, task, world, steps=3):
-    """Plan a sequence of actions using a simple simulation."""
-    best_sequence = []
-    best_reward = -float("inf")
-
-    for _ in range(10):  # Try 10 random sequences
-        sequence = [np.random.randint(action_dim) for _ in range(steps)]
-        sim_shape = current_shape.copy() if isinstance(current_shape, list) else []
-        total_reward = 0
-
-        for action in sequence:
-            # Simulate the action
-            if task == TASK_LINE:
-                curvature = 0
-                if action == 0:
-                    curvature = -1
-                elif action == 1:
-                    curvature = 1
-                if sim_shape:
-                    next_segment = draw_line_segment(sim_shape[-1], target, curvature, world)
-                    sim_shape.extend(next_segment[1:])
-            elif task == TASK_TRIANGLE:
-                angle_adjust = 0
-                if action == 2:
-                    angle_adjust = -10
-                elif action == 3:
-                    angle_adjust = 10
-                sim_shape = draw_triangle(sim_shape, angle_adjust, world)
-            elif task == TASK_CIRCLE:
-                radius_adjust = 0
-                if action == 4:
-                    radius_adjust = 5
-                sim_shape, sim_radius = draw_circle(target[0], target[1], radius_adjust, world)
-                target = (target[0], sim_radius)
-            elif task == TASK_PENTAGON:
-                angle_adjust = 0
-                if action == 2:
-                    angle_adjust = -10
-                elif action == 3:
-                    angle_adjust = 10
-                sim_shape = draw_pentagon(sim_shape, angle_adjust, world)
-            elif task == TASK_TESSELLATION:
-                if action == 5:
-                    base_points = sim_shape[0] if sim_shape and isinstance(sim_shape[0], (list, tuple)) else [(0, 0), (50, 50), (100, 0)]
-                    sim_shape = draw_tessellation(base_points, world)
-
-            # Calculate reward
-            reward = calculate_advanced_reward(sim_shape, target, task, world)
-            total_reward += reward
-
-        if total_reward > best_reward:
-            best_reward = total_reward
-            best_sequence = sequence
-
-    return best_sequence

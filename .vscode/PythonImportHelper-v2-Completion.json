@@ -230,6 +230,15 @@
         "documentation": {}
     },
     {
+        "label": "populate_memory",
+        "kind": 2,
+        "importPath": "geomaster_ai_challenge",
+        "description": "geomaster_ai_challenge",
+        "peekOfCode": "def populate_memory(memory, num_samples=100):\n    \"\"\"Populate the memory with random transitions.\"\"\"\n    for _ in range(num_samples):\n        state = np.random.rand(state_dim).tolist()  # Random state\n        action = random.randint(0, action_dim - 1)  # Random action\n        reward = random.uniform(-1, 1)  # Random reward\n        next_state = np.random.rand(state_dim).tolist()  # Random next state\n        done = random.choice([0, 1])  # Random done flag\n        memory.add(1.0, (state, action, reward, next_state, done))\n# Populate the memory before training",
+        "detail": "geomaster_ai_challenge",
+        "documentation": {}
+    },
+    {
         "label": "optimize_model",
         "kind": 2,
         "importPath": "geomaster_ai_challenge",
@@ -617,20 +626,20 @@
         "documentation": {}
     },
     {
-        "label": "store_transition",
-        "kind": 2,
-        "importPath": "geomaster_ai_challenge",
-        "description": "geomaster_ai_challenge",
-        "peekOfCode": "def store_transition(transition):\n    \"\"\"Store a transition in the replay memory.\"\"\"\n    n_step_buffer.append(transition)\n    if len(n_step_buffer) < n_step:\n        return\n    cumulative_reward = sum([(gamma**i) * t[2] for i, t in enumerate(n_step_buffer)])\n    state, action = n_step_buffer[0][0], n_step_buffer[0][1]\n    next_state, done = n_step_buffer[-1][3], n_step_buffer[-1][4]\n    memory.add(1.0, (state, action, cumulative_reward, next_state, done))\n    n_step_buffer.pop(0)",
-        "detail": "geomaster_ai_challenge",
-        "documentation": {}
-    },
-    {
         "label": "plan_actions",
         "kind": 2,
         "importPath": "geomaster_ai_challenge",
         "description": "geomaster_ai_challenge",
         "peekOfCode": "def plan_actions(state_tensor, model, current_shape, target, task, world, steps=3):\n    \"\"\"Plan a sequence of actions using a simple simulation.\"\"\"\n    best_sequence = []\n    best_reward = -float(\"inf\")\n    for _ in range(10):  # Try 10 random sequences\n        sequence = [np.random.randint(action_dim) for _ in range(steps)]\n        sim_shape = current_shape.copy() if isinstance(current_shape, list) else []\n        total_reward = 0\n        for action in sequence:\n            # Simulate the action",
+        "detail": "geomaster_ai_challenge",
+        "documentation": {}
+    },
+    {
+        "label": "store_transition",
+        "kind": 2,
+        "importPath": "geomaster_ai_challenge",
+        "description": "geomaster_ai_challenge",
+        "peekOfCode": "def store_transition(transition):\n    \"\"\"Store a transition in the replay memory.\"\"\"\n    n_step_buffer.append(transition)\n    if len(n_step_buffer) < n_step:\n        return\n    cumulative_reward = sum([(gamma**i) * t[2] for i, t in enumerate(n_step_buffer)])\n    state, action = n_step_buffer[0][0], n_step_buffer[0][1]\n    next_state, done = n_step_buffer[-1][3], n_step_buffer[-1][4]\n    memory.add(1.0, (state, action, cumulative_reward, next_state, done))\n    n_step_buffer.pop(0)",
         "detail": "geomaster_ai_challenge",
         "documentation": {}
     },
@@ -1125,7 +1134,7 @@
         "kind": 5,
         "importPath": "geomaster_ai_challenge",
         "description": "geomaster_ai_challenge",
-        "peekOfCode": "geo_model = GeoMasterAIModel(state_dim, action_dim, gamma, base_lr)\nmemory = SumTree(memory_size)\ngeo_data = GeoMasterDataModule(memory, batch_size)\n# Replace the training loop with PyTorch Lightning Trainer\ntrainer = Trainer(max_epochs=100, gpus=1 if torch.cuda.is_available() else 0)\n# Train the model\ntrainer.fit(geo_model, geo_data)\n# Update the optimize_model function to include scheduler step\ndef optimize_model():\n    \"\"\"Optimization is now handled by PyTorch Lightning.\"\"\"",
+        "peekOfCode": "geo_model = GeoMasterAIModel(state_dim, action_dim, gamma, base_lr)\nmemory = SumTree(memory_size)\ngeo_data = GeoMasterDataModule(memory, batch_size)\n# Add a warm-up phase to populate the memory\ndef populate_memory(memory, num_samples=100):\n    \"\"\"Populate the memory with random transitions.\"\"\"\n    for _ in range(num_samples):\n        state = np.random.rand(state_dim).tolist()  # Random state\n        action = random.randint(0, action_dim - 1)  # Random action\n        reward = random.uniform(-1, 1)  # Random reward",
         "detail": "geomaster_ai_challenge",
         "documentation": {}
     },
@@ -1134,7 +1143,7 @@
         "kind": 5,
         "importPath": "geomaster_ai_challenge",
         "description": "geomaster_ai_challenge",
-        "peekOfCode": "memory = SumTree(memory_size)\ngeo_data = GeoMasterDataModule(memory, batch_size)\n# Replace the training loop with PyTorch Lightning Trainer\ntrainer = Trainer(max_epochs=100, gpus=1 if torch.cuda.is_available() else 0)\n# Train the model\ntrainer.fit(geo_model, geo_data)\n# Update the optimize_model function to include scheduler step\ndef optimize_model():\n    \"\"\"Optimization is now handled by PyTorch Lightning.\"\"\"\n    trainer.fit(geo_model, geo_data)",
+        "peekOfCode": "memory = SumTree(memory_size)\ngeo_data = GeoMasterDataModule(memory, batch_size)\n# Add a warm-up phase to populate the memory\ndef populate_memory(memory, num_samples=100):\n    \"\"\"Populate the memory with random transitions.\"\"\"\n    for _ in range(num_samples):\n        state = np.random.rand(state_dim).tolist()  # Random state\n        action = random.randint(0, action_dim - 1)  # Random action\n        reward = random.uniform(-1, 1)  # Random reward\n        next_state = np.random.rand(state_dim).tolist()  # Random next state",
         "detail": "geomaster_ai_challenge",
         "documentation": {}
     },
@@ -1143,7 +1152,7 @@
         "kind": 5,
         "importPath": "geomaster_ai_challenge",
         "description": "geomaster_ai_challenge",
-        "peekOfCode": "geo_data = GeoMasterDataModule(memory, batch_size)\n# Replace the training loop with PyTorch Lightning Trainer\ntrainer = Trainer(max_epochs=100, gpus=1 if torch.cuda.is_available() else 0)\n# Train the model\ntrainer.fit(geo_model, geo_data)\n# Update the optimize_model function to include scheduler step\ndef optimize_model():\n    \"\"\"Optimization is now handled by PyTorch Lightning.\"\"\"\n    trainer.fit(geo_model, geo_data)\n    for scheduler in trainer.optimizers[0].schedulers:",
+        "peekOfCode": "geo_data = GeoMasterDataModule(memory, batch_size)\n# Add a warm-up phase to populate the memory\ndef populate_memory(memory, num_samples=100):\n    \"\"\"Populate the memory with random transitions.\"\"\"\n    for _ in range(num_samples):\n        state = np.random.rand(state_dim).tolist()  # Random state\n        action = random.randint(0, action_dim - 1)  # Random action\n        reward = random.uniform(-1, 1)  # Random reward\n        next_state = np.random.rand(state_dim).tolist()  # Random next state\n        done = random.choice([0, 1])  # Random done flag",
         "detail": "geomaster_ai_challenge",
         "documentation": {}
     },
@@ -1152,7 +1161,7 @@
         "kind": 5,
         "importPath": "geomaster_ai_challenge",
         "description": "geomaster_ai_challenge",
-        "peekOfCode": "trainer = Trainer(max_epochs=100, gpus=1 if torch.cuda.is_available() else 0)\n# Train the model\ntrainer.fit(geo_model, geo_data)\n# Update the optimize_model function to include scheduler step\ndef optimize_model():\n    \"\"\"Optimization is now handled by PyTorch Lightning.\"\"\"\n    trainer.fit(geo_model, geo_data)\n    for scheduler in trainer.optimizers[0].schedulers:\n        scheduler.step()  # Step the scheduler after each epoch\n# Neural Networks",
+        "peekOfCode": "trainer = Trainer(\n    max_epochs=100,\n    accelerator=\"gpu\" if torch.cuda.is_available() else \"cpu\",  # Use \"gpu\" or \"cpu\"\n    devices=1  # Ensure devices is set to 1 for both GPU and CPU\n)\n# Train the model\ntrainer.fit(geo_model, geo_data)\n# Update the optimize_model function to include scheduler step\ndef optimize_model():\n    \"\"\"Optimization is now handled by PyTorch Lightning.\"\"\"",
         "detail": "geomaster_ai_challenge",
         "documentation": {}
     },
