@@ -1650,7 +1650,7 @@
         "kind": 6,
         "importPath": "geomaster_picture_drawer",
         "description": "geomaster_picture_drawer",
-        "peekOfCode": "class ImageGenerator(nn.Module):\n    def __init__(self, input_dim, output_dim):\n        super(ImageGenerator, self).__init__()\n        self.fc1 = nn.Linear(input_dim, 128)\n        self.fc2 = nn.Linear(128, 256)\n        self.fc3 = nn.Linear(256, output_dim)\n    def forward(self, x):\n        x = torch.relu(self.fc1(x))\n        x = torch.relu(self.fc2(x))\n        x = torch.sigmoid(self.fc3(x))  # Output values between 0 and 1",
+        "peekOfCode": "class ImageGenerator(nn.Module):\n    def __init__(self, input_dim, output_dim):\n        super(ImageGenerator, self).__init__()\n        self.fc1 = nn.Linear(input_dim, 128)\n        self.fc2 = nn.Linear(128, 256)\n        self.fc3 = nn.Linear(256, output_dim)\n    def forward(self, x):\n        x = torch.relu(self.fc1(x))\n        x = torch.relu(self.fc2(x))\n        x = torch.sigmoid(self.fc3(x))  # Output [0, 1]",
         "detail": "geomaster_picture_drawer",
         "documentation": {}
     },
@@ -1686,7 +1686,7 @@
         "kind": 2,
         "importPath": "geomaster_picture_drawer",
         "description": "geomaster_picture_drawer",
-        "peekOfCode": "def get_state(canvas, pen_pos, target_img):\n    patch_size = 20\n    x, y = int(pen_pos[0]), int(pen_pos[1])\n    x_min, x_max = max(0, x - patch_size), min(WIDTH, x + patch_size)\n    y_min, y_max = max(0, y - patch_size), min(HEIGHT, y + patch_size)\n    canvas_patch = canvas[y_min:y_max, x_min:x_max]\n    target_patch = target_img[y_min:y_max, x_min:x_max]\n    similarity = -np.mean((canvas_patch - target_patch) ** 2) / 255.0\n    state = np.array([\n        pen_pos[0] / WIDTH, pen_pos[1] / HEIGHT,",
+        "peekOfCode": "def get_state(canvas, pen_pos, target_img):\n    patch_size = 20\n    x, y = int(pen_pos[0]), int(pen_pos[1])\n    x_min, x_max = max(0, x - patch_size), min(WIDTH, x + patch_size)\n    y_min, y_max = max(0, y - patch_size), min(HEIGHT, y + patch_size)\n    canvas_patch = canvas[y_min:y_max, x_min:x_max]\n    target_patch = target_img[y_min:y_max, x_min:x_max]\n    similarity = -np.mean((canvas_patch - target_patch) ** 2) / 255.0\n    # Enhanced state with more features\n    state = np.array(",
         "detail": "geomaster_picture_drawer",
         "documentation": {}
     },
@@ -1713,16 +1713,16 @@
         "kind": 2,
         "importPath": "geomaster_picture_drawer",
         "description": "geomaster_picture_drawer",
-        "peekOfCode": "def apply_action(pen_pos, action, canvas, world):\n    dx, dy, draw, color, stroke_size = action_map[action]\n    new_x = max(0, min(WIDTH - 1, pen_pos[0] + dx))\n    new_y = max(0, min(HEIGHT - 1, pen_pos[1] + dy))\n    new_pos = [new_x, new_y]\n    proj_start = project_point((pen_pos[0] - WIDTH / 2, pen_pos[1] - HEIGHT / 2), world)\n    proj_end = project_point((new_x - WIDTH / 2, new_y - HEIGHT / 2), world)\n    if draw:\n        pygame.draw.line(screen, color, proj_start, proj_end, stroke_size)\n        cv2.line(canvas, (int(pen_pos[0]), int(pen_pos[1])), ",
+        "peekOfCode": "def apply_action(pen_pos, action, canvas, world):\n    dx, dy, draw, color, stroke_size = action_map[action]\n    new_x = max(0, min(WIDTH - 1, pen_pos[0] + dx))\n    new_y = max(0, min(HEIGHT - 1, pen_pos[1] + dy))\n    new_pos = [new_x, new_y]\n    proj_start = project_point((pen_pos[0] - WIDTH / 2, pen_pos[1] - HEIGHT / 2), world)\n    proj_end = project_point((new_x - WIDTH / 2, new_y - HEIGHT / 2), world)\n    if draw:\n        pygame.draw.line(screen, color, proj_start, proj_end, stroke_size)\n        cv2.line(",
         "detail": "geomaster_picture_drawer",
         "documentation": {}
     },
     {
-        "label": "generate_image",
+        "label": "generate_initial_canvas",
         "kind": 2,
         "importPath": "geomaster_picture_drawer",
         "description": "geomaster_picture_drawer",
-        "peekOfCode": "def generate_image(input_vector):\n    input_tensor = torch.FloatTensor(input_vector).unsqueeze(0).to(device)\n    with torch.no_grad():\n        output_tensor = image_generator(input_tensor)\n    output_image = output_tensor.cpu().numpy().reshape((HEIGHT, WIDTH, 3)) * 255\n    return output_image.astype(np.uint8)\n# Example usage of the image generator\ninput_vector = np.random.rand(input_dim)  # Random input vector\ngenerated_image = generate_image(input_vector)\n# Save the generated image",
+        "peekOfCode": "def generate_initial_canvas(state):\n    input_tensor = torch.FloatTensor(state).unsqueeze(0).to(device)\n    with torch.no_grad():\n        output_tensor = image_generator(input_tensor)\n    output_image = output_tensor.cpu().numpy().reshape((HEIGHT, WIDTH, 3)) * 255\n    return output_image.astype(np.uint8)\n# Action selection with DQN and bias\ndef select_action_with_dqn(state, action_bias, bias_strength):\n    state_tensor = torch.FloatTensor(state).unsqueeze(0).to(device)\n    with torch.no_grad():",
         "detail": "geomaster_picture_drawer",
         "documentation": {}
     },
@@ -1731,7 +1731,7 @@
         "kind": 2,
         "importPath": "geomaster_picture_drawer",
         "description": "geomaster_picture_drawer",
-        "peekOfCode": "def select_action_with_dqn(state):\n    state_tensor = torch.FloatTensor(state).unsqueeze(0).to(device)\n    with torch.no_grad():\n        q_values = dqn_model(state_tensor).cpu().numpy().flatten()\n    return np.argmax(q_values)\n# Main loop\nclock = pygame.time.Clock()\nrunning = True\nmax_steps = 1000\nbias_strength = 0.5  # Starting value",
+        "peekOfCode": "def select_action_with_dqn(state, action_bias, bias_strength):\n    state_tensor = torch.FloatTensor(state).unsqueeze(0).to(device)\n    with torch.no_grad():\n        q_values = dqn_model(state_tensor).cpu().numpy().flatten()\n        for action, bias in action_bias.items():\n            q_values[action] += bias * bias_strength\n    return np.argmax(q_values)\n# Main loop\nclock = pygame.time.Clock()\nrunning = True",
         "detail": "geomaster_picture_drawer",
         "documentation": {}
     },
@@ -1794,7 +1794,7 @@
         "kind": 5,
         "importPath": "geomaster_picture_drawer",
         "description": "geomaster_picture_drawer",
-        "peekOfCode": "CYAN = (0, 255, 255)\nGREEN = (0, 255, 0)\nBLUE = (0, 0, 255)\nYELLOW = (255, 255, 0)\nMAGENTA = (255, 0, 255)\n# Font\nfont = pygame.font.SysFont(\"monospace\", 20)\n# Device\ndevice = torch.device(\"cuda\" if torch.cuda.is_available() else \"cpu\")\n# Load pre-trained GeoMasterAIModel",
+        "peekOfCode": "CYAN = (0, 255, 255)\nGREEN = (0, 255, 0)\nBLUE = (0, 0, 255)\nYELLOW = (255, 255, 0)\nMAGENTA = (255, 0, 255)\n# Font\nfont = pygame.font.SysFont(\"monospace\", 20)\n# Device\ndevice = torch.device(\"cuda\" if torch.cuda.is_available() else \"cpu\")\n# Action space (aligned with geomaster_ai_challenge.py or expanded)",
         "detail": "geomaster_picture_drawer",
         "documentation": {}
     },
@@ -1803,7 +1803,7 @@
         "kind": 5,
         "importPath": "geomaster_picture_drawer",
         "description": "geomaster_picture_drawer",
-        "peekOfCode": "GREEN = (0, 255, 0)\nBLUE = (0, 0, 255)\nYELLOW = (255, 255, 0)\nMAGENTA = (255, 0, 255)\n# Font\nfont = pygame.font.SysFont(\"monospace\", 20)\n# Device\ndevice = torch.device(\"cuda\" if torch.cuda.is_available() else \"cpu\")\n# Load pre-trained GeoMasterAIModel\nstate_dim = 10  # Match 2D state from geomaster_ai_challenge.py",
+        "peekOfCode": "GREEN = (0, 255, 0)\nBLUE = (0, 0, 255)\nYELLOW = (255, 255, 0)\nMAGENTA = (255, 0, 255)\n# Font\nfont = pygame.font.SysFont(\"monospace\", 20)\n# Device\ndevice = torch.device(\"cuda\" if torch.cuda.is_available() else \"cpu\")\n# Action space (aligned with geomaster_ai_challenge.py or expanded)\naction_dim = 36  # Expanded: 4 dirs (no draw) + 4 dirs x 4 colors x 3 stroke sizes",
         "detail": "geomaster_picture_drawer",
         "documentation": {}
     },
@@ -1812,7 +1812,7 @@
         "kind": 5,
         "importPath": "geomaster_picture_drawer",
         "description": "geomaster_picture_drawer",
-        "peekOfCode": "BLUE = (0, 0, 255)\nYELLOW = (255, 255, 0)\nMAGENTA = (255, 0, 255)\n# Font\nfont = pygame.font.SysFont(\"monospace\", 20)\n# Device\ndevice = torch.device(\"cuda\" if torch.cuda.is_available() else \"cpu\")\n# Load pre-trained GeoMasterAIModel\nstate_dim = 10  # Match 2D state from geomaster_ai_challenge.py\naction_dim = 36  # Expanded: 4 dirs (no draw) + 4 dirs x 4 colors x 3 stroke sizes",
+        "peekOfCode": "BLUE = (0, 0, 255)\nYELLOW = (255, 255, 0)\nMAGENTA = (255, 0, 255)\n# Font\nfont = pygame.font.SysFont(\"monospace\", 20)\n# Device\ndevice = torch.device(\"cuda\" if torch.cuda.is_available() else \"cpu\")\n# Action space (aligned with geomaster_ai_challenge.py or expanded)\naction_dim = 36  # Expanded: 4 dirs (no draw) + 4 dirs x 4 colors x 3 stroke sizes\nstate_dim = 10  # Match 2D state from geomaster_ai_challenge.py",
         "detail": "geomaster_picture_drawer",
         "documentation": {}
     },
@@ -1821,7 +1821,7 @@
         "kind": 5,
         "importPath": "geomaster_picture_drawer",
         "description": "geomaster_picture_drawer",
-        "peekOfCode": "YELLOW = (255, 255, 0)\nMAGENTA = (255, 0, 255)\n# Font\nfont = pygame.font.SysFont(\"monospace\", 20)\n# Device\ndevice = torch.device(\"cuda\" if torch.cuda.is_available() else \"cpu\")\n# Load pre-trained GeoMasterAIModel\nstate_dim = 10  # Match 2D state from geomaster_ai_challenge.py\naction_dim = 36  # Expanded: 4 dirs (no draw) + 4 dirs x 4 colors x 3 stroke sizes\ngeo_model = GeoMasterAIModel(state_dim, action_dim, gamma=0.99, base_lr=0.001).to(device)",
+        "peekOfCode": "YELLOW = (255, 255, 0)\nMAGENTA = (255, 0, 255)\n# Font\nfont = pygame.font.SysFont(\"monospace\", 20)\n# Device\ndevice = torch.device(\"cuda\" if torch.cuda.is_available() else \"cpu\")\n# Action space (aligned with geomaster_ai_challenge.py or expanded)\naction_dim = 36  # Expanded: 4 dirs (no draw) + 4 dirs x 4 colors x 3 stroke sizes\nstate_dim = 10  # Match 2D state from geomaster_ai_challenge.py\n# Load pre-trained GeoMasterAIModel (optional, for comparison)",
         "detail": "geomaster_picture_drawer",
         "documentation": {}
     },
@@ -1830,7 +1830,7 @@
         "kind": 5,
         "importPath": "geomaster_picture_drawer",
         "description": "geomaster_picture_drawer",
-        "peekOfCode": "MAGENTA = (255, 0, 255)\n# Font\nfont = pygame.font.SysFont(\"monospace\", 20)\n# Device\ndevice = torch.device(\"cuda\" if torch.cuda.is_available() else \"cpu\")\n# Load pre-trained GeoMasterAIModel\nstate_dim = 10  # Match 2D state from geomaster_ai_challenge.py\naction_dim = 36  # Expanded: 4 dirs (no draw) + 4 dirs x 4 colors x 3 stroke sizes\ngeo_model = GeoMasterAIModel(state_dim, action_dim, gamma=0.99, base_lr=0.001).to(device)\nweights_path = \"policy_net.pth\"",
+        "peekOfCode": "MAGENTA = (255, 0, 255)\n# Font\nfont = pygame.font.SysFont(\"monospace\", 20)\n# Device\ndevice = torch.device(\"cuda\" if torch.cuda.is_available() else \"cpu\")\n# Action space (aligned with geomaster_ai_challenge.py or expanded)\naction_dim = 36  # Expanded: 4 dirs (no draw) + 4 dirs x 4 colors x 3 stroke sizes\nstate_dim = 10  # Match 2D state from geomaster_ai_challenge.py\n# Load pre-trained GeoMasterAIModel (optional, for comparison)\ngeo_model = GeoMasterAIModel(state_dim, action_dim, gamma=0.99, base_lr=0.001).to(",
         "detail": "geomaster_picture_drawer",
         "documentation": {}
     },
@@ -1839,7 +1839,7 @@
         "kind": 5,
         "importPath": "geomaster_picture_drawer",
         "description": "geomaster_picture_drawer",
-        "peekOfCode": "font = pygame.font.SysFont(\"monospace\", 20)\n# Device\ndevice = torch.device(\"cuda\" if torch.cuda.is_available() else \"cpu\")\n# Load pre-trained GeoMasterAIModel\nstate_dim = 10  # Match 2D state from geomaster_ai_challenge.py\naction_dim = 36  # Expanded: 4 dirs (no draw) + 4 dirs x 4 colors x 3 stroke sizes\ngeo_model = GeoMasterAIModel(state_dim, action_dim, gamma=0.99, base_lr=0.001).to(device)\nweights_path = \"policy_net.pth\"\nif os.path.exists(weights_path):\n    try:",
+        "peekOfCode": "font = pygame.font.SysFont(\"monospace\", 20)\n# Device\ndevice = torch.device(\"cuda\" if torch.cuda.is_available() else \"cpu\")\n# Action space (aligned with geomaster_ai_challenge.py or expanded)\naction_dim = 36  # Expanded: 4 dirs (no draw) + 4 dirs x 4 colors x 3 stroke sizes\nstate_dim = 10  # Match 2D state from geomaster_ai_challenge.py\n# Load pre-trained GeoMasterAIModel (optional, for comparison)\ngeo_model = GeoMasterAIModel(state_dim, action_dim, gamma=0.99, base_lr=0.001).to(\n    device\n)",
         "detail": "geomaster_picture_drawer",
         "documentation": {}
     },
@@ -1848,16 +1848,7 @@
         "kind": 5,
         "importPath": "geomaster_picture_drawer",
         "description": "geomaster_picture_drawer",
-        "peekOfCode": "device = torch.device(\"cuda\" if torch.cuda.is_available() else \"cpu\")\n# Load pre-trained GeoMasterAIModel\nstate_dim = 10  # Match 2D state from geomaster_ai_challenge.py\naction_dim = 36  # Expanded: 4 dirs (no draw) + 4 dirs x 4 colors x 3 stroke sizes\ngeo_model = GeoMasterAIModel(state_dim, action_dim, gamma=0.99, base_lr=0.001).to(device)\nweights_path = \"policy_net.pth\"\nif os.path.exists(weights_path):\n    try:\n        # Load weights into policy_net directly\n        geo_model.policy_net.load_state_dict(torch.load(weights_path))",
-        "detail": "geomaster_picture_drawer",
-        "documentation": {}
-    },
-    {
-        "label": "state_dim",
-        "kind": 5,
-        "importPath": "geomaster_picture_drawer",
-        "description": "geomaster_picture_drawer",
-        "peekOfCode": "state_dim = 10  # Match 2D state from geomaster_ai_challenge.py\naction_dim = 36  # Expanded: 4 dirs (no draw) + 4 dirs x 4 colors x 3 stroke sizes\ngeo_model = GeoMasterAIModel(state_dim, action_dim, gamma=0.99, base_lr=0.001).to(device)\nweights_path = \"policy_net.pth\"\nif os.path.exists(weights_path):\n    try:\n        # Load weights into policy_net directly\n        geo_model.policy_net.load_state_dict(torch.load(weights_path))\n        print(f\"Loaded weights from {weights_path} into policy_net\")\n    except RuntimeError as e:",
+        "peekOfCode": "device = torch.device(\"cuda\" if torch.cuda.is_available() else \"cpu\")\n# Action space (aligned with geomaster_ai_challenge.py or expanded)\naction_dim = 36  # Expanded: 4 dirs (no draw) + 4 dirs x 4 colors x 3 stroke sizes\nstate_dim = 10  # Match 2D state from geomaster_ai_challenge.py\n# Load pre-trained GeoMasterAIModel (optional, for comparison)\ngeo_model = GeoMasterAIModel(state_dim, action_dim, gamma=0.99, base_lr=0.001).to(\n    device\n)\nweights_path = \"policy_net.pth\"\nif os.path.exists(weights_path):",
         "detail": "geomaster_picture_drawer",
         "documentation": {}
     },
@@ -1866,7 +1857,16 @@
         "kind": 5,
         "importPath": "geomaster_picture_drawer",
         "description": "geomaster_picture_drawer",
-        "peekOfCode": "action_dim = 36  # Expanded: 4 dirs (no draw) + 4 dirs x 4 colors x 3 stroke sizes\ngeo_model = GeoMasterAIModel(state_dim, action_dim, gamma=0.99, base_lr=0.001).to(device)\nweights_path = \"policy_net.pth\"\nif os.path.exists(weights_path):\n    try:\n        # Load weights into policy_net directly\n        geo_model.policy_net.load_state_dict(torch.load(weights_path))\n        print(f\"Loaded weights from {weights_path} into policy_net\")\n    except RuntimeError as e:\n        print(f\"Error loading weights: {e}\")",
+        "peekOfCode": "action_dim = 36  # Expanded: 4 dirs (no draw) + 4 dirs x 4 colors x 3 stroke sizes\nstate_dim = 10  # Match 2D state from geomaster_ai_challenge.py\n# Load pre-trained GeoMasterAIModel (optional, for comparison)\ngeo_model = GeoMasterAIModel(state_dim, action_dim, gamma=0.99, base_lr=0.001).to(\n    device\n)\nweights_path = \"policy_net.pth\"\nif os.path.exists(weights_path):\n    try:\n        geo_model.policy_net.load_state_dict(torch.load(weights_path))",
+        "detail": "geomaster_picture_drawer",
+        "documentation": {}
+    },
+    {
+        "label": "state_dim",
+        "kind": 5,
+        "importPath": "geomaster_picture_drawer",
+        "description": "geomaster_picture_drawer",
+        "peekOfCode": "state_dim = 10  # Match 2D state from geomaster_ai_challenge.py\n# Load pre-trained GeoMasterAIModel (optional, for comparison)\ngeo_model = GeoMasterAIModel(state_dim, action_dim, gamma=0.99, base_lr=0.001).to(\n    device\n)\nweights_path = \"policy_net.pth\"\nif os.path.exists(weights_path):\n    try:\n        geo_model.policy_net.load_state_dict(torch.load(weights_path))\n        print(f\"Loaded weights from {weights_path} into policy_net\")",
         "detail": "geomaster_picture_drawer",
         "documentation": {}
     },
@@ -1875,7 +1875,7 @@
         "kind": 5,
         "importPath": "geomaster_picture_drawer",
         "description": "geomaster_picture_drawer",
-        "peekOfCode": "geo_model = GeoMasterAIModel(state_dim, action_dim, gamma=0.99, base_lr=0.001).to(device)\nweights_path = \"policy_net.pth\"\nif os.path.exists(weights_path):\n    try:\n        # Load weights into policy_net directly\n        geo_model.policy_net.load_state_dict(torch.load(weights_path))\n        print(f\"Loaded weights from {weights_path} into policy_net\")\n    except RuntimeError as e:\n        print(f\"Error loading weights: {e}\")\n        print(\"Initializing policy_net with random weights instead.\")",
+        "peekOfCode": "geo_model = GeoMasterAIModel(state_dim, action_dim, gamma=0.99, base_lr=0.001).to(\n    device\n)\nweights_path = \"policy_net.pth\"\nif os.path.exists(weights_path):\n    try:\n        geo_model.policy_net.load_state_dict(torch.load(weights_path))\n        print(f\"Loaded weights from {weights_path} into policy_net\")\n    except RuntimeError as e:\n        print(",
         "detail": "geomaster_picture_drawer",
         "documentation": {}
     },
@@ -1884,16 +1884,7 @@
         "kind": 5,
         "importPath": "geomaster_picture_drawer",
         "description": "geomaster_picture_drawer",
-        "peekOfCode": "weights_path = \"policy_net.pth\"\nif os.path.exists(weights_path):\n    try:\n        # Load weights into policy_net directly\n        geo_model.policy_net.load_state_dict(torch.load(weights_path))\n        print(f\"Loaded weights from {weights_path} into policy_net\")\n    except RuntimeError as e:\n        print(f\"Error loading weights: {e}\")\n        print(\"Initializing policy_net with random weights instead.\")\nelse:",
-        "detail": "geomaster_picture_drawer",
-        "documentation": {}
-    },
-    {
-        "label": "policy_net",
-        "kind": 5,
-        "importPath": "geomaster_picture_drawer",
-        "description": "geomaster_picture_drawer",
-        "peekOfCode": "policy_net = geo_model.policy_net  # Use the policy_net from GeoMasterAIModel\n# Initialize a DQN model for action selection\ndqn_model = DQN(state_dim, action_dim).to(device)\n# Load pre-trained weights for DQN if available\ndqn_weights_path = \"dqn_policy_net.pth\"\nif os.path.exists(dqn_weights_path):\n    try:\n        dqn_model.load_state_dict(torch.load(dqn_weights_path))\n        print(f\"Loaded DQN weights from {dqn_weights_path}\")\n    except RuntimeError as e:",
+        "peekOfCode": "weights_path = \"policy_net.pth\"\nif os.path.exists(weights_path):\n    try:\n        geo_model.policy_net.load_state_dict(torch.load(weights_path))\n        print(f\"Loaded weights from {weights_path} into policy_net\")\n    except RuntimeError as e:\n        print(\n            f\"Error loading weights: {e}. Action dim mismatch? Initializing randomly.\"\n        )\nelse:",
         "detail": "geomaster_picture_drawer",
         "documentation": {}
     },
@@ -1902,7 +1893,7 @@
         "kind": 5,
         "importPath": "geomaster_picture_drawer",
         "description": "geomaster_picture_drawer",
-        "peekOfCode": "dqn_model = DQN(state_dim, action_dim).to(device)\n# Load pre-trained weights for DQN if available\ndqn_weights_path = \"dqn_policy_net.pth\"\nif os.path.exists(dqn_weights_path):\n    try:\n        dqn_model.load_state_dict(torch.load(dqn_weights_path))\n        print(f\"Loaded DQN weights from {dqn_weights_path}\")\n    except RuntimeError as e:\n        print(f\"Error loading DQN weights: {e}\")\n        print(\"Initializing DQN with random weights instead.\")",
+        "peekOfCode": "dqn_model = DQN(state_dim, action_dim).to(device)\ndqn_weights_path = \"dqn_policy_net.pth\"\nif os.path.exists(dqn_weights_path):\n    try:\n        dqn_model.load_state_dict(torch.load(dqn_weights_path))\n        print(f\"Loaded DQN weights from {dqn_weights_path}\")\n    except RuntimeError as e:\n        print(f\"Error loading DQN weights: {e}. Initializing randomly.\")\nelse:\n    print(",
         "detail": "geomaster_picture_drawer",
         "documentation": {}
     },
@@ -1911,7 +1902,7 @@
         "kind": 5,
         "importPath": "geomaster_picture_drawer",
         "description": "geomaster_picture_drawer",
-        "peekOfCode": "dqn_weights_path = \"dqn_policy_net.pth\"\nif os.path.exists(dqn_weights_path):\n    try:\n        dqn_model.load_state_dict(torch.load(dqn_weights_path))\n        print(f\"Loaded DQN weights from {dqn_weights_path}\")\n    except RuntimeError as e:\n        print(f\"Error loading DQN weights: {e}\")\n        print(\"Initializing DQN with random weights instead.\")\nelse:\n    print(f\"No DQN weights found at {dqn_weights_path}; initializing with random weights\")",
+        "peekOfCode": "dqn_weights_path = \"dqn_policy_net.pth\"\nif os.path.exists(dqn_weights_path):\n    try:\n        dqn_model.load_state_dict(torch.load(dqn_weights_path))\n        print(f\"Loaded DQN weights from {dqn_weights_path}\")\n    except RuntimeError as e:\n        print(f\"Error loading DQN weights: {e}. Initializing randomly.\")\nelse:\n    print(\n        f\"No DQN weights found at {dqn_weights_path}; initializing with random weights\"",
         "detail": "geomaster_picture_drawer",
         "documentation": {}
     },
@@ -1929,7 +1920,7 @@
         "kind": 5,
         "importPath": "geomaster_picture_drawer",
         "description": "geomaster_picture_drawer",
-        "peekOfCode": "target_images = [\n    (\"stick_figure\", create_stick_figure()),\n    (\"tree\", create_tree()),\n    (\"custom_star\", load_png(\"star.png\"))\n]\n# Logging\nlog_file = \"picture_drawer_log.csv\"\nfile_exists = os.path.isfile(log_file)\nwith open(log_file, mode=\"a\", newline=\"\") as f:\n    writer = csv.writer(f)",
+        "peekOfCode": "target_images = [\n    (\"stick_figure\", create_stick_figure()),\n    (\"tree\", create_tree()),\n    (\"custom_star\", load_png(\"star.png\")),\n]\n# Logging\nlog_file = \"picture_drawer_log.csv\"\nfile_exists = os.path.isfile(log_file)\nwith open(log_file, mode=\"a\", newline=\"\") as f:\n    writer = csv.writer(f)",
         "detail": "geomaster_picture_drawer",
         "documentation": {}
     },
@@ -1938,7 +1929,7 @@
         "kind": 5,
         "importPath": "geomaster_picture_drawer",
         "description": "geomaster_picture_drawer",
-        "peekOfCode": "log_file = \"picture_drawer_log.csv\"\nfile_exists = os.path.isfile(log_file)\nwith open(log_file, mode=\"a\", newline=\"\") as f:\n    writer = csv.writer(f)\n    if not file_exists:\n        writer.writerow([\"Image\", \"World\", \"Step\", \"Pen_X\", \"Pen_Y\", \"Action\", \"Reward\", \"Similarity\", \"Color_R\", \"Color_G\", \"Color_B\", \"Stroke_Size\"])\n# State and actions\ndef get_state(canvas, pen_pos, target_img):\n    patch_size = 20\n    x, y = int(pen_pos[0]), int(pen_pos[1])",
+        "peekOfCode": "log_file = \"picture_drawer_log.csv\"\nfile_exists = os.path.isfile(log_file)\nwith open(log_file, mode=\"a\", newline=\"\") as f:\n    writer = csv.writer(f)\n    if not file_exists:\n        writer.writerow(\n            [\n                \"Image\",\n                \"World\",\n                \"Step\",",
         "detail": "geomaster_picture_drawer",
         "documentation": {}
     },
@@ -1947,7 +1938,7 @@
         "kind": 5,
         "importPath": "geomaster_picture_drawer",
         "description": "geomaster_picture_drawer",
-        "peekOfCode": "file_exists = os.path.isfile(log_file)\nwith open(log_file, mode=\"a\", newline=\"\") as f:\n    writer = csv.writer(f)\n    if not file_exists:\n        writer.writerow([\"Image\", \"World\", \"Step\", \"Pen_X\", \"Pen_Y\", \"Action\", \"Reward\", \"Similarity\", \"Color_R\", \"Color_G\", \"Color_B\", \"Stroke_Size\"])\n# State and actions\ndef get_state(canvas, pen_pos, target_img):\n    patch_size = 20\n    x, y = int(pen_pos[0]), int(pen_pos[1])\n    x_min, x_max = max(0, x - patch_size), min(WIDTH, x + patch_size)",
+        "peekOfCode": "file_exists = os.path.isfile(log_file)\nwith open(log_file, mode=\"a\", newline=\"\") as f:\n    writer = csv.writer(f)\n    if not file_exists:\n        writer.writerow(\n            [\n                \"Image\",\n                \"World\",\n                \"Step\",\n                \"Pen_X\",",
         "detail": "geomaster_picture_drawer",
         "documentation": {}
     },
@@ -1956,7 +1947,7 @@
         "kind": 5,
         "importPath": "geomaster_picture_drawer",
         "description": "geomaster_picture_drawer",
-        "peekOfCode": "action_map = {\n    # No draw (4 actions)\n    0: (-5, 0, False, (0, 0, 0), 1),  1: (5, 0, False, (0, 0, 0), 1),\n    2: (0, -5, False, (0, 0, 0), 1),  3: (0, 5, False, (0, 0, 0), 1),\n    # Cyan (1, 3, 5)\n    4: (-5, 0, True, CYAN, 1),  5: (5, 0, True, CYAN, 1),\n    6: (0, -5, True, CYAN, 1),  7: (0, 5, True, CYAN, 1),\n    8: (-5, 0, True, CYAN, 3),  9: (5, 0, True, CYAN, 3),\n    10: (0, -5, True, CYAN, 3), 11: (0, 5, True, CYAN, 3),\n    12: (-5, 0, True, CYAN, 5), 13: (5, 0, True, CYAN, 5),",
+        "peekOfCode": "action_map = {\n    0: (-5, 0, False, (0, 0, 0), 1),\n    1: (5, 0, False, (0, 0, 0), 1),\n    2: (0, -5, False, (0, 0, 0), 1),\n    3: (0, 5, False, (0, 0, 0), 1),\n    4: (-5, 0, True, CYAN, 1),\n    5: (5, 0, True, CYAN, 1),\n    6: (0, -5, True, CYAN, 1),\n    7: (0, 5, True, CYAN, 1),\n    8: (-5, 0, True, CYAN, 3),",
         "detail": "geomaster_picture_drawer",
         "documentation": {}
     },
@@ -1965,7 +1956,7 @@
         "kind": 5,
         "importPath": "geomaster_picture_drawer",
         "description": "geomaster_picture_drawer",
-        "peekOfCode": "input_dim = 10  # Example input dimension\noutput_dim = WIDTH * HEIGHT * 3  # Output dimension for an RGB image\nimage_generator = ImageGenerator(input_dim, output_dim).to(device)\n# Generate an image using the neural network\ndef generate_image(input_vector):\n    input_tensor = torch.FloatTensor(input_vector).unsqueeze(0).to(device)\n    with torch.no_grad():\n        output_tensor = image_generator(input_tensor)\n    output_image = output_tensor.cpu().numpy().reshape((HEIGHT, WIDTH, 3)) * 255\n    return output_image.astype(np.uint8)",
+        "peekOfCode": "input_dim = state_dim  # Match state input\noutput_dim = WIDTH * HEIGHT * 3  # RGB image\nimage_generator = ImageGenerator(input_dim, output_dim).to(device)\ndef generate_initial_canvas(state):\n    input_tensor = torch.FloatTensor(state).unsqueeze(0).to(device)\n    with torch.no_grad():\n        output_tensor = image_generator(input_tensor)\n    output_image = output_tensor.cpu().numpy().reshape((HEIGHT, WIDTH, 3)) * 255\n    return output_image.astype(np.uint8)\n# Action selection with DQN and bias",
         "detail": "geomaster_picture_drawer",
         "documentation": {}
     },
@@ -1974,7 +1965,7 @@
         "kind": 5,
         "importPath": "geomaster_picture_drawer",
         "description": "geomaster_picture_drawer",
-        "peekOfCode": "output_dim = WIDTH * HEIGHT * 3  # Output dimension for an RGB image\nimage_generator = ImageGenerator(input_dim, output_dim).to(device)\n# Generate an image using the neural network\ndef generate_image(input_vector):\n    input_tensor = torch.FloatTensor(input_vector).unsqueeze(0).to(device)\n    with torch.no_grad():\n        output_tensor = image_generator(input_tensor)\n    output_image = output_tensor.cpu().numpy().reshape((HEIGHT, WIDTH, 3)) * 255\n    return output_image.astype(np.uint8)\n# Example usage of the image generator",
+        "peekOfCode": "output_dim = WIDTH * HEIGHT * 3  # RGB image\nimage_generator = ImageGenerator(input_dim, output_dim).to(device)\ndef generate_initial_canvas(state):\n    input_tensor = torch.FloatTensor(state).unsqueeze(0).to(device)\n    with torch.no_grad():\n        output_tensor = image_generator(input_tensor)\n    output_image = output_tensor.cpu().numpy().reshape((HEIGHT, WIDTH, 3)) * 255\n    return output_image.astype(np.uint8)\n# Action selection with DQN and bias\ndef select_action_with_dqn(state, action_bias, bias_strength):",
         "detail": "geomaster_picture_drawer",
         "documentation": {}
     },
@@ -1983,34 +1974,7 @@
         "kind": 5,
         "importPath": "geomaster_picture_drawer",
         "description": "geomaster_picture_drawer",
-        "peekOfCode": "image_generator = ImageGenerator(input_dim, output_dim).to(device)\n# Generate an image using the neural network\ndef generate_image(input_vector):\n    input_tensor = torch.FloatTensor(input_vector).unsqueeze(0).to(device)\n    with torch.no_grad():\n        output_tensor = image_generator(input_tensor)\n    output_image = output_tensor.cpu().numpy().reshape((HEIGHT, WIDTH, 3)) * 255\n    return output_image.astype(np.uint8)\n# Example usage of the image generator\ninput_vector = np.random.rand(input_dim)  # Random input vector",
-        "detail": "geomaster_picture_drawer",
-        "documentation": {}
-    },
-    {
-        "label": "input_vector",
-        "kind": 5,
-        "importPath": "geomaster_picture_drawer",
-        "description": "geomaster_picture_drawer",
-        "peekOfCode": "input_vector = np.random.rand(input_dim)  # Random input vector\ngenerated_image = generate_image(input_vector)\n# Save the generated image\noutput_filename = \"generated_image.png\"\ncv2.imwrite(output_filename, generated_image)\nprint(f\"Generated image saved to {output_filename}\")\n# Use DQN for action selection\ndef select_action_with_dqn(state):\n    state_tensor = torch.FloatTensor(state).unsqueeze(0).to(device)\n    with torch.no_grad():",
-        "detail": "geomaster_picture_drawer",
-        "documentation": {}
-    },
-    {
-        "label": "generated_image",
-        "kind": 5,
-        "importPath": "geomaster_picture_drawer",
-        "description": "geomaster_picture_drawer",
-        "peekOfCode": "generated_image = generate_image(input_vector)\n# Save the generated image\noutput_filename = \"generated_image.png\"\ncv2.imwrite(output_filename, generated_image)\nprint(f\"Generated image saved to {output_filename}\")\n# Use DQN for action selection\ndef select_action_with_dqn(state):\n    state_tensor = torch.FloatTensor(state).unsqueeze(0).to(device)\n    with torch.no_grad():\n        q_values = dqn_model(state_tensor).cpu().numpy().flatten()",
-        "detail": "geomaster_picture_drawer",
-        "documentation": {}
-    },
-    {
-        "label": "output_filename",
-        "kind": 5,
-        "importPath": "geomaster_picture_drawer",
-        "description": "geomaster_picture_drawer",
-        "peekOfCode": "output_filename = \"generated_image.png\"\ncv2.imwrite(output_filename, generated_image)\nprint(f\"Generated image saved to {output_filename}\")\n# Use DQN for action selection\ndef select_action_with_dqn(state):\n    state_tensor = torch.FloatTensor(state).unsqueeze(0).to(device)\n    with torch.no_grad():\n        q_values = dqn_model(state_tensor).cpu().numpy().flatten()\n    return np.argmax(q_values)\n# Main loop",
+        "peekOfCode": "image_generator = ImageGenerator(input_dim, output_dim).to(device)\ndef generate_initial_canvas(state):\n    input_tensor = torch.FloatTensor(state).unsqueeze(0).to(device)\n    with torch.no_grad():\n        output_tensor = image_generator(input_tensor)\n    output_image = output_tensor.cpu().numpy().reshape((HEIGHT, WIDTH, 3)) * 255\n    return output_image.astype(np.uint8)\n# Action selection with DQN and bias\ndef select_action_with_dqn(state, action_bias, bias_strength):\n    state_tensor = torch.FloatTensor(state).unsqueeze(0).to(device)",
         "detail": "geomaster_picture_drawer",
         "documentation": {}
     },
@@ -2019,7 +1983,7 @@
         "kind": 5,
         "importPath": "geomaster_picture_drawer",
         "description": "geomaster_picture_drawer",
-        "peekOfCode": "clock = pygame.time.Clock()\nrunning = True\nmax_steps = 1000\nbias_strength = 0.5  # Starting value\nfor img_name, target_img in target_images:\n    for current_world in worlds:\n        if not running:\n            break\n        # Reset for new image/world\n        canvas = np.zeros((WIDTH, HEIGHT, 3), dtype=np.uint8)",
+        "peekOfCode": "clock = pygame.time.Clock()\nrunning = True\nmax_steps = 1000\nbias_strength = 0.5\nfor img_name, target_img in target_images:\n    for current_world in worlds:\n        if not running:\n            break\n        # Reset for new image/world\n        canvas = np.zeros((WIDTH, HEIGHT, 3), dtype=np.uint8)",
         "detail": "geomaster_picture_drawer",
         "documentation": {}
     },
@@ -2028,7 +1992,7 @@
         "kind": 5,
         "importPath": "geomaster_picture_drawer",
         "description": "geomaster_picture_drawer",
-        "peekOfCode": "running = True\nmax_steps = 1000\nbias_strength = 0.5  # Starting value\nfor img_name, target_img in target_images:\n    for current_world in worlds:\n        if not running:\n            break\n        # Reset for new image/world\n        canvas = np.zeros((WIDTH, HEIGHT, 3), dtype=np.uint8)\n        pen_pos = [WIDTH // 2, HEIGHT // 2]",
+        "peekOfCode": "running = True\nmax_steps = 1000\nbias_strength = 0.5\nfor img_name, target_img in target_images:\n    for current_world in worlds:\n        if not running:\n            break\n        # Reset for new image/world\n        canvas = np.zeros((WIDTH, HEIGHT, 3), dtype=np.uint8)\n        pen_pos = [WIDTH // 2, HEIGHT // 2]",
         "detail": "geomaster_picture_drawer",
         "documentation": {}
     },
@@ -2037,7 +2001,7 @@
         "kind": 5,
         "importPath": "geomaster_picture_drawer",
         "description": "geomaster_picture_drawer",
-        "peekOfCode": "max_steps = 1000\nbias_strength = 0.5  # Starting value\nfor img_name, target_img in target_images:\n    for current_world in worlds:\n        if not running:\n            break\n        # Reset for new image/world\n        canvas = np.zeros((WIDTH, HEIGHT, 3), dtype=np.uint8)\n        pen_pos = [WIDTH // 2, HEIGHT // 2]\n        target_surface = pygame.surfarray.make_surface(cv2.cvtColor(target_img, cv2.COLOR_BGR2RGB))",
+        "peekOfCode": "max_steps = 1000\nbias_strength = 0.5\nfor img_name, target_img in target_images:\n    for current_world in worlds:\n        if not running:\n            break\n        # Reset for new image/world\n        canvas = np.zeros((WIDTH, HEIGHT, 3), dtype=np.uint8)\n        pen_pos = [WIDTH // 2, HEIGHT // 2]\n        target_surface = pygame.surfarray.make_surface(",
         "detail": "geomaster_picture_drawer",
         "documentation": {}
     },
@@ -2046,7 +2010,7 @@
         "kind": 5,
         "importPath": "geomaster_picture_drawer",
         "description": "geomaster_picture_drawer",
-        "peekOfCode": "bias_strength = 0.5  # Starting value\nfor img_name, target_img in target_images:\n    for current_world in worlds:\n        if not running:\n            break\n        # Reset for new image/world\n        canvas = np.zeros((WIDTH, HEIGHT, 3), dtype=np.uint8)\n        pen_pos = [WIDTH // 2, HEIGHT // 2]\n        target_surface = pygame.surfarray.make_surface(cv2.cvtColor(target_img, cv2.COLOR_BGR2RGB))\n        step = 0",
+        "peekOfCode": "bias_strength = 0.5\nfor img_name, target_img in target_images:\n    for current_world in worlds:\n        if not running:\n            break\n        # Reset for new image/world\n        canvas = np.zeros((WIDTH, HEIGHT, 3), dtype=np.uint8)\n        pen_pos = [WIDTH // 2, HEIGHT // 2]\n        target_surface = pygame.surfarray.make_surface(\n            cv2.cvtColor(target_img, cv2.COLOR_BGR2RGB)",
         "detail": "geomaster_picture_drawer",
         "documentation": {}
     }

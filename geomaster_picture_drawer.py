@@ -2,7 +2,14 @@ import pygame
 import numpy as np
 import torch
 import cv2
-from geomaster_ai_challenge import project_point, WORLD_EUCLIDEAN, WORLD_HYPERBOLIC, WORLD_FRACTAL, GeoMasterAIModel, DQN
+from geomaster_ai_challenge import (
+    project_point,
+    WORLD_EUCLIDEAN,
+    WORLD_HYPERBOLIC,
+    WORLD_FRACTAL,
+    GeoMasterAIModel,
+    DQN,
+)
 import os
 import csv
 import time
@@ -33,42 +40,45 @@ font = pygame.font.SysFont("monospace", 20)
 # Device
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
-# Load pre-trained GeoMasterAIModel
-state_dim = 10  # Match 2D state from geomaster_ai_challenge.py
+# Action space (aligned with geomaster_ai_challenge.py or expanded)
 action_dim = 36  # Expanded: 4 dirs (no draw) + 4 dirs x 4 colors x 3 stroke sizes
-geo_model = GeoMasterAIModel(state_dim, action_dim, gamma=0.99, base_lr=0.001).to(device)
+state_dim = 10  # Match 2D state from geomaster_ai_challenge.py
+
+# Load pre-trained GeoMasterAIModel (optional, for comparison)
+geo_model = GeoMasterAIModel(state_dim, action_dim, gamma=0.99, base_lr=0.001).to(
+    device
+)
 weights_path = "policy_net.pth"
 if os.path.exists(weights_path):
     try:
-        # Load weights into policy_net directly
         geo_model.policy_net.load_state_dict(torch.load(weights_path))
         print(f"Loaded weights from {weights_path} into policy_net")
     except RuntimeError as e:
-        print(f"Error loading weights: {e}")
-        print("Initializing policy_net with random weights instead.")
+        print(
+            f"Error loading weights: {e}. Action dim mismatch? Initializing randomly."
+        )
 else:
     print(f"No weights found at {weights_path}; initializing with random weights")
 geo_model.eval()
-policy_net = geo_model.policy_net  # Use the policy_net from GeoMasterAIModel
 
-# Initialize a DQN model for action selection
+# Initialize DQN model for action selection
 dqn_model = DQN(state_dim, action_dim).to(device)
-
-# Load pre-trained weights for DQN if available
 dqn_weights_path = "dqn_policy_net.pth"
 if os.path.exists(dqn_weights_path):
     try:
         dqn_model.load_state_dict(torch.load(dqn_weights_path))
         print(f"Loaded DQN weights from {dqn_weights_path}")
     except RuntimeError as e:
-        print(f"Error loading DQN weights: {e}")
-        print("Initializing DQN with random weights instead.")
+        print(f"Error loading DQN weights: {e}. Initializing randomly.")
 else:
-    print(f"No DQN weights found at {dqn_weights_path}; initializing with random weights")
+    print(
+        f"No DQN weights found at {dqn_weights_path}; initializing with random weights"
+    )
 dqn_model.eval()
 
-# Geometric worlds (subset from geomaster_ai_challenge.py)
+# Geometric worlds
 worlds = [WORLD_EUCLIDEAN, WORLD_HYPERBOLIC, WORLD_FRACTAL]
+
 
 # Target images (RGB)
 def create_stick_figure():
@@ -81,11 +91,13 @@ def create_stick_figure():
     cv2.line(img, (50, 60), (60, 80), (255, 0, 0), 2)  # Blue right leg
     return cv2.resize(img, (WIDTH, HEIGHT), interpolation=cv2.INTER_NEAREST)
 
+
 def create_tree():
     img = np.zeros((100, 100, 3), dtype=np.uint8)
     cv2.rectangle(img, (45, 60), (55, 100), (0, 165, 255), -1)  # Brown trunk
     cv2.circle(img, (50, 40), 20, (0, 255, 0), -1)  # Green crown
     return cv2.resize(img, (WIDTH, HEIGHT), interpolation=cv2.INTER_NEAREST)
+
 
 def load_png(filename):
     if os.path.exists(filename):
@@ -96,10 +108,11 @@ def load_png(filename):
     else:
         raise FileNotFoundError(f"{filename} not found")
 
+
 target_images = [
     ("stick_figure", create_stick_figure()),
     ("tree", create_tree()),
-    ("custom_star", load_png("star.png"))
+    ("custom_star", load_png("star.png")),
 ]
 
 # Logging
@@ -108,9 +121,25 @@ file_exists = os.path.isfile(log_file)
 with open(log_file, mode="a", newline="") as f:
     writer = csv.writer(f)
     if not file_exists:
-        writer.writerow(["Image", "World", "Step", "Pen_X", "Pen_Y", "Action", "Reward", "Similarity", "Color_R", "Color_G", "Color_B", "Stroke_Size"])
+        writer.writerow(
+            [
+                "Image",
+                "World",
+                "Step",
+                "Pen_X",
+                "Pen_Y",
+                "Action",
+                "Reward",
+                "Similarity",
+                "Color_R",
+                "Color_G",
+                "Color_B",
+                "Stroke_Size",
+            ]
+        )
 
-# State and actions
+
+# State function
 def get_state(canvas, pen_pos, target_img):
     patch_size = 20
     x, y = int(pen_pos[0]), int(pen_pos[1])
@@ -119,46 +148,70 @@ def get_state(canvas, pen_pos, target_img):
     canvas_patch = canvas[y_min:y_max, x_min:x_max]
     target_patch = target_img[y_min:y_max, x_min:x_max]
     similarity = -np.mean((canvas_patch - target_patch) ** 2) / 255.0
-    state = np.array([
-        pen_pos[0] / WIDTH, pen_pos[1] / HEIGHT,
-        similarity, 0, 0,
-        0, 0, 0, 0, 0  # Padded to match state_dim=10
-    ])
+    # Enhanced state with more features
+    state = np.array(
+        [
+            pen_pos[0] / WIDTH,
+            pen_pos[1] / HEIGHT,  # Normalized position
+            similarity,  # Local similarity
+            np.mean(canvas_patch[:, :, 0]) / 255,  # Avg red
+            np.mean(canvas_patch[:, :, 1]) / 255,  # Avg green
+            np.mean(canvas_patch[:, :, 2]) / 255,  # Avg blue
+            np.mean(target_patch[:, :, 0]) / 255,  # Target avg red
+            np.mean(target_patch[:, :, 1]) / 255,  # Target avg green
+            np.mean(target_patch[:, :, 2]) / 255,  # Target avg blue
+            np.std(canvas_patch) / 255,  # Texture variance
+        ]
+    )
     return state
 
+
+# Action map
 action_map = {
-    # No draw (4 actions)
-    0: (-5, 0, False, (0, 0, 0), 1),  1: (5, 0, False, (0, 0, 0), 1),
-    2: (0, -5, False, (0, 0, 0), 1),  3: (0, 5, False, (0, 0, 0), 1),
-    
-    # Cyan (1, 3, 5)
-    4: (-5, 0, True, CYAN, 1),  5: (5, 0, True, CYAN, 1),
-    6: (0, -5, True, CYAN, 1),  7: (0, 5, True, CYAN, 1),
-    8: (-5, 0, True, CYAN, 3),  9: (5, 0, True, CYAN, 3),
-    10: (0, -5, True, CYAN, 3), 11: (0, 5, True, CYAN, 3),
-    12: (-5, 0, True, CYAN, 5), 13: (5, 0, True, CYAN, 5),
-    14: (0, -5, True, CYAN, 5), 15: (0, 5, True, CYAN, 5),
-    
-    # Green (1, 3, 5)
-    16: (-5, 0, True, GREEN, 1), 17: (5, 0, True, GREEN, 1),
-    18: (0, -5, True, GREEN, 1), 19: (0, 5, True, GREEN, 1),
-    20: (-5, 0, True, GREEN, 3), 21: (5, 0, True, GREEN, 3),
-    22: (0, -5, True, GREEN, 3), 23: (0, 5, True, GREEN, 3),
-    24: (-5, 0, True, GREEN, 5), 25: (5, 0, True, GREEN, 5),
-    26: (0, -5, True, GREEN, 5), 27: (0, 5, True, GREEN, 5),
-    
-    # Red (1, 3, 5)
-    28: (-5, 0, True, RED, 1),  29: (5, 0, True, RED, 1),
-    30: (0, -5, True, RED, 1),  31: (0, 5, True, RED, 1),
-    32: (-5, 0, True, RED, 3),  33: (5, 0, True, RED, 3),
-    34: (0, -5, True, RED, 3),  35: (0, 5, True, RED, 3),
-    # Red stroke 5 and Blue actions can be added by expanding action_dim to 48
+    0: (-5, 0, False, (0, 0, 0), 1),
+    1: (5, 0, False, (0, 0, 0), 1),
+    2: (0, -5, False, (0, 0, 0), 1),
+    3: (0, 5, False, (0, 0, 0), 1),
+    4: (-5, 0, True, CYAN, 1),
+    5: (5, 0, True, CYAN, 1),
+    6: (0, -5, True, CYAN, 1),
+    7: (0, 5, True, CYAN, 1),
+    8: (-5, 0, True, CYAN, 3),
+    9: (5, 0, True, CYAN, 3),
+    10: (0, -5, True, CYAN, 3),
+    11: (0, 5, True, CYAN, 3),
+    12: (-5, 0, True, CYAN, 5),
+    13: (5, 0, True, CYAN, 5),
+    14: (0, -5, True, CYAN, 5),
+    15: (0, 5, True, CYAN, 5),
+    16: (-5, 0, True, GREEN, 1),
+    17: (5, 0, True, GREEN, 1),
+    18: (0, -5, True, GREEN, 1),
+    19: (0, 5, True, GREEN, 1),
+    20: (-5, 0, True, GREEN, 3),
+    21: (5, 0, True, GREEN, 3),
+    22: (0, -5, True, GREEN, 3),
+    23: (0, 5, True, GREEN, 3),
+    24: (-5, 0, True, GREEN, 5),
+    25: (5, 0, True, GREEN, 5),
+    26: (0, -5, True, GREEN, 5),
+    27: (0, 5, True, GREEN, 5),
+    28: (-5, 0, True, RED, 1),
+    29: (5, 0, True, RED, 1),
+    30: (0, -5, True, RED, 1),
+    31: (0, 5, True, RED, 1),
+    32: (-5, 0, True, RED, 3),
+    33: (5, 0, True, RED, 3),
+    34: (0, -5, True, RED, 3),
+    35: (0, 5, True, RED, 3),
 }
+
 
 # Reward function
 def calculate_reward(canvas, target_img):
     mse = np.mean((canvas - target_img) ** 2) / 255.0
     return -mse
+
 
 # Load previous data for action bias
 def load_previous_data(image_name, world):
@@ -171,13 +224,20 @@ def load_previous_data(image_name, world):
                 if row["Image"] == image_name and row["World"] == world:
                     action = int(row["Action"])
                     reward = float(row["Reward"])
-                    previous_data.append({
-                        "Pen_X": float(row["Pen_X"]), "Pen_Y": float(row["Pen_Y"]),
-                        "Action": action, "Reward": reward
-                    })
+                    previous_data.append(
+                        {
+                            "Pen_X": float(row["Pen_X"]),
+                            "Pen_Y": float(row["Pen_Y"]),
+                            "Action": action,
+                            "Reward": reward,
+                        }
+                    )
                     action_rewards[action].append(reward)
-    action_bias = {i: np.mean(rewards) if rewards else 0 for i, rewards in action_rewards.items()}
+    action_bias = {
+        i: np.mean(rewards) if rewards else 0 for i, rewards in action_rewards.items()
+    }
     return previous_data, action_bias
+
 
 # Drawing function
 def apply_action(pen_pos, action, canvas, world):
@@ -185,18 +245,24 @@ def apply_action(pen_pos, action, canvas, world):
     new_x = max(0, min(WIDTH - 1, pen_pos[0] + dx))
     new_y = max(0, min(HEIGHT - 1, pen_pos[1] + dy))
     new_pos = [new_x, new_y]
-    
+
     proj_start = project_point((pen_pos[0] - WIDTH / 2, pen_pos[1] - HEIGHT / 2), world)
     proj_end = project_point((new_x - WIDTH / 2, new_y - HEIGHT / 2), world)
-    
+
     if draw:
         pygame.draw.line(screen, color, proj_start, proj_end, stroke_size)
-        cv2.line(canvas, (int(pen_pos[0]), int(pen_pos[1])), 
-                 (int(new_x), int(new_y)), color[::-1], stroke_size)
-    
+        cv2.line(
+            canvas,
+            (int(pen_pos[0]), int(pen_pos[1])),
+            (int(new_x), int(new_y)),
+            color[::-1],
+            stroke_size,
+        )
+
     return new_pos, color if draw else (0, 0, 0), stroke_size
 
-# Define a simple neural network for image generation
+
+# Image Generator
 class ImageGenerator(nn.Module):
     def __init__(self, input_dim, output_dim):
         super(ImageGenerator, self).__init__()
@@ -207,67 +273,71 @@ class ImageGenerator(nn.Module):
     def forward(self, x):
         x = torch.relu(self.fc1(x))
         x = torch.relu(self.fc2(x))
-        x = torch.sigmoid(self.fc3(x))  # Output values between 0 and 1
+        x = torch.sigmoid(self.fc3(x))  # Output [0, 1]
         return x
 
-# Initialize the image generator
-input_dim = 10  # Example input dimension
-output_dim = WIDTH * HEIGHT * 3  # Output dimension for an RGB image
+
+# Initialize and use ImageGenerator
+input_dim = state_dim  # Match state input
+output_dim = WIDTH * HEIGHT * 3  # RGB image
 image_generator = ImageGenerator(input_dim, output_dim).to(device)
 
-# Generate an image using the neural network
-def generate_image(input_vector):
-    input_tensor = torch.FloatTensor(input_vector).unsqueeze(0).to(device)
+
+def generate_initial_canvas(state):
+    input_tensor = torch.FloatTensor(state).unsqueeze(0).to(device)
     with torch.no_grad():
         output_tensor = image_generator(input_tensor)
     output_image = output_tensor.cpu().numpy().reshape((HEIGHT, WIDTH, 3)) * 255
     return output_image.astype(np.uint8)
 
-# Example usage of the image generator
-input_vector = np.random.rand(input_dim)  # Random input vector
-generated_image = generate_image(input_vector)
 
-# Save the generated image
-output_filename = "generated_image.png"
-cv2.imwrite(output_filename, generated_image)
-print(f"Generated image saved to {output_filename}")
-
-# Use DQN for action selection
-def select_action_with_dqn(state):
+# Action selection with DQN and bias
+def select_action_with_dqn(state, action_bias, bias_strength):
     state_tensor = torch.FloatTensor(state).unsqueeze(0).to(device)
     with torch.no_grad():
         q_values = dqn_model(state_tensor).cpu().numpy().flatten()
+        for action, bias in action_bias.items():
+            q_values[action] += bias * bias_strength
     return np.argmax(q_values)
+
 
 # Main loop
 clock = pygame.time.Clock()
 running = True
 max_steps = 1000
-bias_strength = 0.5  # Starting value
+bias_strength = 0.5
 
 for img_name, target_img in target_images:
     for current_world in worlds:
         if not running:
             break
-        
+
         # Reset for new image/world
         canvas = np.zeros((WIDTH, HEIGHT, 3), dtype=np.uint8)
         pen_pos = [WIDTH // 2, HEIGHT // 2]
-        target_surface = pygame.surfarray.make_surface(cv2.cvtColor(target_img, cv2.COLOR_BGR2RGB))
+        target_surface = pygame.surfarray.make_surface(
+            cv2.cvtColor(target_img, cv2.COLOR_BGR2RGB)
+        )
         step = 0
         total_reward = 0
-        
-        # Load previous data and bias actions
+
+        # Load previous data and bias
         previous_data, action_bias = load_previous_data(img_name, current_world)
         if previous_data:
             avg_reward = np.mean([d["Reward"] for d in previous_data])
             if avg_reward > -50:
                 pen_pos = [previous_data[0]["Pen_X"], previous_data[0]["Pen_Y"]]
                 print(f"Reusing starting position for {img_name} in {current_world}")
-        
+
+        # Generate initial canvas (optional)
+        initial_state = get_state(canvas, pen_pos, target_img)
+        canvas = generate_initial_canvas(initial_state)
+
         while step < max_steps and running:
             for event in pygame.event.get():
-                if event.type == pygame.QUIT or (event.type == pygame.KEYDOWN and event.key == pygame.K_q):
+                if event.type == pygame.QUIT or (
+                    event.type == pygame.KEYDOWN and event.key == pygame.K_q
+                ):
                     running = False
                 if event.type == pygame.KEYDOWN:
                     if event.key == pygame.K_u:
@@ -280,11 +350,13 @@ for img_name, target_img in target_images:
             # Get state
             state = get_state(canvas, pen_pos, target_img)
 
-            # Choose action using DQN
-            action = select_action_with_dqn(state)
+            # Choose action
+            action = select_action_with_dqn(state, action_bias, bias_strength)
 
             # Apply action
-            pen_pos, color, stroke_size = apply_action(pen_pos, action, canvas, current_world)
+            pen_pos, color, stroke_size = apply_action(
+                pen_pos, action, canvas, current_world
+            )
             reward = calculate_reward(canvas, target_img)
             total_reward += reward
 
@@ -292,12 +364,27 @@ for img_name, target_img in target_images:
             similarity = -np.mean((canvas - target_img) ** 2) / 255.0
             with open(log_file, mode="a", newline="") as f:
                 writer = csv.writer(f)
-                writer.writerow([img_name, current_world, step, pen_pos[0], pen_pos[1], action, reward, similarity, *color, stroke_size])
+                writer.writerow(
+                    [
+                        img_name,
+                        current_world,
+                        step,
+                        pen_pos[0],
+                        pen_pos[1],
+                        action,
+                        reward,
+                        similarity,
+                        *color,
+                        stroke_size,
+                    ]
+                )
 
             # Drawing
             screen.fill(BLACK)
             screen.blit(target_surface, (0, 0))
-            canvas_surface = pygame.surfarray.make_surface(cv2.cvtColor(canvas, cv2.COLOR_BGR2RGB))
+            canvas_surface = pygame.surfarray.make_surface(
+                cv2.cvtColor(canvas, cv2.COLOR_BGR2RGB)
+            )
             screen.blit(canvas_surface, (0, 0))
 
             # Info
@@ -307,7 +394,7 @@ for img_name, target_img in target_images:
                 f"Step: {step}/{max_steps}",
                 f"Reward: {reward:.2f}",
                 f"Total Reward: {total_reward:.2f}",
-                f"Bias Strength: {bias_strength:.1f}"
+                f"Bias Strength: {bias_strength:.1f}",
             ]
             for i, line in enumerate(info_text):
                 text = font.render(line, True, WHITE)
@@ -317,10 +404,10 @@ for img_name, target_img in target_images:
             clock.tick(60)
             step += 1
 
-        # Save output as PNG
+        # Save output
         if running:
             output_filename = f"{img_name}_{current_world}_{int(time.time())}.png"
-            cv2.imwrite(output_filename, canvas)  # Save the canvas as an image file
+            cv2.imwrite(output_filename, canvas)
             print(f"Saved drawing to {output_filename}")
 
 pygame.quit()
