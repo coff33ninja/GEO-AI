@@ -167,7 +167,7 @@ class WorldModel(nn.Module):
         try:
             if state.dim() != 2 or action.dim() != 2:
                 raise ValueError(
-                    f"Expected 2D tensors, got state shape {state.shape}, action shape {action.shape}"
+                    f"Expected 2D tensors, got state shape {state.shape}, action shape {state.shape}"
                 )
             if state.shape[1] != state_dim or action.shape[1] != 1:
                 raise ValueError(
@@ -748,20 +748,24 @@ def calculate_triangle_angle(points):
         return 0
 
 def calculate_dist_to_close(points):
-    if not points or len(points) < 2:
-        return 0
-    if all(isinstance(p, (tuple, list)) and len(p) == 2 for p in points):
-        p1 = points[0]
-        p_last = points[-1]
-        return np.sqrt((p1[0] - p_last[0]) ** 2 + (p1[1] - p_last[1]) ** 2)
-    elif all(isinstance(t, (list, tuple)) and len(t) == 3 for t in points):
-        if not points[0] or not points[-1]:
+    try:
+        if not points or len(points) < 2:
             return 0
-        p1 = points[0][0]
-        p_last = points[-1][-1]
-        return np.sqrt((p1[0] - p_last[0]) ** 2 + (p1[1] - p_last[1]) ** 2)
-    else:
-        log_message(f"Invalid points structure for dist_to_close: {repr(points)}")
+        if all(isinstance(p, (tuple, list)) and len(p) >= 2 for p in points):
+            p1 = points[0]
+            p_last = points[-1]
+            return np.sqrt((p1[0] - p_last[0]) ** 2 + (p1[1] - p_last[1]) ** 2)
+        elif all(isinstance(t, (list, tuple)) and len(t) == 3 for t in points):
+            if not points[0] or not points[-1]:
+                return 0
+            p1 = points[0][0]
+            p_last = points[-1][-1]
+            return np.sqrt((p1[0] - p_last[0]) ** 2 + (p1[1] - p_last[1]) ** 2)
+        else:
+            log_message(f"Invalid points structure for dist_to_close: {repr(points)}")
+            return 0
+    except Exception as e:
+        log_message(f"Error in calculate_dist_to_close: {repr(e)}")
         return 0
 
 # Advanced Reward System
@@ -1074,43 +1078,67 @@ def predict_next_shape():
         pred = shape_predictor(state_tensor).argmax().item()
     return tasks[pred]
 
+# Dynamic Task Generation
+def generate_dynamic_task():
+    """Generate a new dynamic task with random parameters."""
+    task_type = random.choice(tasks)
+    if task_type == TASK_LINE:
+        start = (random.randint(50, WIDTH - 50), random.randint(50, HEIGHT - 50))
+        end = (random.randint(50, WIDTH - 50), random.randint(50, HEIGHT - 50))
+        return {"type": TASK_LINE, "start": start, "end": end}
+    elif task_type == TASK_TRIANGLE:
+        points = [(random.randint(50, WIDTH - 50), random.randint(50, HEIGHT - 50)) for _ in range(3)]
+        return {"type": TASK_TRIANGLE, "points": points}
+    elif task_type == TASK_CIRCLE:
+        center = (random.randint(50, WIDTH - 50), random.randint(50, HEIGHT - 50))
+        radius = random.randint(20, 100)
+        return {"type": TASK_CIRCLE, "center": center, "radius": radius}
+    elif task_type == TASK_PENTAGON:
+        points = [(random.randint(50, WIDTH - 50), random.randint(50, HEIGHT - 50)) for _ in range(5)]
+        return {"type": TASK_PENTAGON, "points": points}
+    elif task_type == TASK_TESSELLATION:
+        base_points = [(random.randint(50, WIDTH - 50), random.randint(50, HEIGHT - 50)) for _ in range(3)]
+        return {"type": TASK_TESSELLATION, "base_points": base_points}
+    else:
+        return {"type": "Unknown"}
+
 # Reset Episode
 def reset_episode():
-    global start_point, triangle_points, circle_center, pentagon_points, tessellation_points, current_shape, game_state, ai_step
-    if is_3d_mode:
-        if current_task == TASK_LINE:
-            start_point = (random.randint(50, WIDTH-50), random.randint(50, HEIGHT-50), random.randint(-100, 100))
-            current_shape = [start_point]
-            global end_point
-            end_point = (WIDTH - 50, HEIGHT - 50, random.randint(-100, 100))
-        elif current_task == TASK_TRIANGLE:
-            triangle_points = [(random.randint(50, WIDTH-50), random.randint(50, HEIGHT-50), random.randint(-100, 100)) for _ in range(3)]
-            current_shape = triangle_points.copy()
-        elif current_task == TASK_CIRCLE:
-            circle_center = (random.randint(50, WIDTH-50), random.randint(50, HEIGHT-50), random.randint(-100, 100))
-            current_shape = []
-        elif current_task == TASK_PENTAGON:
-            pentagon_points = [(random.randint(50, WIDTH-50), random.randint(50, HEIGHT-50), random.randint(-100, 100)) for _ in range(5)]
-            current_shape = pentagon_points.copy()
-        elif current_task == TASK_TESSELLATION:
-            tessellation_points = [(random.randint(50, WIDTH-50), random.randint(50, HEIGHT-50), random.randint(-100, 100)) for _ in range(3)]
-            current_shape = [tessellation_points.copy()]
+    global start_point, triangle_points, circle_center, pentagon_points, tessellation_points, current_shape, game_state, ai_step, current_task, end_point, circle_radius
+    dynamic_task = generate_dynamic_task()
+    current_task = dynamic_task["type"]
+
+    if current_task == TASK_LINE:
+        start_point = dynamic_task["start"]
+        end_point = dynamic_task["end"]
+        if is_3d_mode:  # Ensure `end_point` is a 3D point in 3D mode
+            start_point = (start_point[0], start_point[1], random.randint(-100, 100))
+            end_point = (end_point[0], end_point[1], random.randint(-100, 100))
+        current_shape = [start_point]
+    elif current_task == TASK_TRIANGLE:
+        triangle_points = dynamic_task["points"]
+        if is_3d_mode:  # Ensure points are 3D in 3D mode
+            triangle_points = [(p[0], p[1], random.randint(-100, 100)) for p in triangle_points]
+        current_shape = triangle_points.copy()
+    elif current_task == TASK_CIRCLE:
+        circle_center = dynamic_task["center"]
+        circle_radius = dynamic_task["radius"]
+        if is_3d_mode:  # Ensure `circle_center` is a 3D point in 3D mode
+            circle_center = (circle_center[0], circle_center[1], random.randint(-100, 100))
+        current_shape = []
+    elif current_task == TASK_PENTAGON:
+        pentagon_points = dynamic_task["points"]
+        if is_3d_mode:  # Ensure points are 3D in 3D mode
+            pentagon_points = [(p[0], p[1], random.randint(-100, 100)) for p in pentagon_points]
+        current_shape = pentagon_points.copy()
+    elif current_task == TASK_TESSELLATION:
+        tessellation_points = dynamic_task["base_points"]
+        if is_3d_mode:  # Ensure points are 3D in 3D mode
+            tessellation_points = [(p[0], p[1], random.randint(-100, 100)) for p in tessellation_points]
+        current_shape = [tessellation_points.copy()]
     else:
-        if current_task == TASK_LINE:
-            start_point = (random.randint(50, WIDTH-50), random.randint(50, HEIGHT-50))
-            current_shape = [start_point]
-        elif current_task == TASK_TRIANGLE:
-            triangle_points = [(random.randint(50, WIDTH-50), random.randint(50, HEIGHT-50)) for _ in range(3)]
-            current_shape = triangle_points.copy()
-        elif current_task == TASK_CIRCLE:
-            circle_center = (random.randint(50, WIDTH-50), random.randint(50, HEIGHT-50))
-            current_shape = []
-        elif current_task == TASK_PENTAGON:
-            pentagon_points = [(random.randint(50, WIDTH-50), random.randint(50, HEIGHT-50)) for _ in range(5)]
-            current_shape = pentagon_points.copy()
-        elif current_task == TASK_TESSELLATION:
-            tessellation_points = [(random.randint(50, WIDTH-50), random.randint(50, HEIGHT-50)) for _ in range(3)]
-            current_shape = [tessellation_points.copy()]
+        log_message(f"Unknown task type: {current_task}")
+
     game_state = "ai_drawing"
     ai_step = 0
 
@@ -1231,6 +1259,7 @@ while running:
 
     if running_state == "running" and game_state == "waiting":
         reset_episode()
+        log_message(f"New dynamic task generated: {current_task}")
 
     if running_state == "running" and game_state == "ai_drawing":
         shape_progress = (
@@ -1280,7 +1309,11 @@ while running:
                 if current_task == TASK_TRIANGLE and len(current_shape) == 3:
                     angle = calculate_triangle_angle(current_shape)
                 elif current_task == TASK_PENTAGON and len(current_shape) >= 2:
-                    dist_to_close = calculate_dist_to_close(current_shape)
+                    if all(isinstance(p, (tuple, list)) and len(p) >= 2 for p in current_shape):
+                        dist_to_close = calculate_dist_to_close(current_shape)
+                    else:
+                        log_message(f"Invalid current_shape for dist_to_close: {repr(current_shape)}")
+                        dist_to_close = 0
                 elif current_task == TASK_TESSELLATION and current_shape:
                     angle = calculate_triangle_angle(current_shape[0])
             task_id = tasks.index(current_task)
@@ -1413,7 +1446,11 @@ while running:
                 if current_task == TASK_TRIANGLE and len(current_shape) == 3:
                     angle = calculate_triangle_angle(current_shape)
                 elif current_task == TASK_PENTAGON and len(current_shape) >= 2:
-                    dist_to_close = calculate_dist_to_close(current_shape)
+                    if all(isinstance(p, (tuple, list)) and len(p) >= 2 for p in current_shape):
+                        dist_to_close = calculate_dist_to_close(current_shape)
+                    else:
+                        log_message(f"Invalid current_shape for dist_to_close: {repr(current_shape)}")
+                        dist_to_close = 0
                 elif current_task == TASK_TESSELLATION and current_shape:
                     angle = calculate_triangle_angle(current_shape[0])
             next_state = np.array(
