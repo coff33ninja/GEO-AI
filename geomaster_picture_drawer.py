@@ -111,15 +111,24 @@ def load_png(filename):
         return None
 
 
+def create_placeholder_image():
+    """Create a placeholder image if a target image is missing."""
+    img = np.zeros((100, 100, 3), dtype=np.uint8)
+    cv2.putText(img, "MISSING", (5, 50), cv2.FONT_HERSHEY_SIMPLEX, 0.4, (255, 255, 255), 1)
+    return cv2.resize(img, (WIDTH, HEIGHT), interpolation=cv2.INTER_NEAREST)
+
+
 target_images = [
     ("stick_figure", create_stick_figure()),
     ("tree", create_tree()),
 ]
 
-# Attempt to load custom_star only if the file exists
+# Attempt to load custom_star only if the file exists, otherwise use a placeholder
 custom_star = load_png("star.png")
-if custom_star is not None:
-    target_images.append(("custom_star", custom_star))
+if custom_star is None:
+    print("Using placeholder for missing 'star.png'")
+    custom_star = create_placeholder_image()
+target_images.append(("custom_star", custom_star))
 
 # Logging
 log_file = "picture_drawer_log.csv"

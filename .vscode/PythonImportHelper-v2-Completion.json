@@ -1677,7 +1677,16 @@
         "kind": 2,
         "importPath": "geomaster_picture_drawer",
         "description": "geomaster_picture_drawer",
-        "peekOfCode": "def load_png(filename):\n    if os.path.exists(filename):\n        img = cv2.imread(filename)  # BGR\n        if img is None:\n            raise ValueError(f\"Failed to load {filename}\")\n        return cv2.resize(img, (WIDTH, HEIGHT), interpolation=cv2.INTER_NEAREST)\n    else:\n        print(f\"Warning: {filename} not found. Skipping this image.\")\n        return None\ntarget_images = [",
+        "peekOfCode": "def load_png(filename):\n    if os.path.exists(filename):\n        img = cv2.imread(filename)  # BGR\n        if img is None:\n            raise ValueError(f\"Failed to load {filename}\")\n        return cv2.resize(img, (WIDTH, HEIGHT), interpolation=cv2.INTER_NEAREST)\n    else:\n        print(f\"Warning: {filename} not found. Skipping this image.\")\n        return None\ndef create_placeholder_image():",
+        "detail": "geomaster_picture_drawer",
+        "documentation": {}
+    },
+    {
+        "label": "create_placeholder_image",
+        "kind": 2,
+        "importPath": "geomaster_picture_drawer",
+        "description": "geomaster_picture_drawer",
+        "peekOfCode": "def create_placeholder_image():\n    \"\"\"Create a placeholder image if a target image is missing.\"\"\"\n    img = np.zeros((100, 100, 3), dtype=np.uint8)\n    cv2.putText(img, \"MISSING\", (5, 50), cv2.FONT_HERSHEY_SIMPLEX, 0.4, (255, 255, 255), 1)\n    return cv2.resize(img, (WIDTH, HEIGHT), interpolation=cv2.INTER_NEAREST)\ntarget_images = [\n    (\"stick_figure\", create_stick_figure()),\n    (\"tree\", create_tree()),\n]\n# Attempt to load custom_star only if the file exists, otherwise use a placeholder",
         "detail": "geomaster_picture_drawer",
         "documentation": {}
     },
@@ -1929,7 +1938,7 @@
         "kind": 5,
         "importPath": "geomaster_picture_drawer",
         "description": "geomaster_picture_drawer",
-        "peekOfCode": "target_images = [\n    (\"stick_figure\", create_stick_figure()),\n    (\"tree\", create_tree()),\n]\n# Attempt to load custom_star only if the file exists\ncustom_star = load_png(\"star.png\")\nif custom_star is not None:\n    target_images.append((\"custom_star\", custom_star))\n# Logging\nlog_file = \"picture_drawer_log.csv\"",
+        "peekOfCode": "target_images = [\n    (\"stick_figure\", create_stick_figure()),\n    (\"tree\", create_tree()),\n]\n# Attempt to load custom_star only if the file exists, otherwise use a placeholder\ncustom_star = load_png(\"star.png\")\nif custom_star is None:\n    print(\"Using placeholder for missing 'star.png'\")\n    custom_star = create_placeholder_image()\ntarget_images.append((\"custom_star\", custom_star))",
         "detail": "geomaster_picture_drawer",
         "documentation": {}
     },
@@ -1938,7 +1947,7 @@
         "kind": 5,
         "importPath": "geomaster_picture_drawer",
         "description": "geomaster_picture_drawer",
-        "peekOfCode": "custom_star = load_png(\"star.png\")\nif custom_star is not None:\n    target_images.append((\"custom_star\", custom_star))\n# Logging\nlog_file = \"picture_drawer_log.csv\"\nfile_exists = os.path.isfile(log_file)\nwith open(log_file, mode=\"a\", newline=\"\") as f:\n    writer = csv.writer(f)\n    if not file_exists:\n        writer.writerow(",
+        "peekOfCode": "custom_star = load_png(\"star.png\")\nif custom_star is None:\n    print(\"Using placeholder for missing 'star.png'\")\n    custom_star = create_placeholder_image()\ntarget_images.append((\"custom_star\", custom_star))\n# Logging\nlog_file = \"picture_drawer_log.csv\"\nfile_exists = os.path.isfile(log_file)\nwith open(log_file, mode=\"a\", newline=\"\") as f:\n    writer = csv.writer(f)",
         "detail": "geomaster_picture_drawer",
         "documentation": {}
     },
