@@ -266,7 +266,7 @@ for img_name, target_img in target_images:
         # Save output as PNG
         if running:
             output_filename = f"{img_name}_{current_world}_{int(time.time())}.png"
-            pygame.image.save(canvas_surface, output_filename)
+            cv2.imwrite(output_filename, canvas)  # Save the canvas as an image file
             print(f"Saved drawing to {output_filename}")
 
 pygame.quit()
