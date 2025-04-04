@@ -1305,6 +1305,97 @@ def visualize_explanation(explanation):
     buf.close()
     return pygame.transform.scale(image, (300, 200))
 
+# Model Evaluation
+def evaluate_model(num_episodes=10):
+    """Evaluate the model's performance on predefined tasks."""
+    global current_task, current_world, game_state, ai_step, current_shape, circle_radius
+    evaluation_rewards = []
+    success_count = 0
+    total_steps = 0
+
+    predefined_tasks = [
+        {"task": TASK_LINE, "world": WORLD_EUCLIDEAN},
+        {"task": TASK_TRIANGLE, "world": WORLD_SPHERICAL},
+        {"task": TASK_CIRCLE, "world": WORLD_HYPERBOLIC},
+        {"task": TASK_PENTAGON, "world": WORLD_ELLIPTICAL},
+        {"task": TASK_TESSELLATION, "world": WORLD_PROJECTIVE},
+    ]
+
+    for episode in range(num_episodes):
+        for task_config in predefined_tasks:
+            current_task = task_config["task"]
+            current_world = task_config["world"]
+            reset_episode()  # Reset the environment for the task
+
+            # Initialize circle_radius to avoid undefined reference
+            if current_task == TASK_CIRCLE:
+                circle_radius = 50
+
+            episode_reward = 0
+            for step in range(max_steps):
+                state_tensor = torch.FloatTensor(state).unsqueeze(0).to(device)
+                if random.random() < epsilon_end:
+                    action = random.randint(0, action_dim - 1)
+                else:
+                    with torch.no_grad():
+                        action = policy_net(state_tensor).argmax().item()
+
+                # Simulate the action
+                actions = [action]
+                for action in actions:
+                    if current_task == TASK_LINE:
+                        curvature = 0
+                        next_segment = draw_line_segment(
+                            current_shape[-1], end_point, curvature, current_world
+                        )
+                        current_shape.extend([p for p in next_segment if p is not None])
+                    elif current_task == TASK_TRIANGLE:
+                        angle_adjust = 0
+                        current_shape = draw_triangle(
+                            current_shape, angle_adjust, current_world
+                        )
+                    elif current_task == TASK_CIRCLE:
+                        radius_adjust = 0
+                        current_shape, circle_radius = draw_circle(
+                            circle_center, circle_radius, radius_adjust, current_world
+                        )
+                    elif current_task == TASK_PENTAGON:
+                        angle_adjust = 0
+                        current_shape = draw_pentagon(
+                            current_shape, angle_adjust, current_world
+                        )
+                    elif current_task == TASK_TESSELLATION:
+                        base_points = current_shape[0] if current_shape else tessellation_points
+                        current_shape = draw_tessellation(base_points, current_world)
+
+                # Calculate reward
+                extrinsic_reward = calculate_advanced_reward(
+                    current_shape, end_point, current_task, current_world
+                )
+                episode_reward += extrinsic_reward
+
+                # Check for task completion
+                if (
+                    current_task == TASK_LINE
+                    and np.sqrt(
+                        (current_shape[-1][0] - end_point[0]) ** 2
+                        + (current_shape[-1][1] - end_point[1]) ** 2
+                    )
+                    < 10
+                ):
+                    success_count += 1
+                    break
+
+            evaluation_rewards.append(episode_reward)
+            total_steps += step + 1
+
+    avg_reward = sum(evaluation_rewards) / len(evaluation_rewards)
+    success_rate = success_count / (num_episodes * len(predefined_tasks))
+    avg_steps = total_steps / (num_episodes * len(predefined_tasks))
+
+    log_message(f"Evaluation Results: Avg Reward: {avg_reward:.2f}, Success Rate: {success_rate:.2%}, Avg Steps: {avg_steps:.2f}")
+    return {"avg_reward": avg_reward, "success_rate": success_rate, "avg_steps": avg_steps}
+
 # Main Game Loop
 clock = pygame.time.Clock()
 running = True

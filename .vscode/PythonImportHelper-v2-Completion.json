@@ -555,6 +555,15 @@
         "documentation": {}
     },
     {
+        "label": "evaluate_model",
+        "kind": 2,
+        "importPath": "geomaster_ai_challenge",
+        "description": "geomaster_ai_challenge",
+        "peekOfCode": "def evaluate_model(num_episodes=10):\n    \"\"\"Evaluate the model's performance on predefined tasks.\"\"\"\n    global current_task, current_world, game_state, ai_step, current_shape, circle_radius\n    evaluation_rewards = []\n    success_count = 0\n    total_steps = 0\n    predefined_tasks = [\n        {\"task\": TASK_LINE, \"world\": WORLD_EUCLIDEAN},\n        {\"task\": TASK_TRIANGLE, \"world\": WORLD_SPHERICAL},\n        {\"task\": TASK_CIRCLE, \"world\": WORLD_HYPERBOLIC},",
+        "detail": "geomaster_ai_challenge",
+        "documentation": {}
+    },
+    {
         "label": "WIDTH",
         "kind": 5,
         "importPath": "geomaster_ai_challenge",
