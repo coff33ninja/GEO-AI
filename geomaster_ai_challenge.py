@@ -85,6 +85,36 @@ MAX_SCORE = 50000
 NEGATIVE_REWARD_RETRY_LIMIT = 3
 POSITIVE_REWARD_RETRY_LIMIT = 3  # Number of additional attempts after achieving positive rewards
 
+# Curriculum learning parameters
+curriculum_stage = 0
+curriculum_threshold = 10  # Number of successful episodes to progress to the next stage
+curriculum_progress = 0  # Tracks successful episodes in the current stage
+
+# Define task progression for curriculum learning
+curriculum_tasks = [
+    [TASK_LINE],  # Stage 0: Only line tasks
+    [TASK_LINE, TASK_TRIANGLE],  # Stage 1: Line and triangle tasks
+    [TASK_LINE, TASK_TRIANGLE, TASK_CIRCLE],  # Stage 2: Add circle tasks
+    [TASK_LINE, TASK_TRIANGLE, TASK_CIRCLE, TASK_PENTAGON],  # Stage 3: Add pentagon tasks
+    tasks,  # Stage 4: All tasks
+]
+
+curriculum_worlds = [
+    [WORLD_EUCLIDEAN],  # Stage 0: Only Euclidean world
+    [WORLD_EUCLIDEAN, WORLD_SPHERICAL],  # Stage 1: Add spherical world
+    [WORLD_EUCLIDEAN, WORLD_SPHERICAL, WORLD_HYPERBOLIC],  # Stage 2: Add hyperbolic world
+    [WORLD_EUCLIDEAN, WORLD_SPHERICAL, WORLD_HYPERBOLIC, WORLD_ELLIPTICAL],  # Stage 3: Add elliptical world
+    worlds,  # Stage 4: All worlds
+]
+
+def update_curriculum():
+    """Update the curriculum stage based on performance."""
+    global curriculum_stage, curriculum_progress
+    if curriculum_progress >= curriculum_threshold and curriculum_stage < len(curriculum_tasks) - 1:
+        curriculum_stage += 1
+        curriculum_progress = 0
+        log_message(f"Curriculum advanced to stage {curriculum_stage}. Tasks: {curriculum_tasks[curriculum_stage]}, Worlds: {curriculum_worlds[curriculum_stage]}")
+
 # --- SumTree for Prioritized Experience Replay ---
 class SumTree:
     def __init__(self, capacity):
@@ -1100,34 +1130,11 @@ def predict_next_shape():
         pred = shape_predictor(state_tensor).argmax().item()
     return tasks[pred]
 
-# Dynamic Task Generation
-def generate_dynamic_task():
-    """Generate a new dynamic task with random parameters."""
-    task_type = random.choice(tasks)
-    if task_type == TASK_LINE:
-        start = (random.randint(50, WIDTH - 50), random.randint(50, HEIGHT - 50))
-        end = (random.randint(50, WIDTH - 50), random.randint(50, HEIGHT - 50))
-        return {"type": TASK_LINE, "start": start, "end": end}
-    elif task_type == TASK_TRIANGLE:
-        points = [(random.randint(50, WIDTH - 50), random.randint(50, HEIGHT - 50)) for _ in range(3)]
-        return {"type": TASK_TRIANGLE, "points": points}
-    elif task_type == TASK_CIRCLE:
-        center = (random.randint(50, WIDTH - 50), random.randint(50, HEIGHT - 50))
-        radius = random.randint(20, 100)
-        return {"type": TASK_CIRCLE, "center": center, "radius": radius}
-    elif task_type == TASK_PENTAGON:
-        points = [(random.randint(50, WIDTH - 50), random.randint(50, HEIGHT - 50)) for _ in range(5)]
-        return {"type": TASK_PENTAGON, "points": points}
-    elif task_type == TASK_TESSELLATION:
-        base_points = [(random.randint(50, WIDTH - 50), random.randint(50, HEIGHT - 50)) for _ in range(3)]
-        return {"type": TASK_TESSELLATION, "base_points": base_points}
-    else:
-        return {"type": "Unknown"}
-
-# Reset Episode
+# Modify reset_episode to use curriculum learning
 def reset_episode():
     global start_point, triangle_points, circle_center, pentagon_points, tessellation_points, current_shape
     global game_state, ai_step, current_task, end_point, circle_radius, negative_reward_attempts, positive_reward_attempts
+    global curriculum_progress
 
     if negative_reward_attempts >= NEGATIVE_REWARD_RETRY_LIMIT:
         log_message("Max retries for negative rewards reached. Moving to next task.")
@@ -1144,12 +1151,17 @@ def reset_episode():
         save_model_weights(current_task, current_world)  # Save progress
         return  # Retry the current task
 
+    # Update curriculum progress
+    if sum(rewards) > 0:
+        curriculum_progress += 1
+        update_curriculum()
+
     # Reset counters for the next task
     negative_reward_attempts = 0
     positive_reward_attempts = 0
 
-    # Generate a new task
-    dynamic_task = generate_dynamic_task()
+    # Generate a new task based on the current curriculum stage
+    dynamic_task = generate_dynamic_task(curriculum_tasks[curriculum_stage], curriculum_worlds[curriculum_stage])
     current_task = dynamic_task["type"]
 
     if current_task == TASK_LINE:
@@ -1186,6 +1198,31 @@ def reset_episode():
     game_state = "ai_drawing"
     ai_step = 0
     rewards.clear()  # Reset rewards for the new episode
+
+# Modify generate_dynamic_task to accept task and world constraints
+def generate_dynamic_task(allowed_tasks, allowed_worlds):
+    """Generate a new dynamic task with random parameters within the allowed tasks and worlds."""
+    task_type = random.choice(allowed_tasks)
+    world = random.choice(allowed_worlds)
+    if task_type == TASK_LINE:
+        start = (random.randint(50, WIDTH - 50), random.randint(50, HEIGHT - 50))
+        end = (random.randint(50, WIDTH - 50), random.randint(50, HEIGHT - 50))
+        return {"type": TASK_LINE, "start": start, "end": end, "world": world}
+    elif task_type == TASK_TRIANGLE:
+        points = [(random.randint(50, WIDTH - 50), random.randint(50, HEIGHT - 50)) for _ in range(3)]
+        return {"type": TASK_TRIANGLE, "points": points, "world": world}
+    elif task_type == TASK_CIRCLE:
+        center = (random.randint(50, WIDTH - 50), random.randint(50, HEIGHT - 50))
+        radius = random.randint(20, 100)
+        return {"type": TASK_CIRCLE, "center": center, "radius": radius, "world": world}
+    elif task_type == TASK_PENTAGON:
+        points = [(random.randint(50, WIDTH - 50), random.randint(50, HEIGHT - 50)) for _ in range(5)]
+        return {"type": TASK_PENTAGON, "points": points, "world": world}
+    elif task_type == TASK_TESSELLATION:
+        base_points = [(random.randint(50, WIDTH - 50), random.randint(50, HEIGHT - 50)) for _ in range(3)]
+        return {"type": TASK_TESSELLATION, "base_points": base_points, "world": world}
+    else:
+        return {"type": "Unknown", "world": world}
 
 # Matplotlib Plot
 plot_surface = None

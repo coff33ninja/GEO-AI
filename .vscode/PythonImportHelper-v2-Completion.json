@@ -186,6 +186,15 @@
         "documentation": {}
     },
     {
+        "label": "update_curriculum",
+        "kind": 2,
+        "importPath": "geomaster_ai_challenge",
+        "description": "geomaster_ai_challenge",
+        "peekOfCode": "def update_curriculum():\n    \"\"\"Update the curriculum stage based on performance.\"\"\"\n    global curriculum_stage, curriculum_progress\n    if curriculum_progress >= curriculum_threshold and curriculum_stage < len(curriculum_tasks) - 1:\n        curriculum_stage += 1\n        curriculum_progress = 0\n        log_message(f\"Curriculum advanced to stage {curriculum_stage}. Tasks: {curriculum_tasks[curriculum_stage]}, Worlds: {curriculum_worlds[curriculum_stage]}\")\n# --- SumTree for Prioritized Experience Replay ---\nclass SumTree:\n    def __init__(self, capacity):",
+        "detail": "geomaster_ai_challenge",
+        "documentation": {}
+    },
+    {
         "label": "stereographic_projection",
         "kind": 2,
         "importPath": "geomaster_ai_challenge",
@@ -474,20 +483,20 @@
         "documentation": {}
     },
     {
-        "label": "generate_dynamic_task",
-        "kind": 2,
-        "importPath": "geomaster_ai_challenge",
-        "description": "geomaster_ai_challenge",
-        "peekOfCode": "def generate_dynamic_task():\n    \"\"\"Generate a new dynamic task with random parameters.\"\"\"\n    task_type = random.choice(tasks)\n    if task_type == TASK_LINE:\n        start = (random.randint(50, WIDTH - 50), random.randint(50, HEIGHT - 50))\n        end = (random.randint(50, WIDTH - 50), random.randint(50, HEIGHT - 50))\n        return {\"type\": TASK_LINE, \"start\": start, \"end\": end}\n    elif task_type == TASK_TRIANGLE:\n        points = [(random.randint(50, WIDTH - 50), random.randint(50, HEIGHT - 50)) for _ in range(3)]\n        return {\"type\": TASK_TRIANGLE, \"points\": points}",
-        "detail": "geomaster_ai_challenge",
-        "documentation": {}
-    },
-    {
         "label": "reset_episode",
         "kind": 2,
         "importPath": "geomaster_ai_challenge",
         "description": "geomaster_ai_challenge",
-        "peekOfCode": "def reset_episode():\n    global start_point, triangle_points, circle_center, pentagon_points, tessellation_points, current_shape\n    global game_state, ai_step, current_task, end_point, circle_radius, negative_reward_attempts, positive_reward_attempts\n    if negative_reward_attempts >= NEGATIVE_REWARD_RETRY_LIMIT:\n        log_message(\"Max retries for negative rewards reached. Moving to next task.\")\n        negative_reward_attempts = 0  # Reset retry counter\n        positive_reward_attempts = 0  # Reset positive retry counter\n    elif sum(rewards) < 0:\n        log_message(f\"Negative reward detected. Retrying task. Attempt {negative_reward_attempts + 1}/{NEGATIVE_REWARD_RETRY_LIMIT}.\")\n        negative_reward_attempts += 1",
+        "peekOfCode": "def reset_episode():\n    global start_point, triangle_points, circle_center, pentagon_points, tessellation_points, current_shape\n    global game_state, ai_step, current_task, end_point, circle_radius, negative_reward_attempts, positive_reward_attempts\n    global curriculum_progress\n    if negative_reward_attempts >= NEGATIVE_REWARD_RETRY_LIMIT:\n        log_message(\"Max retries for negative rewards reached. Moving to next task.\")\n        negative_reward_attempts = 0  # Reset retry counter\n        positive_reward_attempts = 0  # Reset positive retry counter\n    elif sum(rewards) < 0:\n        log_message(f\"Negative reward detected. Retrying task. Attempt {negative_reward_attempts + 1}/{NEGATIVE_REWARD_RETRY_LIMIT}.\")",
+        "detail": "geomaster_ai_challenge",
+        "documentation": {}
+    },
+    {
+        "label": "generate_dynamic_task",
+        "kind": 2,
+        "importPath": "geomaster_ai_challenge",
+        "description": "geomaster_ai_challenge",
+        "peekOfCode": "def generate_dynamic_task(allowed_tasks, allowed_worlds):\n    \"\"\"Generate a new dynamic task with random parameters within the allowed tasks and worlds.\"\"\"\n    task_type = random.choice(allowed_tasks)\n    world = random.choice(allowed_worlds)\n    if task_type == TASK_LINE:\n        start = (random.randint(50, WIDTH - 50), random.randint(50, HEIGHT - 50))\n        end = (random.randint(50, WIDTH - 50), random.randint(50, HEIGHT - 50))\n        return {\"type\": TASK_LINE, \"start\": start, \"end\": end, \"world\": world}\n    elif task_type == TASK_TRIANGLE:\n        points = [(random.randint(50, WIDTH - 50), random.randint(50, HEIGHT - 50)) for _ in range(3)]",
         "detail": "geomaster_ai_challenge",
         "documentation": {}
     },
@@ -739,7 +748,7 @@
         "kind": 5,
         "importPath": "geomaster_ai_challenge",
         "description": "geomaster_ai_challenge",
-        "peekOfCode": "TASK_CIRCLE = \"Draw Circle\"\nTASK_PENTAGON = \"Draw Pentagon\"\nTASK_TESSELLATION = \"Draw Tessellation\"\ntasks = [TASK_LINE, TASK_TRIANGLE, TASK_CIRCLE, TASK_PENTAGON, TASK_TESSELLATION]\ncurrent_task = TASK_LINE\n# Constants\nMAX_SCORE = 50000\nNEGATIVE_REWARD_RETRY_LIMIT = 3\nPOSITIVE_REWARD_RETRY_LIMIT = 3  # Number of additional attempts after achieving positive rewards\n# --- SumTree for Prioritized Experience Replay ---",
+        "peekOfCode": "TASK_CIRCLE = \"Draw Circle\"\nTASK_PENTAGON = \"Draw Pentagon\"\nTASK_TESSELLATION = \"Draw Tessellation\"\ntasks = [TASK_LINE, TASK_TRIANGLE, TASK_CIRCLE, TASK_PENTAGON, TASK_TESSELLATION]\ncurrent_task = TASK_LINE\n# Constants\nMAX_SCORE = 50000\nNEGATIVE_REWARD_RETRY_LIMIT = 3\nPOSITIVE_REWARD_RETRY_LIMIT = 3  # Number of additional attempts after achieving positive rewards\n# Curriculum learning parameters",
         "detail": "geomaster_ai_challenge",
         "documentation": {}
     },
@@ -748,7 +757,7 @@
         "kind": 5,
         "importPath": "geomaster_ai_challenge",
         "description": "geomaster_ai_challenge",
-        "peekOfCode": "TASK_PENTAGON = \"Draw Pentagon\"\nTASK_TESSELLATION = \"Draw Tessellation\"\ntasks = [TASK_LINE, TASK_TRIANGLE, TASK_CIRCLE, TASK_PENTAGON, TASK_TESSELLATION]\ncurrent_task = TASK_LINE\n# Constants\nMAX_SCORE = 50000\nNEGATIVE_REWARD_RETRY_LIMIT = 3\nPOSITIVE_REWARD_RETRY_LIMIT = 3  # Number of additional attempts after achieving positive rewards\n# --- SumTree for Prioritized Experience Replay ---\nclass SumTree:",
+        "peekOfCode": "TASK_PENTAGON = \"Draw Pentagon\"\nTASK_TESSELLATION = \"Draw Tessellation\"\ntasks = [TASK_LINE, TASK_TRIANGLE, TASK_CIRCLE, TASK_PENTAGON, TASK_TESSELLATION]\ncurrent_task = TASK_LINE\n# Constants\nMAX_SCORE = 50000\nNEGATIVE_REWARD_RETRY_LIMIT = 3\nPOSITIVE_REWARD_RETRY_LIMIT = 3  # Number of additional attempts after achieving positive rewards\n# Curriculum learning parameters\ncurriculum_stage = 0",
         "detail": "geomaster_ai_challenge",
         "documentation": {}
     },
@@ -757,7 +766,7 @@
         "kind": 5,
         "importPath": "geomaster_ai_challenge",
         "description": "geomaster_ai_challenge",
-        "peekOfCode": "TASK_TESSELLATION = \"Draw Tessellation\"\ntasks = [TASK_LINE, TASK_TRIANGLE, TASK_CIRCLE, TASK_PENTAGON, TASK_TESSELLATION]\ncurrent_task = TASK_LINE\n# Constants\nMAX_SCORE = 50000\nNEGATIVE_REWARD_RETRY_LIMIT = 3\nPOSITIVE_REWARD_RETRY_LIMIT = 3  # Number of additional attempts after achieving positive rewards\n# --- SumTree for Prioritized Experience Replay ---\nclass SumTree:\n    def __init__(self, capacity):",
+        "peekOfCode": "TASK_TESSELLATION = \"Draw Tessellation\"\ntasks = [TASK_LINE, TASK_TRIANGLE, TASK_CIRCLE, TASK_PENTAGON, TASK_TESSELLATION]\ncurrent_task = TASK_LINE\n# Constants\nMAX_SCORE = 50000\nNEGATIVE_REWARD_RETRY_LIMIT = 3\nPOSITIVE_REWARD_RETRY_LIMIT = 3  # Number of additional attempts after achieving positive rewards\n# Curriculum learning parameters\ncurriculum_stage = 0\ncurriculum_threshold = 10  # Number of successful episodes to progress to the next stage",
         "detail": "geomaster_ai_challenge",
         "documentation": {}
     },
@@ -766,7 +775,7 @@
         "kind": 5,
         "importPath": "geomaster_ai_challenge",
         "description": "geomaster_ai_challenge",
-        "peekOfCode": "tasks = [TASK_LINE, TASK_TRIANGLE, TASK_CIRCLE, TASK_PENTAGON, TASK_TESSELLATION]\ncurrent_task = TASK_LINE\n# Constants\nMAX_SCORE = 50000\nNEGATIVE_REWARD_RETRY_LIMIT = 3\nPOSITIVE_REWARD_RETRY_LIMIT = 3  # Number of additional attempts after achieving positive rewards\n# --- SumTree for Prioritized Experience Replay ---\nclass SumTree:\n    def __init__(self, capacity):\n        self.capacity = capacity",
+        "peekOfCode": "tasks = [TASK_LINE, TASK_TRIANGLE, TASK_CIRCLE, TASK_PENTAGON, TASK_TESSELLATION]\ncurrent_task = TASK_LINE\n# Constants\nMAX_SCORE = 50000\nNEGATIVE_REWARD_RETRY_LIMIT = 3\nPOSITIVE_REWARD_RETRY_LIMIT = 3  # Number of additional attempts after achieving positive rewards\n# Curriculum learning parameters\ncurriculum_stage = 0\ncurriculum_threshold = 10  # Number of successful episodes to progress to the next stage\ncurriculum_progress = 0  # Tracks successful episodes in the current stage",
         "detail": "geomaster_ai_challenge",
         "documentation": {}
     },
@@ -775,7 +784,7 @@
         "kind": 5,
         "importPath": "geomaster_ai_challenge",
         "description": "geomaster_ai_challenge",
-        "peekOfCode": "current_task = TASK_LINE\n# Constants\nMAX_SCORE = 50000\nNEGATIVE_REWARD_RETRY_LIMIT = 3\nPOSITIVE_REWARD_RETRY_LIMIT = 3  # Number of additional attempts after achieving positive rewards\n# --- SumTree for Prioritized Experience Replay ---\nclass SumTree:\n    def __init__(self, capacity):\n        self.capacity = capacity\n        self.tree = np.zeros(2 * capacity - 1)",
+        "peekOfCode": "current_task = TASK_LINE\n# Constants\nMAX_SCORE = 50000\nNEGATIVE_REWARD_RETRY_LIMIT = 3\nPOSITIVE_REWARD_RETRY_LIMIT = 3  # Number of additional attempts after achieving positive rewards\n# Curriculum learning parameters\ncurriculum_stage = 0\ncurriculum_threshold = 10  # Number of successful episodes to progress to the next stage\ncurriculum_progress = 0  # Tracks successful episodes in the current stage\n# Define task progression for curriculum learning",
         "detail": "geomaster_ai_challenge",
         "documentation": {}
     },
@@ -784,7 +793,7 @@
         "kind": 5,
         "importPath": "geomaster_ai_challenge",
         "description": "geomaster_ai_challenge",
-        "peekOfCode": "MAX_SCORE = 50000\nNEGATIVE_REWARD_RETRY_LIMIT = 3\nPOSITIVE_REWARD_RETRY_LIMIT = 3  # Number of additional attempts after achieving positive rewards\n# --- SumTree for Prioritized Experience Replay ---\nclass SumTree:\n    def __init__(self, capacity):\n        self.capacity = capacity\n        self.tree = np.zeros(2 * capacity - 1)\n        self.data = np.zeros(capacity, dtype=object)\n        self.write = 0",
+        "peekOfCode": "MAX_SCORE = 50000\nNEGATIVE_REWARD_RETRY_LIMIT = 3\nPOSITIVE_REWARD_RETRY_LIMIT = 3  # Number of additional attempts after achieving positive rewards\n# Curriculum learning parameters\ncurriculum_stage = 0\ncurriculum_threshold = 10  # Number of successful episodes to progress to the next stage\ncurriculum_progress = 0  # Tracks successful episodes in the current stage\n# Define task progression for curriculum learning\ncurriculum_tasks = [\n    [TASK_LINE],  # Stage 0: Only line tasks",
         "detail": "geomaster_ai_challenge",
         "documentation": {}
     },
@@ -793,7 +802,7 @@
         "kind": 5,
         "importPath": "geomaster_ai_challenge",
         "description": "geomaster_ai_challenge",
-        "peekOfCode": "NEGATIVE_REWARD_RETRY_LIMIT = 3\nPOSITIVE_REWARD_RETRY_LIMIT = 3  # Number of additional attempts after achieving positive rewards\n# --- SumTree for Prioritized Experience Replay ---\nclass SumTree:\n    def __init__(self, capacity):\n        self.capacity = capacity\n        self.tree = np.zeros(2 * capacity - 1)\n        self.data = np.zeros(capacity, dtype=object)\n        self.write = 0\n        self.n_entries = 0",
+        "peekOfCode": "NEGATIVE_REWARD_RETRY_LIMIT = 3\nPOSITIVE_REWARD_RETRY_LIMIT = 3  # Number of additional attempts after achieving positive rewards\n# Curriculum learning parameters\ncurriculum_stage = 0\ncurriculum_threshold = 10  # Number of successful episodes to progress to the next stage\ncurriculum_progress = 0  # Tracks successful episodes in the current stage\n# Define task progression for curriculum learning\ncurriculum_tasks = [\n    [TASK_LINE],  # Stage 0: Only line tasks\n    [TASK_LINE, TASK_TRIANGLE],  # Stage 1: Line and triangle tasks",
         "detail": "geomaster_ai_challenge",
         "documentation": {}
     },
@@ -802,7 +811,52 @@
         "kind": 5,
         "importPath": "geomaster_ai_challenge",
         "description": "geomaster_ai_challenge",
-        "peekOfCode": "POSITIVE_REWARD_RETRY_LIMIT = 3  # Number of additional attempts after achieving positive rewards\n# --- SumTree for Prioritized Experience Replay ---\nclass SumTree:\n    def __init__(self, capacity):\n        self.capacity = capacity\n        self.tree = np.zeros(2 * capacity - 1)\n        self.data = np.zeros(capacity, dtype=object)\n        self.write = 0\n        self.n_entries = 0\n    def add(self, priority, data):",
+        "peekOfCode": "POSITIVE_REWARD_RETRY_LIMIT = 3  # Number of additional attempts after achieving positive rewards\n# Curriculum learning parameters\ncurriculum_stage = 0\ncurriculum_threshold = 10  # Number of successful episodes to progress to the next stage\ncurriculum_progress = 0  # Tracks successful episodes in the current stage\n# Define task progression for curriculum learning\ncurriculum_tasks = [\n    [TASK_LINE],  # Stage 0: Only line tasks\n    [TASK_LINE, TASK_TRIANGLE],  # Stage 1: Line and triangle tasks\n    [TASK_LINE, TASK_TRIANGLE, TASK_CIRCLE],  # Stage 2: Add circle tasks",
+        "detail": "geomaster_ai_challenge",
+        "documentation": {}
+    },
+    {
+        "label": "curriculum_stage",
+        "kind": 5,
+        "importPath": "geomaster_ai_challenge",
+        "description": "geomaster_ai_challenge",
+        "peekOfCode": "curriculum_stage = 0\ncurriculum_threshold = 10  # Number of successful episodes to progress to the next stage\ncurriculum_progress = 0  # Tracks successful episodes in the current stage\n# Define task progression for curriculum learning\ncurriculum_tasks = [\n    [TASK_LINE],  # Stage 0: Only line tasks\n    [TASK_LINE, TASK_TRIANGLE],  # Stage 1: Line and triangle tasks\n    [TASK_LINE, TASK_TRIANGLE, TASK_CIRCLE],  # Stage 2: Add circle tasks\n    [TASK_LINE, TASK_TRIANGLE, TASK_CIRCLE, TASK_PENTAGON],  # Stage 3: Add pentagon tasks\n    tasks,  # Stage 4: All tasks",
+        "detail": "geomaster_ai_challenge",
+        "documentation": {}
+    },
+    {
+        "label": "curriculum_threshold",
+        "kind": 5,
+        "importPath": "geomaster_ai_challenge",
+        "description": "geomaster_ai_challenge",
+        "peekOfCode": "curriculum_threshold = 10  # Number of successful episodes to progress to the next stage\ncurriculum_progress = 0  # Tracks successful episodes in the current stage\n# Define task progression for curriculum learning\ncurriculum_tasks = [\n    [TASK_LINE],  # Stage 0: Only line tasks\n    [TASK_LINE, TASK_TRIANGLE],  # Stage 1: Line and triangle tasks\n    [TASK_LINE, TASK_TRIANGLE, TASK_CIRCLE],  # Stage 2: Add circle tasks\n    [TASK_LINE, TASK_TRIANGLE, TASK_CIRCLE, TASK_PENTAGON],  # Stage 3: Add pentagon tasks\n    tasks,  # Stage 4: All tasks\n]",
+        "detail": "geomaster_ai_challenge",
+        "documentation": {}
+    },
+    {
+        "label": "curriculum_progress",
+        "kind": 5,
+        "importPath": "geomaster_ai_challenge",
+        "description": "geomaster_ai_challenge",
+        "peekOfCode": "curriculum_progress = 0  # Tracks successful episodes in the current stage\n# Define task progression for curriculum learning\ncurriculum_tasks = [\n    [TASK_LINE],  # Stage 0: Only line tasks\n    [TASK_LINE, TASK_TRIANGLE],  # Stage 1: Line and triangle tasks\n    [TASK_LINE, TASK_TRIANGLE, TASK_CIRCLE],  # Stage 2: Add circle tasks\n    [TASK_LINE, TASK_TRIANGLE, TASK_CIRCLE, TASK_PENTAGON],  # Stage 3: Add pentagon tasks\n    tasks,  # Stage 4: All tasks\n]\ncurriculum_worlds = [",
+        "detail": "geomaster_ai_challenge",
+        "documentation": {}
+    },
+    {
+        "label": "curriculum_tasks",
+        "kind": 5,
+        "importPath": "geomaster_ai_challenge",
+        "description": "geomaster_ai_challenge",
+        "peekOfCode": "curriculum_tasks = [\n    [TASK_LINE],  # Stage 0: Only line tasks\n    [TASK_LINE, TASK_TRIANGLE],  # Stage 1: Line and triangle tasks\n    [TASK_LINE, TASK_TRIANGLE, TASK_CIRCLE],  # Stage 2: Add circle tasks\n    [TASK_LINE, TASK_TRIANGLE, TASK_CIRCLE, TASK_PENTAGON],  # Stage 3: Add pentagon tasks\n    tasks,  # Stage 4: All tasks\n]\ncurriculum_worlds = [\n    [WORLD_EUCLIDEAN],  # Stage 0: Only Euclidean world\n    [WORLD_EUCLIDEAN, WORLD_SPHERICAL],  # Stage 1: Add spherical world",
+        "detail": "geomaster_ai_challenge",
+        "documentation": {}
+    },
+    {
+        "label": "curriculum_worlds",
+        "kind": 5,
+        "importPath": "geomaster_ai_challenge",
+        "description": "geomaster_ai_challenge",
+        "peekOfCode": "curriculum_worlds = [\n    [WORLD_EUCLIDEAN],  # Stage 0: Only Euclidean world\n    [WORLD_EUCLIDEAN, WORLD_SPHERICAL],  # Stage 1: Add spherical world\n    [WORLD_EUCLIDEAN, WORLD_SPHERICAL, WORLD_HYPERBOLIC],  # Stage 2: Add hyperbolic world\n    [WORLD_EUCLIDEAN, WORLD_SPHERICAL, WORLD_HYPERBOLIC, WORLD_ELLIPTICAL],  # Stage 3: Add elliptical world\n    worlds,  # Stage 4: All worlds\n]\ndef update_curriculum():\n    \"\"\"Update the curriculum stage based on performance.\"\"\"\n    global curriculum_stage, curriculum_progress",
         "detail": "geomaster_ai_challenge",
         "documentation": {}
     },
