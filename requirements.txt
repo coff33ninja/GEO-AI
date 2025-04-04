@@ -4,3 +4,4 @@ numpy
 matplotlib
 pytorch_lightning
 opencv-python
+lightning[extra]
