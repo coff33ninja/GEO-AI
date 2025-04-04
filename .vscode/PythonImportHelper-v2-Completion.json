@@ -136,7 +136,7 @@
         "kind": 6,
         "importPath": "geomaster_ai_challenge",
         "description": "geomaster_ai_challenge",
-        "peekOfCode": "class ForwardModel(nn.Module):\n    def __init__(self, state_dim, action_dim):\n        super().__init__()\n        self.fc1 = nn.Linear(state_dim + 1, 128)\n        self.fc2 = nn.Linear(128, state_dim)\n    def forward(self, state, action):\n        try:\n            if state.dim() != 2 or action.dim() != 2:\n                raise ValueError(\n                    f\"Expected 2D tensors, got state shape {state.shape}, action shape {action.shape}\"",
+        "peekOfCode": "class ForwardModel(nn.Module):\n    def __init__(self, state_dim, action_dim):\n        super().__init__()\n        self.state_dim = state_dim  # Store state_dim as an instance variable\n        self.fc1 = nn.Linear(state_dim + 1, 128)\n        self.fc2 = nn.Linear(128, state_dim)\n    def forward(self, state, action):\n        try:\n            if state.dim() != 2 or action.dim() != 2:\n                raise ValueError(",
         "detail": "geomaster_ai_challenge",
         "documentation": {}
     },
@@ -280,7 +280,7 @@
         "kind": 2,
         "importPath": "geomaster_ai_challenge",
         "description": "geomaster_ai_challenge",
-        "peekOfCode": "def update_network_dimensions():\n    global policy_net, target_net, forward_model, world_model, state_dim\n    state_dim = state_dim_3d if is_3d_mode else state_dim_2d\n    policy_net = DQN(state_dim, action_dim).to(device)\n    target_net = DQN(state_dim, action_dim).to(device)\n    target_net.load_state_dict(policy_net.state_dict())\n    forward_model = ForwardModel(state_dim, action_dim).to(device)\n    world_model = WorldModel(state_dim, action_dim).to(device)\n    global optimizer, optimizer_fm, optimizer_wm\n    optimizer = optim.Adam(policy_net.parameters(), lr=base_lr)",
+        "peekOfCode": "def update_network_dimensions():\n    global policy_net, target_net, forward_model, world_model, state_dim\n    state_dim = state_dim_3d if is_3d_mode else state_dim_2d\n    policy_net = DQN(state_dim, action_dim).to(device)\n    target_net = DQN(state_dim, action_dim).to(device)\n    target_net.load_state_dict(policy_net.state_dict())\n    forward_model = ForwardModel(state_dim, action_dim).to(device)  # Re-initialize with updated state_dim\n    world_model = WorldModel(state_dim, action_dim).to(device)\n    global optimizer, optimizer_fm, optimizer_wm\n    optimizer = optim.Adam(policy_net.parameters(), lr=base_lr)",
         "detail": "geomaster_ai_challenge",
         "documentation": {}
     },
@@ -1234,7 +1234,7 @@
         "kind": 5,
         "importPath": "geomaster_ai_challenge",
         "description": "geomaster_ai_challenge",
-        "peekOfCode": "is_3d_mode = False\nprojection_mode = \"perspective\"  # Options: \"perspective\", \"orthographic\"\ndef update_network_dimensions():\n    global policy_net, target_net, forward_model, world_model, state_dim\n    state_dim = state_dim_3d if is_3d_mode else state_dim_2d\n    policy_net = DQN(state_dim, action_dim).to(device)\n    target_net = DQN(state_dim, action_dim).to(device)\n    target_net.load_state_dict(policy_net.state_dict())\n    forward_model = ForwardModel(state_dim, action_dim).to(device)\n    world_model = WorldModel(state_dim, action_dim).to(device)",
+        "peekOfCode": "is_3d_mode = False\nprojection_mode = \"perspective\"  # Options: \"perspective\", \"orthographic\"\ndef update_network_dimensions():\n    global policy_net, target_net, forward_model, world_model, state_dim\n    state_dim = state_dim_3d if is_3d_mode else state_dim_2d\n    policy_net = DQN(state_dim, action_dim).to(device)\n    target_net = DQN(state_dim, action_dim).to(device)\n    target_net.load_state_dict(policy_net.state_dict())\n    forward_model = ForwardModel(state_dim, action_dim).to(device)  # Re-initialize with updated state_dim\n    world_model = WorldModel(state_dim, action_dim).to(device)",
         "detail": "geomaster_ai_challenge",
         "documentation": {}
     },
@@ -1243,7 +1243,7 @@
         "kind": 5,
         "importPath": "geomaster_ai_challenge",
         "description": "geomaster_ai_challenge",
-        "peekOfCode": "projection_mode = \"perspective\"  # Options: \"perspective\", \"orthographic\"\ndef update_network_dimensions():\n    global policy_net, target_net, forward_model, world_model, state_dim\n    state_dim = state_dim_3d if is_3d_mode else state_dim_2d\n    policy_net = DQN(state_dim, action_dim).to(device)\n    target_net = DQN(state_dim, action_dim).to(device)\n    target_net.load_state_dict(policy_net.state_dict())\n    forward_model = ForwardModel(state_dim, action_dim).to(device)\n    world_model = WorldModel(state_dim, action_dim).to(device)\n    global optimizer, optimizer_fm, optimizer_wm",
+        "peekOfCode": "projection_mode = \"perspective\"  # Options: \"perspective\", \"orthographic\"\ndef update_network_dimensions():\n    global policy_net, target_net, forward_model, world_model, state_dim\n    state_dim = state_dim_3d if is_3d_mode else state_dim_2d\n    policy_net = DQN(state_dim, action_dim).to(device)\n    target_net = DQN(state_dim, action_dim).to(device)\n    target_net.load_state_dict(policy_net.state_dict())\n    forward_model = ForwardModel(state_dim, action_dim).to(device)  # Re-initialize with updated state_dim\n    world_model = WorldModel(state_dim, action_dim).to(device)\n    global optimizer, optimizer_fm, optimizer_wm",
         "detail": "geomaster_ai_challenge",
         "documentation": {}
     },

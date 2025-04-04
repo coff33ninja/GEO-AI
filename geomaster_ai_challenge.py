@@ -134,6 +134,7 @@ class DQN(nn.Module):
 class ForwardModel(nn.Module):
     def __init__(self, state_dim, action_dim):
         super().__init__()
+        self.state_dim = state_dim  # Store state_dim as an instance variable
         self.fc1 = nn.Linear(state_dim + 1, 128)
         self.fc2 = nn.Linear(128, state_dim)
 
@@ -143,7 +144,7 @@ class ForwardModel(nn.Module):
                 raise ValueError(
                     f"Expected 2D tensors, got state shape {state.shape}, action shape {action.shape}"
                 )
-            if state.shape[1] != state_dim or action.shape[1] != 1:
+            if state.shape[1] != self.state_dim or action.shape[1] != 1:
                 raise ValueError(
                     f"Unexpected feature dimensions: state {state.shape}, action {action.shape}"
                 )
@@ -395,7 +396,7 @@ def update_network_dimensions():
     policy_net = DQN(state_dim, action_dim).to(device)
     target_net = DQN(state_dim, action_dim).to(device)
     target_net.load_state_dict(policy_net.state_dict())
-    forward_model = ForwardModel(state_dim, action_dim).to(device)
+    forward_model = ForwardModel(state_dim, action_dim).to(device)  # Re-initialize with updated state_dim
     world_model = WorldModel(state_dim, action_dim).to(device)
     global optimizer, optimizer_fm, optimizer_wm
     optimizer = optim.Adam(policy_net.parameters(), lr=base_lr)
@@ -1235,18 +1236,20 @@ while running:
             current_pos = current_shape[-1] if current_shape else (0, 0, 0)
             if len(current_pos) == 2:
                 current_pos = (current_pos[0], current_pos[1], 0)
+            task_id = tasks.index(current_task)  # Define task_id
+            world_id = worlds.index(current_world)  # Define world_id
             if current_task == TASK_LINE:
                 dx = end_point[0] - current_pos[0]
                 dy = end_point[1] - current_pos[1]
                 dz = end_point[2] - current_pos[2]
                 state = np.array([
-                    current_pos[0], current_pos[1], dx, dy, tasks.index(current_task),
-                    worlds.index(current_world), shape_progress, num_vertices, angle, dz
+                    current_pos[0], current_pos[1], dx, dy, task_id,
+                    world_id, shape_progress, num_vertices, angle, dz
                 ])
             else:
                 state = np.array([
-                    0, 0, 0, 0, tasks.index(current_task),
-                    worlds.index(current_world), shape_progress, num_vertices, angle, 0
+                    0, 0, 0, 0, task_id,
+                    world_id, shape_progress, num_vertices, angle, 0
                 ])
         else:
             if current_task == TASK_LINE:
@@ -1265,8 +1268,8 @@ while running:
                     dist_to_close = calculate_dist_to_close(current_shape)
                 elif current_task == TASK_TESSELLATION and current_shape:
                     angle = calculate_triangle_angle(current_shape[0])
-            task_id = tasks.index(current_task)
-            world_id = worlds.index(current_world)
+            task_id = tasks.index(current_task)  # Define task_id
+            world_id = worlds.index(current_world)  # Define world_id
             state = np.array(
                 [
                     current_pos[0],
