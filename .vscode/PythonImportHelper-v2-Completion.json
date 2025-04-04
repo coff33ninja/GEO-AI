@@ -243,7 +243,7 @@
         "kind": 2,
         "importPath": "geomaster_ai_challenge",
         "description": "geomaster_ai_challenge",
-        "peekOfCode": "def optimize_model():\n    \"\"\"Optimization is now handled by PyTorch Lightning.\"\"\"\n    trainer.fit(geo_model, geo_data)\n    for scheduler in trainer.optimizers[0].schedulers:\n        scheduler.step()  # Step the scheduler after each epoch\n# Neural Networks\npolicy_net = geo_model.policy_net.to(device)\ntarget_net = geo_model.target_net.to(device)\ntarget_net.load_state_dict(policy_net.state_dict())\noptimizer = optim.Adam(policy_net.parameters(), lr=base_lr)",
+        "peekOfCode": "def optimize_model():\n    \"\"\"Optimization is now handled by PyTorch Lightning.\"\"\"\n    trainer.fit(geo_model, geo_data)\n    # Step the learning rate scheduler manually if it exists\n    if trainer.lr_scheduler_configs:\n        for scheduler_config in trainer.lr_scheduler_configs:\n            scheduler = scheduler_config.scheduler\n            scheduler.step()\n# Neural Networks\npolicy_net = geo_model.policy_net.to(device)",
         "detail": "geomaster_ai_challenge",
         "documentation": {}
     },

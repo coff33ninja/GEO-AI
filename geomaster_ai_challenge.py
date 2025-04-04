@@ -356,8 +356,11 @@ trainer.fit(geo_model, geo_data)
 def optimize_model():
     """Optimization is now handled by PyTorch Lightning."""
     trainer.fit(geo_model, geo_data)
-    for scheduler in trainer.optimizers[0].schedulers:
-        scheduler.step()  # Step the scheduler after each epoch
+    # Step the learning rate scheduler manually if it exists
+    if trainer.lr_scheduler_configs:
+        for scheduler_config in trainer.lr_scheduler_configs:
+            scheduler = scheduler_config.scheduler
+            scheduler.step()
 
 # Neural Networks
 policy_net = geo_model.policy_net.to(device)
