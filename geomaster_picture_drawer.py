@@ -14,6 +14,7 @@ import os
 import csv
 import time
 import torch.nn as nn
+import torch.optim as optim
 
 # Initialize Pygame
 pygame.init()
@@ -40,11 +41,11 @@ font = pygame.font.SysFont("monospace", 20)
 # Device
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
-# Action space (aligned with geomaster_ai_challenge.py or expanded)
+# Action space and state
 action_dim = 36  # Expanded: 4 dirs (no draw) + 4 dirs x 4 colors x 3 stroke sizes
 state_dim = 10  # Match 2D state from geomaster_ai_challenge.py
 
-# Load pre-trained GeoMasterAIModel (optional, for comparison)
+# Load pre-trained GeoMasterAIModel
 geo_model = GeoMasterAIModel(state_dim, action_dim, gamma=0.99, base_lr=0.001).to(
     device
 )
@@ -61,7 +62,7 @@ else:
     print(f"No weights found at {weights_path}; initializing with random weights")
 geo_model.eval()
 
-# Initialize DQN model for action selection
+# Initialize DQN model
 dqn_model = DQN(state_dim, action_dim).to(device)
 dqn_weights_path = "dqn_policy_net.pth"
 if os.path.exists(dqn_weights_path):
@@ -148,19 +149,18 @@ def get_state(canvas, pen_pos, target_img):
     canvas_patch = canvas[y_min:y_max, x_min:x_max]
     target_patch = target_img[y_min:y_max, x_min:x_max]
     similarity = -np.mean((canvas_patch - target_patch) ** 2) / 255.0
-    # Enhanced state with more features
     state = np.array(
         [
             pen_pos[0] / WIDTH,
-            pen_pos[1] / HEIGHT,  # Normalized position
-            similarity,  # Local similarity
-            np.mean(canvas_patch[:, :, 0]) / 255,  # Avg red
-            np.mean(canvas_patch[:, :, 1]) / 255,  # Avg green
-            np.mean(canvas_patch[:, :, 2]) / 255,  # Avg blue
-            np.mean(target_patch[:, :, 0]) / 255,  # Target avg red
-            np.mean(target_patch[:, :, 1]) / 255,  # Target avg green
-            np.mean(target_patch[:, :, 2]) / 255,  # Target avg blue
-            np.std(canvas_patch) / 255,  # Texture variance
+            pen_pos[1] / HEIGHT,
+            similarity,
+            np.mean(canvas_patch[:, :, 0]) / 255,
+            np.mean(canvas_patch[:, :, 1]) / 255,
+            np.mean(canvas_patch[:, :, 2]) / 255,
+            np.mean(target_patch[:, :, 0]) / 255,
+            np.mean(target_patch[:, :, 1]) / 255,
+            np.mean(target_patch[:, :, 2]) / 255,
+            np.std(canvas_patch) / 255,
         ]
     )
     return state
@@ -277,12 +277,61 @@ class ImageGenerator(nn.Module):
         return x
 
 
-# Initialize and use ImageGenerator
-input_dim = state_dim  # Match state input
-output_dim = WIDTH * HEIGHT * 3  # RGB image
+# Initialize ImageGenerator
+input_dim = state_dim
+output_dim = WIDTH * HEIGHT * 3
 image_generator = ImageGenerator(input_dim, output_dim).to(device)
 
 
+# Training loop for ImageGenerator
+def train_image_generator(generator, target_images, epochs=100, lr=0.001):
+    optimizer = optim.Adam(generator.parameters(), lr=lr)
+    criterion = nn.MSELoss()
+
+    print("Training ImageGenerator...")
+    for epoch in range(epochs):
+        total_loss = 0
+        for img_name, target_img in target_images:
+            # Generate random state-like input (simulating pen position and canvas state)
+            pen_pos = [np.random.uniform(0, WIDTH), np.random.uniform(0, HEIGHT)]
+            canvas = np.zeros((WIDTH, HEIGHT, 3), dtype=np.uint8)
+            state = get_state(canvas, pen_pos, target_img)
+            state_tensor = torch.FloatTensor(state).unsqueeze(0).to(device)
+
+            # Target image as ground truth
+            target_tensor = torch.FloatTensor(target_img.flatten() / 255.0).to(device)
+
+            # Forward pass
+            optimizer.zero_grad()
+            output = generator(state_tensor)
+            loss = criterion(output, target_tensor)
+
+            # Backward pass
+            loss.backward()
+            optimizer.step()
+
+            total_loss += loss.item()
+
+        avg_loss = total_loss / len(target_images)
+        if (epoch + 1) % 10 == 0:
+            print(f"Epoch [{epoch+1}/{epochs}], Avg Loss: {avg_loss:.6f}")
+
+    # Save trained model
+    torch.save(generator.state_dict(), "image_generator.pth")
+    print("ImageGenerator training complete. Weights saved to 'image_generator.pth'")
+
+
+# Load or train ImageGenerator
+generator_weights_path = "image_generator.pth"
+if os.path.exists(generator_weights_path):
+    image_generator.load_state_dict(torch.load(generator_weights_path))
+    print(f"Loaded ImageGenerator weights from {generator_weights_path}")
+else:
+    train_image_generator(image_generator, target_images)
+image_generator.eval()
+
+
+# Generate initial canvas
 def generate_initial_canvas(state):
     input_tensor = torch.FloatTensor(state).unsqueeze(0).to(device)
     with torch.no_grad():
@@ -291,11 +340,11 @@ def generate_initial_canvas(state):
     return output_image.astype(np.uint8)
 
 
-# Action selection with DQN and bias
-def select_action_with_dqn(state, action_bias, bias_strength):
+# Action selection
+def select_action(state, model, action_bias, bias_strength):
     state_tensor = torch.FloatTensor(state).unsqueeze(0).to(device)
     with torch.no_grad():
-        q_values = dqn_model(state_tensor).cpu().numpy().flatten()
+        q_values = model(state_tensor).cpu().numpy().flatten()
         for action, bias in action_bias.items():
             q_values[action] += bias * bias_strength
     return np.argmax(q_values)
@@ -306,6 +355,7 @@ clock = pygame.time.Clock()
 running = True
 max_steps = 1000
 bias_strength = 0.5
+use_dqn = True  # Default to DQN model
 
 for img_name, target_img in target_images:
     for current_world in worlds:
@@ -329,7 +379,7 @@ for img_name, target_img in target_images:
                 pen_pos = [previous_data[0]["Pen_X"], previous_data[0]["Pen_Y"]]
                 print(f"Reusing starting position for {img_name} in {current_world}")
 
-        # Generate initial canvas (optional)
+        # Generate initial canvas
         initial_state = get_state(canvas, pen_pos, target_img)
         canvas = generate_initial_canvas(initial_state)
 
@@ -346,12 +396,17 @@ for img_name, target_img in target_images:
                     if event.key == pygame.K_d:
                         bias_strength = max(0.1, bias_strength - 0.1)
                         print(f"Bias strength decreased to {bias_strength:.1f}")
+                    if event.key == pygame.K_m:
+                        use_dqn = not use_dqn
+                        model_name = "DQN" if use_dqn else "PolicyNet"
+                        print(f"Switched to {model_name} for action selection")
 
             # Get state
             state = get_state(canvas, pen_pos, target_img)
 
-            # Choose action
-            action = select_action_with_dqn(state, action_bias, bias_strength)
+            # Choose action based on selected model
+            model = dqn_model if use_dqn else geo_model.policy_net
+            action = select_action(state, model, action_bias, bias_strength)
 
             # Apply action
             pen_pos, color, stroke_size = apply_action(
@@ -388,6 +443,7 @@ for img_name, target_img in target_images:
             screen.blit(canvas_surface, (0, 0))
 
             # Info
+            model_name = "DQN" if use_dqn else "PolicyNet"
             info_text = [
                 f"Image: {img_name}",
                 f"World: {current_world}",
@@ -395,6 +451,7 @@ for img_name, target_img in target_images:
                 f"Reward: {reward:.2f}",
                 f"Total Reward: {total_reward:.2f}",
                 f"Bias Strength: {bias_strength:.1f}",
+                f"Model: {model_name}",
             ]
             for i, line in enumerate(info_text):
                 text = font.render(line, True, WHITE)
