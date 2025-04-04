@@ -1266,10 +1266,10 @@ dashboard_surface = None
 
 def update_dashboard():
     """Update the real-time dashboard with rewards, losses, and task progression."""
-    global dashboard_surface, episode_rewards, reward_history, step_counter
+    global dashboard_surface, episode_rewards, reward_history, curriculum_stage
 
     # Create a new figure for the dashboard
-    plt.figure(figsize=(8, 4))
+    plt.figure(figsize=(10, 4))
 
     # Subplot 1: Reward Trend
     plt.subplot(1, 3, 1)
@@ -1279,7 +1279,7 @@ def update_dashboard():
     plt.title("Reward Trend")
     plt.legend()
 
-    # Subplot 2: Loss Trend
+    # Subplot 2: Recent Rewards
     plt.subplot(1, 3, 2)
     if len(reward_history) > 0:
         plt.plot(list(reward_history), label="Recent Rewards", color="orange")
@@ -1288,13 +1288,14 @@ def update_dashboard():
     plt.title("Recent Rewards")
     plt.legend()
 
-    # Subplot 3: Task Progression
+    # Subplot 3: Curriculum Progression
     plt.subplot(1, 3, 3)
-    plt.bar(["Line", "Triangle", "Circle", "Pentagon", "Tessellation"], 
-            [episode_rewards.count(task) for task in tasks], color="green")
-    plt.xlabel("Tasks")
-    plt.ylabel("Count")
-    plt.title("Task Progression")
+    stages = [f"Stage {i}" for i in range(len(curriculum_tasks))]
+    progression = [1 if i <= curriculum_stage else 0 for i in range(len(curriculum_tasks))]
+    plt.bar(stages, progression, color="green")
+    plt.xlabel("Curriculum Stages")
+    plt.ylabel("Progress")
+    plt.title("Curriculum Progression")
 
     # Save the dashboard to a buffer
     buf = BytesIO()

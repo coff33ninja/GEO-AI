@@ -523,7 +523,7 @@
         "kind": 2,
         "importPath": "geomaster_ai_challenge",
         "description": "geomaster_ai_challenge",
-        "peekOfCode": "def update_dashboard():\n    \"\"\"Update the real-time dashboard with rewards, losses, and task progression.\"\"\"\n    global dashboard_surface, episode_rewards, reward_history, step_counter\n    # Create a new figure for the dashboard\n    plt.figure(figsize=(8, 4))\n    # Subplot 1: Reward Trend\n    plt.subplot(1, 3, 1)\n    plt.plot(list(episode_rewards), label=\"Avg Reward\", color=\"cyan\")\n    plt.xlabel(\"Episode\")\n    plt.ylabel(\"Reward\")",
+        "peekOfCode": "def update_dashboard():\n    \"\"\"Update the real-time dashboard with rewards, losses, and task progression.\"\"\"\n    global dashboard_surface, episode_rewards, reward_history, curriculum_stage\n    # Create a new figure for the dashboard\n    plt.figure(figsize=(10, 4))\n    # Subplot 1: Reward Trend\n    plt.subplot(1, 3, 1)\n    plt.plot(list(episode_rewards), label=\"Avg Reward\", color=\"cyan\")\n    plt.xlabel(\"Episode\")\n    plt.ylabel(\"Reward\")",
         "detail": "geomaster_ai_challenge",
         "documentation": {}
     },
@@ -1450,7 +1450,7 @@
         "kind": 5,
         "importPath": "geomaster_ai_challenge",
         "description": "geomaster_ai_challenge",
-        "peekOfCode": "dashboard_surface = None\ndef update_dashboard():\n    \"\"\"Update the real-time dashboard with rewards, losses, and task progression.\"\"\"\n    global dashboard_surface, episode_rewards, reward_history, step_counter\n    # Create a new figure for the dashboard\n    plt.figure(figsize=(8, 4))\n    # Subplot 1: Reward Trend\n    plt.subplot(1, 3, 1)\n    plt.plot(list(episode_rewards), label=\"Avg Reward\", color=\"cyan\")\n    plt.xlabel(\"Episode\")",
+        "peekOfCode": "dashboard_surface = None\ndef update_dashboard():\n    \"\"\"Update the real-time dashboard with rewards, losses, and task progression.\"\"\"\n    global dashboard_surface, episode_rewards, reward_history, curriculum_stage\n    # Create a new figure for the dashboard\n    plt.figure(figsize=(10, 4))\n    # Subplot 1: Reward Trend\n    plt.subplot(1, 3, 1)\n    plt.plot(list(episode_rewards), label=\"Avg Reward\", color=\"cyan\")\n    plt.xlabel(\"Episode\")",
         "detail": "geomaster_ai_challenge",
         "documentation": {}
     },
