@@ -39,9 +39,13 @@ action_dim = 36  # Expanded: 4 dirs (no draw) + 4 dirs x 4 colors x 3 stroke siz
 geo_model = GeoMasterAIModel(state_dim, action_dim, gamma=0.99, base_lr=0.001).to(device)
 weights_path = "policy_net.pth"
 if os.path.exists(weights_path):
-    # Load weights into policy_net directly
-    geo_model.policy_net.load_state_dict(torch.load(weights_path))
-    print(f"Loaded weights from {weights_path} into policy_net")
+    try:
+        # Load weights into policy_net directly
+        geo_model.policy_net.load_state_dict(torch.load(weights_path))
+        print(f"Loaded weights from {weights_path} into policy_net")
+    except RuntimeError as e:
+        print(f"Error loading weights: {e}")
+        print("Initializing policy_net with random weights instead.")
 else:
     print(f"No weights found at {weights_path}; initializing with random weights")
 geo_model.eval()

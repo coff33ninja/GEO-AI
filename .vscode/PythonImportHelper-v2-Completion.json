@@ -1812,7 +1812,7 @@
         "kind": 5,
         "importPath": "geomaster_picture_drawer",
         "description": "geomaster_picture_drawer",
-        "peekOfCode": "font = pygame.font.SysFont(\"monospace\", 20)\n# Device\ndevice = torch.device(\"cuda\" if torch.cuda.is_available() else \"cpu\")\n# Load pre-trained GeoMasterAIModel\nstate_dim = 10  # Match 2D state from geomaster_ai_challenge.py\naction_dim = 36  # Expanded: 4 dirs (no draw) + 4 dirs x 4 colors x 3 stroke sizes\ngeo_model = GeoMasterAIModel(state_dim, action_dim, gamma=0.99, base_lr=0.001).to(device)\nweights_path = \"policy_net.pth\"\nif os.path.exists(weights_path):\n    # Load weights into policy_net directly",
+        "peekOfCode": "font = pygame.font.SysFont(\"monospace\", 20)\n# Device\ndevice = torch.device(\"cuda\" if torch.cuda.is_available() else \"cpu\")\n# Load pre-trained GeoMasterAIModel\nstate_dim = 10  # Match 2D state from geomaster_ai_challenge.py\naction_dim = 36  # Expanded: 4 dirs (no draw) + 4 dirs x 4 colors x 3 stroke sizes\ngeo_model = GeoMasterAIModel(state_dim, action_dim, gamma=0.99, base_lr=0.001).to(device)\nweights_path = \"policy_net.pth\"\nif os.path.exists(weights_path):\n    try:",
         "detail": "geomaster_picture_drawer",
         "documentation": {}
     },
@@ -1821,7 +1821,7 @@
         "kind": 5,
         "importPath": "geomaster_picture_drawer",
         "description": "geomaster_picture_drawer",
-        "peekOfCode": "device = torch.device(\"cuda\" if torch.cuda.is_available() else \"cpu\")\n# Load pre-trained GeoMasterAIModel\nstate_dim = 10  # Match 2D state from geomaster_ai_challenge.py\naction_dim = 36  # Expanded: 4 dirs (no draw) + 4 dirs x 4 colors x 3 stroke sizes\ngeo_model = GeoMasterAIModel(state_dim, action_dim, gamma=0.99, base_lr=0.001).to(device)\nweights_path = \"policy_net.pth\"\nif os.path.exists(weights_path):\n    # Load weights into policy_net directly\n    geo_model.policy_net.load_state_dict(torch.load(weights_path))\n    print(f\"Loaded weights from {weights_path} into policy_net\")",
+        "peekOfCode": "device = torch.device(\"cuda\" if torch.cuda.is_available() else \"cpu\")\n# Load pre-trained GeoMasterAIModel\nstate_dim = 10  # Match 2D state from geomaster_ai_challenge.py\naction_dim = 36  # Expanded: 4 dirs (no draw) + 4 dirs x 4 colors x 3 stroke sizes\ngeo_model = GeoMasterAIModel(state_dim, action_dim, gamma=0.99, base_lr=0.001).to(device)\nweights_path = \"policy_net.pth\"\nif os.path.exists(weights_path):\n    try:\n        # Load weights into policy_net directly\n        geo_model.policy_net.load_state_dict(torch.load(weights_path))",
         "detail": "geomaster_picture_drawer",
         "documentation": {}
     },
@@ -1830,7 +1830,7 @@
         "kind": 5,
         "importPath": "geomaster_picture_drawer",
         "description": "geomaster_picture_drawer",
-        "peekOfCode": "state_dim = 10  # Match 2D state from geomaster_ai_challenge.py\naction_dim = 36  # Expanded: 4 dirs (no draw) + 4 dirs x 4 colors x 3 stroke sizes\ngeo_model = GeoMasterAIModel(state_dim, action_dim, gamma=0.99, base_lr=0.001).to(device)\nweights_path = \"policy_net.pth\"\nif os.path.exists(weights_path):\n    # Load weights into policy_net directly\n    geo_model.policy_net.load_state_dict(torch.load(weights_path))\n    print(f\"Loaded weights from {weights_path} into policy_net\")\nelse:\n    print(f\"No weights found at {weights_path}; initializing with random weights\")",
+        "peekOfCode": "state_dim = 10  # Match 2D state from geomaster_ai_challenge.py\naction_dim = 36  # Expanded: 4 dirs (no draw) + 4 dirs x 4 colors x 3 stroke sizes\ngeo_model = GeoMasterAIModel(state_dim, action_dim, gamma=0.99, base_lr=0.001).to(device)\nweights_path = \"policy_net.pth\"\nif os.path.exists(weights_path):\n    try:\n        # Load weights into policy_net directly\n        geo_model.policy_net.load_state_dict(torch.load(weights_path))\n        print(f\"Loaded weights from {weights_path} into policy_net\")\n    except RuntimeError as e:",
         "detail": "geomaster_picture_drawer",
         "documentation": {}
     },
@@ -1839,7 +1839,7 @@
         "kind": 5,
         "importPath": "geomaster_picture_drawer",
         "description": "geomaster_picture_drawer",
-        "peekOfCode": "action_dim = 36  # Expanded: 4 dirs (no draw) + 4 dirs x 4 colors x 3 stroke sizes\ngeo_model = GeoMasterAIModel(state_dim, action_dim, gamma=0.99, base_lr=0.001).to(device)\nweights_path = \"policy_net.pth\"\nif os.path.exists(weights_path):\n    # Load weights into policy_net directly\n    geo_model.policy_net.load_state_dict(torch.load(weights_path))\n    print(f\"Loaded weights from {weights_path} into policy_net\")\nelse:\n    print(f\"No weights found at {weights_path}; initializing with random weights\")\ngeo_model.eval()",
+        "peekOfCode": "action_dim = 36  # Expanded: 4 dirs (no draw) + 4 dirs x 4 colors x 3 stroke sizes\ngeo_model = GeoMasterAIModel(state_dim, action_dim, gamma=0.99, base_lr=0.001).to(device)\nweights_path = \"policy_net.pth\"\nif os.path.exists(weights_path):\n    try:\n        # Load weights into policy_net directly\n        geo_model.policy_net.load_state_dict(torch.load(weights_path))\n        print(f\"Loaded weights from {weights_path} into policy_net\")\n    except RuntimeError as e:\n        print(f\"Error loading weights: {e}\")",
         "detail": "geomaster_picture_drawer",
         "documentation": {}
     },
@@ -1848,7 +1848,7 @@
         "kind": 5,
         "importPath": "geomaster_picture_drawer",
         "description": "geomaster_picture_drawer",
-        "peekOfCode": "geo_model = GeoMasterAIModel(state_dim, action_dim, gamma=0.99, base_lr=0.001).to(device)\nweights_path = \"policy_net.pth\"\nif os.path.exists(weights_path):\n    # Load weights into policy_net directly\n    geo_model.policy_net.load_state_dict(torch.load(weights_path))\n    print(f\"Loaded weights from {weights_path} into policy_net\")\nelse:\n    print(f\"No weights found at {weights_path}; initializing with random weights\")\ngeo_model.eval()\npolicy_net = geo_model.policy_net  # Use the policy_net from GeoMasterAIModel",
+        "peekOfCode": "geo_model = GeoMasterAIModel(state_dim, action_dim, gamma=0.99, base_lr=0.001).to(device)\nweights_path = \"policy_net.pth\"\nif os.path.exists(weights_path):\n    try:\n        # Load weights into policy_net directly\n        geo_model.policy_net.load_state_dict(torch.load(weights_path))\n        print(f\"Loaded weights from {weights_path} into policy_net\")\n    except RuntimeError as e:\n        print(f\"Error loading weights: {e}\")\n        print(\"Initializing policy_net with random weights instead.\")",
         "detail": "geomaster_picture_drawer",
         "documentation": {}
     },
@@ -1857,7 +1857,7 @@
         "kind": 5,
         "importPath": "geomaster_picture_drawer",
         "description": "geomaster_picture_drawer",
-        "peekOfCode": "weights_path = \"policy_net.pth\"\nif os.path.exists(weights_path):\n    # Load weights into policy_net directly\n    geo_model.policy_net.load_state_dict(torch.load(weights_path))\n    print(f\"Loaded weights from {weights_path} into policy_net\")\nelse:\n    print(f\"No weights found at {weights_path}; initializing with random weights\")\ngeo_model.eval()\npolicy_net = geo_model.policy_net  # Use the policy_net from GeoMasterAIModel\n# Geometric worlds (subset from geomaster_ai_challenge.py)",
+        "peekOfCode": "weights_path = \"policy_net.pth\"\nif os.path.exists(weights_path):\n    try:\n        # Load weights into policy_net directly\n        geo_model.policy_net.load_state_dict(torch.load(weights_path))\n        print(f\"Loaded weights from {weights_path} into policy_net\")\n    except RuntimeError as e:\n        print(f\"Error loading weights: {e}\")\n        print(\"Initializing policy_net with random weights instead.\")\nelse:",
         "detail": "geomaster_picture_drawer",
         "documentation": {}
     },
