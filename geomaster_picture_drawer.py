@@ -2,7 +2,7 @@ import pygame
 import numpy as np
 import torch
 import cv2
-from geomaster_ai_challenge import project_point, WORLD_EUCLIDEAN, WORLD_HYPERBOLIC, WORLD_FRACTAL, GeoMasterAIModel
+from geomaster_ai_challenge import project_point, WORLD_EUCLIDEAN, WORLD_HYPERBOLIC, WORLD_FRACTAL, GeoMasterAIModel, DQN
 import os
 import csv
 import time
@@ -50,6 +50,22 @@ else:
     print(f"No weights found at {weights_path}; initializing with random weights")
 geo_model.eval()
 policy_net = geo_model.policy_net  # Use the policy_net from GeoMasterAIModel
+
+# Initialize a DQN model for action selection
+dqn_model = DQN(state_dim, action_dim).to(device)
+
+# Load pre-trained weights for DQN if available
+dqn_weights_path = "dqn_policy_net.pth"
+if os.path.exists(dqn_weights_path):
+    try:
+        dqn_model.load_state_dict(torch.load(dqn_weights_path))
+        print(f"Loaded DQN weights from {dqn_weights_path}")
+    except RuntimeError as e:
+        print(f"Error loading DQN weights: {e}")
+        print("Initializing DQN with random weights instead.")
+else:
+    print(f"No DQN weights found at {dqn_weights_path}; initializing with random weights")
+dqn_model.eval()
 
 # Geometric worlds (subset from geomaster_ai_challenge.py)
 worlds = [WORLD_EUCLIDEAN, WORLD_HYPERBOLIC, WORLD_FRACTAL]
@@ -216,6 +232,13 @@ output_filename = "generated_image.png"
 cv2.imwrite(output_filename, generated_image)
 print(f"Generated image saved to {output_filename}")
 
+# Use DQN for action selection
+def select_action_with_dqn(state):
+    state_tensor = torch.FloatTensor(state).unsqueeze(0).to(device)
+    with torch.no_grad():
+        q_values = dqn_model(state_tensor).cpu().numpy().flatten()
+    return np.argmax(q_values)
+
 # Main loop
 clock = pygame.time.Clock()
 running = True
@@ -256,14 +279,9 @@ for img_name, target_img in target_images:
 
             # Get state
             state = get_state(canvas, pen_pos, target_img)
-            state_tensor = torch.FloatTensor(state).unsqueeze(0).to(device)
 
-            # Choose action with bias
-            with torch.no_grad():
-                q_values = policy_net(state_tensor).cpu().numpy().flatten()
-                for action, bias in action_bias.items():
-                    q_values[action] += bias * bias_strength
-                action = np.argmax(q_values)
+            # Choose action using DQN
+            action = select_action_with_dqn(state)
 
             # Apply action
             pen_pos, color, stroke_size = apply_action(pen_pos, action, canvas, current_world)

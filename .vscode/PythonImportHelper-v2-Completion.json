@@ -180,6 +180,14 @@
         "documentation": {}
     },
     {
+        "label": "DQN",
+        "importPath": "geomaster_ai_challenge",
+        "description": "geomaster_ai_challenge",
+        "isExtraImport": true,
+        "detail": "geomaster_ai_challenge",
+        "documentation": {}
+    },
+    {
         "label": "SumTree",
         "kind": 6,
         "importPath": "geomaster_ai_challenge",
@@ -1719,6 +1727,15 @@
         "documentation": {}
     },
     {
+        "label": "select_action_with_dqn",
+        "kind": 2,
+        "importPath": "geomaster_picture_drawer",
+        "description": "geomaster_picture_drawer",
+        "peekOfCode": "def select_action_with_dqn(state):\n    state_tensor = torch.FloatTensor(state).unsqueeze(0).to(device)\n    with torch.no_grad():\n        q_values = dqn_model(state_tensor).cpu().numpy().flatten()\n    return np.argmax(q_values)\n# Main loop\nclock = pygame.time.Clock()\nrunning = True\nmax_steps = 1000\nbias_strength = 0.5  # Starting value",
+        "detail": "geomaster_picture_drawer",
+        "documentation": {}
+    },
+    {
         "label": "WIDTH",
         "kind": 5,
         "importPath": "geomaster_picture_drawer",
@@ -1876,7 +1893,25 @@
         "kind": 5,
         "importPath": "geomaster_picture_drawer",
         "description": "geomaster_picture_drawer",
-        "peekOfCode": "policy_net = geo_model.policy_net  # Use the policy_net from GeoMasterAIModel\n# Geometric worlds (subset from geomaster_ai_challenge.py)\nworlds = [WORLD_EUCLIDEAN, WORLD_HYPERBOLIC, WORLD_FRACTAL]\n# Target images (RGB)\ndef create_stick_figure():\n    img = np.zeros((100, 100, 3), dtype=np.uint8)\n    cv2.circle(img, (50, 20), 10, (255, 255, 0), -1)  # Yellow head\n    cv2.line(img, (50, 30), (50, 60), (0, 255, 0), 2)  # Green body\n    cv2.line(img, (50, 40), (30, 50), (0, 0, 255), 2)  # Red left arm\n    cv2.line(img, (50, 40), (70, 50), (0, 0, 255), 2)  # Red right arm",
+        "peekOfCode": "policy_net = geo_model.policy_net  # Use the policy_net from GeoMasterAIModel\n# Initialize a DQN model for action selection\ndqn_model = DQN(state_dim, action_dim).to(device)\n# Load pre-trained weights for DQN if available\ndqn_weights_path = \"dqn_policy_net.pth\"\nif os.path.exists(dqn_weights_path):\n    try:\n        dqn_model.load_state_dict(torch.load(dqn_weights_path))\n        print(f\"Loaded DQN weights from {dqn_weights_path}\")\n    except RuntimeError as e:",
+        "detail": "geomaster_picture_drawer",
+        "documentation": {}
+    },
+    {
+        "label": "dqn_model",
+        "kind": 5,
+        "importPath": "geomaster_picture_drawer",
+        "description": "geomaster_picture_drawer",
+        "peekOfCode": "dqn_model = DQN(state_dim, action_dim).to(device)\n# Load pre-trained weights for DQN if available\ndqn_weights_path = \"dqn_policy_net.pth\"\nif os.path.exists(dqn_weights_path):\n    try:\n        dqn_model.load_state_dict(torch.load(dqn_weights_path))\n        print(f\"Loaded DQN weights from {dqn_weights_path}\")\n    except RuntimeError as e:\n        print(f\"Error loading DQN weights: {e}\")\n        print(\"Initializing DQN with random weights instead.\")",
+        "detail": "geomaster_picture_drawer",
+        "documentation": {}
+    },
+    {
+        "label": "dqn_weights_path",
+        "kind": 5,
+        "importPath": "geomaster_picture_drawer",
+        "description": "geomaster_picture_drawer",
+        "peekOfCode": "dqn_weights_path = \"dqn_policy_net.pth\"\nif os.path.exists(dqn_weights_path):\n    try:\n        dqn_model.load_state_dict(torch.load(dqn_weights_path))\n        print(f\"Loaded DQN weights from {dqn_weights_path}\")\n    except RuntimeError as e:\n        print(f\"Error loading DQN weights: {e}\")\n        print(\"Initializing DQN with random weights instead.\")\nelse:\n    print(f\"No DQN weights found at {dqn_weights_path}; initializing with random weights\")",
         "detail": "geomaster_picture_drawer",
         "documentation": {}
     },
@@ -1957,7 +1992,7 @@
         "kind": 5,
         "importPath": "geomaster_picture_drawer",
         "description": "geomaster_picture_drawer",
-        "peekOfCode": "input_vector = np.random.rand(input_dim)  # Random input vector\ngenerated_image = generate_image(input_vector)\n# Save the generated image\noutput_filename = \"generated_image.png\"\ncv2.imwrite(output_filename, generated_image)\nprint(f\"Generated image saved to {output_filename}\")\n# Main loop\nclock = pygame.time.Clock()\nrunning = True\nmax_steps = 1000",
+        "peekOfCode": "input_vector = np.random.rand(input_dim)  # Random input vector\ngenerated_image = generate_image(input_vector)\n# Save the generated image\noutput_filename = \"generated_image.png\"\ncv2.imwrite(output_filename, generated_image)\nprint(f\"Generated image saved to {output_filename}\")\n# Use DQN for action selection\ndef select_action_with_dqn(state):\n    state_tensor = torch.FloatTensor(state).unsqueeze(0).to(device)\n    with torch.no_grad():",
         "detail": "geomaster_picture_drawer",
         "documentation": {}
     },
@@ -1966,7 +2001,7 @@
         "kind": 5,
         "importPath": "geomaster_picture_drawer",
         "description": "geomaster_picture_drawer",
-        "peekOfCode": "generated_image = generate_image(input_vector)\n# Save the generated image\noutput_filename = \"generated_image.png\"\ncv2.imwrite(output_filename, generated_image)\nprint(f\"Generated image saved to {output_filename}\")\n# Main loop\nclock = pygame.time.Clock()\nrunning = True\nmax_steps = 1000\nbias_strength = 0.5  # Starting value",
+        "peekOfCode": "generated_image = generate_image(input_vector)\n# Save the generated image\noutput_filename = \"generated_image.png\"\ncv2.imwrite(output_filename, generated_image)\nprint(f\"Generated image saved to {output_filename}\")\n# Use DQN for action selection\ndef select_action_with_dqn(state):\n    state_tensor = torch.FloatTensor(state).unsqueeze(0).to(device)\n    with torch.no_grad():\n        q_values = dqn_model(state_tensor).cpu().numpy().flatten()",
         "detail": "geomaster_picture_drawer",
         "documentation": {}
     },
@@ -1975,7 +2010,7 @@
         "kind": 5,
         "importPath": "geomaster_picture_drawer",
         "description": "geomaster_picture_drawer",
-        "peekOfCode": "output_filename = \"generated_image.png\"\ncv2.imwrite(output_filename, generated_image)\nprint(f\"Generated image saved to {output_filename}\")\n# Main loop\nclock = pygame.time.Clock()\nrunning = True\nmax_steps = 1000\nbias_strength = 0.5  # Starting value\nfor img_name, target_img in target_images:\n    for current_world in worlds:",
+        "peekOfCode": "output_filename = \"generated_image.png\"\ncv2.imwrite(output_filename, generated_image)\nprint(f\"Generated image saved to {output_filename}\")\n# Use DQN for action selection\ndef select_action_with_dqn(state):\n    state_tensor = torch.FloatTensor(state).unsqueeze(0).to(device)\n    with torch.no_grad():\n        q_values = dqn_model(state_tensor).cpu().numpy().flatten()\n    return np.argmax(q_values)\n# Main loop",
         "detail": "geomaster_picture_drawer",
         "documentation": {}
     },
