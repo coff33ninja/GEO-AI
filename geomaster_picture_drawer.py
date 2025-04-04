@@ -107,14 +107,19 @@ def load_png(filename):
             raise ValueError(f"Failed to load {filename}")
         return cv2.resize(img, (WIDTH, HEIGHT), interpolation=cv2.INTER_NEAREST)
     else:
-        raise FileNotFoundError(f"{filename} not found")
+        print(f"Warning: {filename} not found. Skipping this image.")
+        return None
 
 
 target_images = [
     ("stick_figure", create_stick_figure()),
     ("tree", create_tree()),
-    ("custom_star", load_png("star.png")),
 ]
+
+# Attempt to load custom_star only if the file exists
+custom_star = load_png("star.png")
+if custom_star is not None:
+    target_images.append(("custom_star", custom_star))
 
 # Logging
 log_file = "picture_drawer_log.csv"
