@@ -16,8 +16,8 @@ from queue import Queue
 pygame.init()
 
 # Screen settings
-WIDTH = 800
-HEIGHT = 600
+WIDTH = 1000
+HEIGHT = 850
 screen = pygame.display.set_mode((WIDTH, HEIGHT))
 pygame.display.set_caption("GeoMaster AI Challenge - Next Shape Predictor")
 
