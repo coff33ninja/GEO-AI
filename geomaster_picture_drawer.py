@@ -312,8 +312,8 @@ def train_image_generator(generator, target_images, epochs=100, lr=0.001):
             state = get_state(canvas, pen_pos, target_img)
             state_tensor = torch.FloatTensor(state).unsqueeze(0).to(device)
 
-            # Target image as ground truth
-            target_tensor = torch.FloatTensor(target_img.flatten() / 255.0).to(device)
+            # Target image as ground truth (ensure same shape as input)
+            target_tensor = torch.FloatTensor(target_img.flatten() / 255.0).unsqueeze(0).to(device)
 
             # Forward pass
             optimizer.zero_grad()
@@ -364,121 +364,121 @@ def select_action(state, model, action_bias, bias_strength):
     return np.argmax(q_values)
 
 
-# Main loop
-clock = pygame.time.Clock()
-running = True
-max_steps = 1000
-bias_strength = 0.5
-use_dqn = True  # Default to DQN model
+if __name__ == '__main__':
+    clock = pygame.time.Clock()
+    running = True
+    max_steps = 1000
+    bias_strength = 0.5
+    use_dqn = True  # Default to DQN model
 
-for img_name, target_img in target_images:
-    for current_world in worlds:
-        if not running:
-            break
+    for img_name, target_img in target_images:
+        for current_world in worlds:
+            if not running:
+                break
 
-        # Reset for new image/world
-        canvas = np.zeros((WIDTH, HEIGHT, 3), dtype=np.uint8)
-        pen_pos = [WIDTH // 2, HEIGHT // 2]
-        target_surface = pygame.surfarray.make_surface(
-            cv2.cvtColor(target_img, cv2.COLOR_BGR2RGB)
-        )
-        step = 0
-        total_reward = 0
-
-        # Load previous data and bias
-        previous_data, action_bias = load_previous_data(img_name, current_world)
-        if previous_data:
-            avg_reward = np.mean([d["Reward"] for d in previous_data])
-            if avg_reward > -50:
-                pen_pos = [previous_data[0]["Pen_X"], previous_data[0]["Pen_Y"]]
-                print(f"Reusing starting position for {img_name} in {current_world}")
-
-        # Generate initial canvas
-        initial_state = get_state(canvas, pen_pos, target_img)
-        canvas = generate_initial_canvas(initial_state)
-
-        while step < max_steps and running:
-            for event in pygame.event.get():
-                if event.type == pygame.QUIT or (
-                    event.type == pygame.KEYDOWN and event.key == pygame.K_q
-                ):
-                    running = False
-                if event.type == pygame.KEYDOWN:
-                    if event.key == pygame.K_u:
-                        bias_strength = min(1.0, bias_strength + 0.1)
-                        print(f"Bias strength increased to {bias_strength:.1f}")
-                    if event.key == pygame.K_d:
-                        bias_strength = max(0.1, bias_strength - 0.1)
-                        print(f"Bias strength decreased to {bias_strength:.1f}")
-                    if event.key == pygame.K_m:
-                        use_dqn = not use_dqn
-                        model_name = "DQN" if use_dqn else "PolicyNet"
-                        print(f"Switched to {model_name} for action selection")
-
-            # Get state
-            state = get_state(canvas, pen_pos, target_img)
-
-            # Choose action based on selected model
-            model = dqn_model if use_dqn else geo_model.policy_net
-            action = select_action(state, model, action_bias, bias_strength)
-
-            # Apply action
-            pen_pos, color, stroke_size = apply_action(
-                pen_pos, action, canvas, current_world
+            # Reset for new image/world
+            canvas = np.zeros((WIDTH, HEIGHT, 3), dtype=np.uint8)
+            pen_pos = [WIDTH // 2, HEIGHT // 2]
+            target_surface = pygame.surfarray.make_surface(
+                cv2.cvtColor(target_img, cv2.COLOR_BGR2RGB)
             )
-            reward = calculate_reward(canvas, target_img)
-            total_reward += reward
+            step = 0
+            total_reward = 0
 
-            # Log data
-            similarity = -np.mean((canvas - target_img) ** 2) / 255.0
-            with open(log_file, mode="a", newline="") as f:
-                writer = csv.writer(f)
-                writer.writerow(
-                    [
-                        img_name,
-                        current_world,
-                        step,
-                        pen_pos[0],
-                        pen_pos[1],
-                        action,
-                        reward,
-                        similarity,
-                        *color,
-                        stroke_size,
-                    ]
+            # Load previous data and bias
+            previous_data, action_bias = load_previous_data(img_name, current_world)
+            if previous_data:
+                avg_reward = np.mean([d["Reward"] for d in previous_data])
+                if avg_reward > -50:
+                    pen_pos = [previous_data[0]["Pen_X"], previous_data[0]["Pen_Y"]]
+                    print(f"Reusing starting position for {img_name} in {current_world}")
+
+            # Generate initial canvas
+            initial_state = get_state(canvas, pen_pos, target_img)
+            canvas = generate_initial_canvas(initial_state)
+
+            while step < max_steps and running:
+                for event in pygame.event.get():
+                    if event.type == pygame.QUIT or (
+                        event.type == pygame.KEYDOWN and event.key == pygame.K_q
+                    ):
+                        running = False
+                    if event.type == pygame.KEYDOWN:
+                        if event.key == pygame.K_u:
+                            bias_strength = min(1.0, bias_strength + 0.1)
+                            print(f"Bias strength increased to {bias_strength:.1f}")
+                        if event.key == pygame.K_d:
+                            bias_strength = max(0.1, bias_strength - 0.1)
+                            print(f"Bias strength decreased to {bias_strength:.1f}")
+                        if event.key == pygame.K_m:
+                            use_dqn = not use_dqn
+                            model_name = "DQN" if use_dqn else "PolicyNet"
+                            print(f"Switched to {model_name} for action selection")
+
+                # Get state
+                state = get_state(canvas, pen_pos, target_img)
+
+                # Choose action based on selected model
+                model = dqn_model if use_dqn else geo_model.policy_net
+                action = select_action(state, model, action_bias, bias_strength)
+
+                # Apply action
+                pen_pos, color, stroke_size = apply_action(
+                    pen_pos, action, canvas, current_world
                 )
+                reward = calculate_reward(canvas, target_img)
+                total_reward += reward
 
-            # Drawing
-            screen.fill(BLACK)
-            screen.blit(target_surface, (0, 0))
-            canvas_surface = pygame.surfarray.make_surface(
-                cv2.cvtColor(canvas, cv2.COLOR_BGR2RGB)
-            )
-            screen.blit(canvas_surface, (0, 0))
+                # Log data
+                similarity = -np.mean((canvas - target_img) ** 2) / 255.0
+                with open(log_file, mode="a", newline="") as f:
+                    writer = csv.writer(f)
+                    writer.writerow(
+                        [
+                            img_name,
+                            current_world,
+                            step,
+                            pen_pos[0],
+                            pen_pos[1],
+                            action,
+                            reward,
+                            similarity,
+                            *color,
+                            stroke_size,
+                        ]
+                    )
 
-            # Info
-            model_name = "DQN" if use_dqn else "PolicyNet"
-            info_text = [
-                f"Image: {img_name}",
-                f"World: {current_world}",
-                f"Step: {step}/{max_steps}",
-                f"Reward: {reward:.2f}",
-                f"Total Reward: {total_reward:.2f}",
-                f"Bias Strength: {bias_strength:.1f}",
-                f"Model: {model_name}",
-            ]
-            for i, line in enumerate(info_text):
-                text = font.render(line, True, WHITE)
-                screen.blit(text, (10, 10 + i * 30))
+                # Drawing
+                screen.fill(BLACK)
+                screen.blit(target_surface, (0, 0))
+                canvas_surface = pygame.surfarray.make_surface(
+                    cv2.cvtColor(canvas, cv2.COLOR_BGR2RGB)
+                )
+                screen.blit(canvas_surface, (0, 0))
 
-            pygame.display.flip()
-            clock.tick(60)
-            step += 1
+                # Info
+                model_name = "DQN" if use_dqn else "PolicyNet"
+                info_text = [
+                    f"Image: {img_name}",
+                    f"World: {current_world}",
+                    f"Step: {step}/{max_steps}",
+                    f"Reward: {reward:.2f}",
+                    f"Total Reward: {total_reward:.2f}",
+                    f"Bias Strength: {bias_strength:.1f}",
+                    f"Model: {model_name}",
+                ]
+                for i, line in enumerate(info_text):
+                    text = font.render(line, True, WHITE)
+                    screen.blit(text, (10, 10 + i * 30))
 
-        # Save output
-        if running:
-            output_filename = f"{img_name}_{current_world}_{int(time.time())}.png"
-            cv2.imwrite(output_filename, canvas)
-            print(f"Saved drawing to {output_filename}")
+                pygame.display.flip()
+                clock.tick(60)
+                step += 1
 
-pygame.quit()
+            # Save output
+            if running:
+                output_filename = f"{img_name}_{current_world}_{int(time.time())}.png"
+                cv2.imwrite(output_filename, canvas)
+                print(f"Saved drawing to {output_filename}")
+
+    pygame.quit()
