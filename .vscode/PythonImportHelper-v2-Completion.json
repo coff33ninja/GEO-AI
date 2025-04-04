@@ -411,11 +411,20 @@
         "documentation": {}
     },
     {
+        "label": "normalize_reward",
+        "kind": 2,
+        "importPath": "geomaster_ai_challenge",
+        "description": "geomaster_ai_challenge",
+        "peekOfCode": "def normalize_reward(reward):\n    \"\"\"Normalize reward to a range of [-1, 1].\"\"\"\n    return 2 * (reward - REWARD_MIN) / (REWARD_MAX - REWARD_MIN) - 1\n# Advanced Reward System\ndef calculate_advanced_reward(shape, target, task, world):\n    try:\n        reward = 0\n        efficiency_factor = 1.0\n        creativity_factor = 1.0\n        constraint_penalty = 0",
+        "detail": "geomaster_ai_challenge",
+        "documentation": {}
+    },
+    {
         "label": "calculate_advanced_reward",
         "kind": 2,
         "importPath": "geomaster_ai_challenge",
         "description": "geomaster_ai_challenge",
-        "peekOfCode": "def calculate_advanced_reward(shape, target, task, world):\n    try:\n        reward = 0\n        efficiency_factor = 1.0\n        creativity_factor = 1.0\n        constraint_penalty = 0\n        if task == TASK_LINE:\n            if not shape:\n                return -10\n            current_pos = shape[-1] if shape else (0, 0)",
+        "peekOfCode": "def calculate_advanced_reward(shape, target, task, world):\n    try:\n        reward = 0\n        efficiency_factor = 1.0\n        creativity_factor = 1.0\n        constraint_penalty = 0\n        if task == TASK_LINE:\n            if not shape:\n                return normalize_reward(-10)\n            current_pos = shape[-1] if shape else (0, 0)",
         "detail": "geomaster_ai_challenge",
         "documentation": {}
     },
@@ -1307,6 +1316,24 @@
         "importPath": "geomaster_ai_challenge",
         "description": "geomaster_ai_challenge",
         "peekOfCode": "animation_time = 0\ndef draw_wireframe(world):\n    global animation_time\n    animation_time += 0.05\n    pulse = 0.5 + 0.5 * np.sin(animation_time)\n    def gradient_color(t):\n        r = int(0 * (1 - t) + 0 * t)\n        g = int(0 * (1 - t) + 255 * t)\n        b = int(255 * (1 - t) + 255 * t)\n        return (r, g, b)",
+        "detail": "geomaster_ai_challenge",
+        "documentation": {}
+    },
+    {
+        "label": "REWARD_MIN",
+        "kind": 5,
+        "importPath": "geomaster_ai_challenge",
+        "description": "geomaster_ai_challenge",
+        "peekOfCode": "REWARD_MIN = -50  # Minimum possible reward\nREWARD_MAX = 50   # Maximum possible reward\ndef normalize_reward(reward):\n    \"\"\"Normalize reward to a range of [-1, 1].\"\"\"\n    return 2 * (reward - REWARD_MIN) / (REWARD_MAX - REWARD_MIN) - 1\n# Advanced Reward System\ndef calculate_advanced_reward(shape, target, task, world):\n    try:\n        reward = 0\n        efficiency_factor = 1.0",
+        "detail": "geomaster_ai_challenge",
+        "documentation": {}
+    },
+    {
+        "label": "REWARD_MAX",
+        "kind": 5,
+        "importPath": "geomaster_ai_challenge",
+        "description": "geomaster_ai_challenge",
+        "peekOfCode": "REWARD_MAX = 50   # Maximum possible reward\ndef normalize_reward(reward):\n    \"\"\"Normalize reward to a range of [-1, 1].\"\"\"\n    return 2 * (reward - REWARD_MIN) / (REWARD_MAX - REWARD_MIN) - 1\n# Advanced Reward System\ndef calculate_advanced_reward(shape, target, task, world):\n    try:\n        reward = 0\n        efficiency_factor = 1.0\n        creativity_factor = 1.0",
         "detail": "geomaster_ai_challenge",
         "documentation": {}
     },

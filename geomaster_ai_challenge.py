@@ -775,6 +775,14 @@ def calculate_dist_to_close(points):
         log_message(f"Error in calculate_dist_to_close: {repr(e)}")
         return 0
 
+# Reward normalization constants
+REWARD_MIN = -50  # Minimum possible reward
+REWARD_MAX = 50   # Maximum possible reward
+
+def normalize_reward(reward):
+    """Normalize reward to a range of [-1, 1]."""
+    return 2 * (reward - REWARD_MIN) / (REWARD_MAX - REWARD_MIN) - 1
+
 # Advanced Reward System
 def calculate_advanced_reward(shape, target, task, world):
     try:
@@ -785,7 +793,7 @@ def calculate_advanced_reward(shape, target, task, world):
 
         if task == TASK_LINE:
             if not shape:
-                return -10
+                return normalize_reward(-10)
             current_pos = shape[-1] if shape else (0, 0)
             dx = target[0] - current_pos[0]
             dy = target[1] - current_pos[1]
@@ -797,7 +805,7 @@ def calculate_advanced_reward(shape, target, task, world):
 
         elif task == TASK_TRIANGLE:
             if len(shape) != 3:
-                return -10
+                return normalize_reward(-10)
             angle = calculate_triangle_angle(shape)
             if world == WORLD_SPHERICAL:
                 reward = (angle - 60) / 10 if angle > 60 else -10
@@ -811,7 +819,7 @@ def calculate_advanced_reward(shape, target, task, world):
 
         elif task == TASK_CIRCLE:
             if not shape:
-                return -10
+                return normalize_reward(-10)
             current_radius = target[1]
             ideal_radius = 50
             reward = -abs(current_radius - ideal_radius) / 10
@@ -821,7 +829,7 @@ def calculate_advanced_reward(shape, target, task, world):
 
         elif task == TASK_PENTAGON:
             if len(shape) != 5:
-                return -10
+                return normalize_reward(-10)
             dist = calculate_dist_to_close(shape)
             reward = -dist / 10
             if dist < 10:
@@ -830,7 +838,7 @@ def calculate_advanced_reward(shape, target, task, world):
 
         elif task == TASK_TESSELLATION:
             if not shape or not isinstance(shape, (list, tuple)):
-                return -10
+                return normalize_reward(-10)
             num_triangles = len(shape)
             reward = num_triangles * 10
             for triangle in shape:
@@ -863,10 +871,11 @@ def calculate_advanced_reward(shape, target, task, world):
             reward = MAX_SCORE - sum(rewards)
             log_message(f"Score capped at {MAX_SCORE}.")
 
-        return reward
+        # Normalize the reward
+        return normalize_reward(reward)
     except Exception as e:
         log_message(f"Error in calculate_advanced_reward: {repr(e)}")
-        return -10
+        return normalize_reward(-10)
 
 # DQN Training
 def optimize_model():
