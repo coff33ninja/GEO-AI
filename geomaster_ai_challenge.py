@@ -18,7 +18,7 @@ from pytorch_lightning import Trainer
 pygame.init()
 
 # Screen settings
-WIDTH = 1000
+WIDTH = 1200  # Increase the width (e.g., from 1000 to 1200)
 HEIGHT = 850
 screen = pygame.display.set_mode((WIDTH, HEIGHT))
 pygame.display.set_caption("GeoMaster AI Challenge - Next Shape Predictor")

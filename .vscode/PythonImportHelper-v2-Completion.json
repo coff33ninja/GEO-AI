@@ -639,7 +639,7 @@
         "kind": 5,
         "importPath": "geomaster_ai_challenge",
         "description": "geomaster_ai_challenge",
-        "peekOfCode": "WIDTH = 1000\nHEIGHT = 850\nscreen = pygame.display.set_mode((WIDTH, HEIGHT))\npygame.display.set_caption(\"GeoMaster AI Challenge - Next Shape Predictor\")\n# Colors\nBLACK = (0, 0, 0)\nWHITE = (255, 255, 255)\nRED = (255, 0, 0)\nBLUE = (0, 0, 255)\nCYAN = (0, 255, 255)",
+        "peekOfCode": "WIDTH = 1200  # Increase the width (e.g., from 1000 to 1200)\nHEIGHT = 850\nscreen = pygame.display.set_mode((WIDTH, HEIGHT))\npygame.display.set_caption(\"GeoMaster AI Challenge - Next Shape Predictor\")\n# Colors\nBLACK = (0, 0, 0)\nWHITE = (255, 255, 255)\nRED = (255, 0, 0)\nBLUE = (0, 0, 255)\nCYAN = (0, 255, 255)",
         "detail": "geomaster_ai_challenge",
         "documentation": {}
     },
