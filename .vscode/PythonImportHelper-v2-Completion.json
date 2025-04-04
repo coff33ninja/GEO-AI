@@ -519,6 +519,15 @@
         "documentation": {}
     },
     {
+        "label": "update_dashboard",
+        "kind": 2,
+        "importPath": "geomaster_ai_challenge",
+        "description": "geomaster_ai_challenge",
+        "peekOfCode": "def update_dashboard():\n    \"\"\"Update the real-time dashboard with rewards, losses, and task progression.\"\"\"\n    global dashboard_surface, episode_rewards, reward_history, step_counter\n    # Create a new figure for the dashboard\n    plt.figure(figsize=(8, 4))\n    # Subplot 1: Reward Trend\n    plt.subplot(1, 3, 1)\n    plt.plot(list(episode_rewards), label=\"Avg Reward\", color=\"cyan\")\n    plt.xlabel(\"Episode\")\n    plt.ylabel(\"Reward\")",
+        "detail": "geomaster_ai_challenge",
+        "documentation": {}
+    },
+    {
         "label": "save_model_weights",
         "kind": 2,
         "importPath": "geomaster_ai_challenge",
@@ -560,6 +569,15 @@
         "importPath": "geomaster_ai_challenge",
         "description": "geomaster_ai_challenge",
         "peekOfCode": "def evaluate_model(num_episodes=10):\n    \"\"\"Evaluate the model's performance on predefined tasks.\"\"\"\n    global current_task, current_world, game_state, ai_step, current_shape, circle_radius\n    evaluation_rewards = []\n    success_count = 0\n    total_steps = 0\n    predefined_tasks = [\n        {\"task\": TASK_LINE, \"world\": WORLD_EUCLIDEAN},\n        {\"task\": TASK_TRIANGLE, \"world\": WORLD_SPHERICAL},\n        {\"task\": TASK_CIRCLE, \"world\": WORLD_HYPERBOLIC},",
+        "detail": "geomaster_ai_challenge",
+        "documentation": {}
+    },
+    {
+        "label": "tune_hyperparameters",
+        "kind": 2,
+        "importPath": "geomaster_ai_challenge",
+        "description": "geomaster_ai_challenge",
+        "peekOfCode": "def tune_hyperparameters(avg_reward, fps):\n    \"\"\"Dynamically adjust hyperparameters based on performance.\"\"\"\n    global base_lr, epsilon_decay, REWARD_MIN, REWARD_MAX\n    # Adjust learning rate based on average reward\n    if avg_reward > 10:\n        base_lr = min(base_lr * 1.1, 0.01)  # Increase learning rate\n    elif avg_reward < -5:\n        base_lr = max(base_lr * 0.9, 0.0001)  # Decrease learning rate\n    # Adjust epsilon decay based on FPS\n    if fps < 20:",
         "detail": "geomaster_ai_challenge",
         "documentation": {}
     },
@@ -1424,6 +1442,15 @@
         "importPath": "geomaster_ai_challenge",
         "description": "geomaster_ai_challenge",
         "peekOfCode": "plot_surface = None\ndef update_reward_plot():\n    global plot_surface, episode_rewards\n    plt.figure(figsize=(4, 2))\n    plt.plot(list(episode_rewards), label=\"Reward\", color=\"cyan\")\n    plt.xlabel(\"Episode\")\n    plt.ylabel(\"Avg Reward\")\n    plt.title(\"Reward Trend\")\n    plt.legend()\n    buf = BytesIO()",
+        "detail": "geomaster_ai_challenge",
+        "documentation": {}
+    },
+    {
+        "label": "dashboard_surface",
+        "kind": 5,
+        "importPath": "geomaster_ai_challenge",
+        "description": "geomaster_ai_challenge",
+        "peekOfCode": "dashboard_surface = None\ndef update_dashboard():\n    \"\"\"Update the real-time dashboard with rewards, losses, and task progression.\"\"\"\n    global dashboard_surface, episode_rewards, reward_history, step_counter\n    # Create a new figure for the dashboard\n    plt.figure(figsize=(8, 4))\n    # Subplot 1: Reward Trend\n    plt.subplot(1, 3, 1)\n    plt.plot(list(episode_rewards), label=\"Avg Reward\", color=\"cyan\")\n    plt.xlabel(\"Episode\")",
         "detail": "geomaster_ai_challenge",
         "documentation": {}
     },

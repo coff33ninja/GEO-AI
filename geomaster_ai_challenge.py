@@ -1261,6 +1261,53 @@ def update_reward_plot():
     buf.close()
     return pygame.transform.scale(image, (300, 150))
 
+# Real-time Dashboard
+dashboard_surface = None
+
+def update_dashboard():
+    """Update the real-time dashboard with rewards, losses, and task progression."""
+    global dashboard_surface, episode_rewards, reward_history, step_counter
+
+    # Create a new figure for the dashboard
+    plt.figure(figsize=(8, 4))
+
+    # Subplot 1: Reward Trend
+    plt.subplot(1, 3, 1)
+    plt.plot(list(episode_rewards), label="Avg Reward", color="cyan")
+    plt.xlabel("Episode")
+    plt.ylabel("Reward")
+    plt.title("Reward Trend")
+    plt.legend()
+
+    # Subplot 2: Loss Trend
+    plt.subplot(1, 3, 2)
+    if len(reward_history) > 0:
+        plt.plot(list(reward_history), label="Recent Rewards", color="orange")
+    plt.xlabel("Step")
+    plt.ylabel("Reward")
+    plt.title("Recent Rewards")
+    plt.legend()
+
+    # Subplot 3: Task Progression
+    plt.subplot(1, 3, 3)
+    plt.bar(["Line", "Triangle", "Circle", "Pentagon", "Tessellation"], 
+            [episode_rewards.count(task) for task in tasks], color="green")
+    plt.xlabel("Tasks")
+    plt.ylabel("Count")
+    plt.title("Task Progression")
+
+    # Save the dashboard to a buffer
+    buf = BytesIO()
+    plt.tight_layout()
+    plt.savefig(buf, format="png", bbox_inches="tight")
+    buf.seek(0)
+    dashboard_surface = pygame.image.load(buf)
+    plt.close()
+    buf.close()
+
+    # Scale the dashboard for display
+    dashboard_surface = pygame.transform.scale(dashboard_surface, (600, 200))
+
 # Transfer Learning
 def save_model_weights(task, world):
     filename = f"model_{task}_{world}.pth"
@@ -1395,6 +1442,35 @@ def evaluate_model(num_episodes=10):
 
     log_message(f"Evaluation Results: Avg Reward: {avg_reward:.2f}, Success Rate: {success_rate:.2%}, Avg Steps: {avg_steps:.2f}")
     return {"avg_reward": avg_reward, "success_rate": success_rate, "avg_steps": avg_steps}
+
+# Hyperparameter Tuning
+def tune_hyperparameters(avg_reward, fps):
+    """Dynamically adjust hyperparameters based on performance."""
+    global base_lr, epsilon_decay, REWARD_MIN, REWARD_MAX
+
+    # Adjust learning rate based on average reward
+    if avg_reward > 10:
+        base_lr = min(base_lr * 1.1, 0.01)  # Increase learning rate
+    elif avg_reward < -5:
+        base_lr = max(base_lr * 0.9, 0.0001)  # Decrease learning rate
+
+    # Adjust epsilon decay based on FPS
+    if fps < 20:
+        epsilon_decay = max(epsilon_decay * 1.1, 1000)  # Slow down decay
+    elif fps > 60:
+        epsilon_decay = max(epsilon_decay * 0.9, 100)  # Speed up decay
+
+    # Adjust reward scaling dynamically
+    if avg_reward > 20:
+        REWARD_MAX = min(REWARD_MAX + 5, 100)
+    elif avg_reward < -10:
+        REWARD_MIN = max(REWARD_MIN - 5, -100)
+
+    # Update optimizer learning rate
+    for param_group in optimizer.param_groups:
+        param_group["lr"] = base_lr
+
+    log_message(f"Hyperparameters tuned: base_lr={base_lr:.6f}, epsilon_decay={epsilon_decay}, REWARD_MIN={REWARD_MIN}, REWARD_MAX={REWARD_MAX}")
 
 # Main Game Loop
 clock = pygame.time.Clock()
@@ -1704,6 +1780,10 @@ while running:
 
             avg_reward = sum(rewards) / len(rewards) if rewards else 0
             fps = clock.get_fps()
+
+            # Call the hyperparameter tuning function
+            tune_hyperparameters(avg_reward, fps)
+
             current_lr = adjust_learning_rate(fps)
             next_shape = predict_next_shape()
             with open(log_file, mode="a", newline="") as f:
@@ -1950,9 +2030,12 @@ while running:
     process_logs()
     if time.time() - last_plot_update > 1:
         plot_surface = update_reward_plot()
+        update_dashboard()  # Update the dashboard every second
         last_plot_update = time.time()
     if plot_surface:
         screen.blit(plot_surface, (WIDTH - 310, 10))
+    if dashboard_surface:
+        screen.blit(dashboard_surface, (WIDTH - 610, HEIGHT - 220))  # Display the dashboard
 
     pygame.display.flip()
     clock.tick(tick_rate if running_state == "running" else 5)
