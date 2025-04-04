@@ -114,6 +114,23 @@
         "documentation": {}
     },
     {
+        "label": "pytorch_lightning",
+        "kind": 6,
+        "isExtraImport": true,
+        "importPath": "pytorch_lightning",
+        "description": "pytorch_lightning",
+        "detail": "pytorch_lightning",
+        "documentation": {}
+    },
+    {
+        "label": "Trainer",
+        "importPath": "pytorch_lightning",
+        "description": "pytorch_lightning",
+        "isExtraImport": true,
+        "detail": "pytorch_lightning",
+        "documentation": {}
+    },
+    {
         "label": "SumTree",
         "kind": 6,
         "importPath": "geomaster_ai_challenge",
@@ -159,6 +176,24 @@
         "documentation": {}
     },
     {
+        "label": "GeoMasterAIModel",
+        "kind": 6,
+        "importPath": "geomaster_ai_challenge",
+        "description": "geomaster_ai_challenge",
+        "peekOfCode": "class GeoMasterAIModel(pl.LightningModule):\n    def __init__(self, state_dim, action_dim, gamma, base_lr):\n        super().__init__()\n        self.policy_net = DQN(state_dim, action_dim)\n        self.target_net = DQN(state_dim, action_dim)\n        self.target_net.load_state_dict(self.policy_net.state_dict())\n        self.gamma = gamma\n        self.base_lr = base_lr\n        self.loss_fn = nn.MSELoss()\n    def forward(self, state):",
+        "detail": "geomaster_ai_challenge",
+        "documentation": {}
+    },
+    {
+        "label": "GeoMasterDataModule",
+        "kind": 6,
+        "importPath": "geomaster_ai_challenge",
+        "description": "geomaster_ai_challenge",
+        "peekOfCode": "class GeoMasterDataModule(pl.LightningDataModule):\n    def __init__(self, memory, batch_size):\n        super().__init__()\n        self.memory = memory\n        self.batch_size = batch_size\n    def train_dataloader(self):\n        dataset = self.memory_to_dataset()\n        return torch.utils.data.DataLoader(dataset, batch_size=self.batch_size, shuffle=True)\n    def memory_to_dataset(self):\n        transitions = [self.memory.data[i] for i in range(self.memory.n_entries)]",
+        "detail": "geomaster_ai_challenge",
+        "documentation": {}
+    },
+    {
         "label": "log_message",
         "kind": 2,
         "importPath": "geomaster_ai_challenge",
@@ -191,6 +226,15 @@
         "importPath": "geomaster_ai_challenge",
         "description": "geomaster_ai_challenge",
         "peekOfCode": "def update_curriculum():\n    \"\"\"Update the curriculum stage based on performance.\"\"\"\n    global curriculum_stage, curriculum_progress\n    if curriculum_progress >= curriculum_threshold and curriculum_stage < len(curriculum_tasks) - 1:\n        curriculum_stage += 1\n        curriculum_progress = 0\n        log_message(f\"Curriculum advanced to stage {curriculum_stage}. Tasks: {curriculum_tasks[curriculum_stage]}, Worlds: {curriculum_worlds[curriculum_stage]}\")\n# --- SumTree for Prioritized Experience Replay ---\nclass SumTree:\n    def __init__(self, capacity):",
+        "detail": "geomaster_ai_challenge",
+        "documentation": {}
+    },
+    {
+        "label": "optimize_model",
+        "kind": 2,
+        "importPath": "geomaster_ai_challenge",
+        "description": "geomaster_ai_challenge",
+        "peekOfCode": "def optimize_model():\n    \"\"\"Optimization is now handled by PyTorch Lightning.\"\"\"\n    trainer.fit(geo_model, geo_data)\n# Neural Networks\npolicy_net = geo_model.policy_net.to(device)\ntarget_net = geo_model.target_net.to(device)\ntarget_net.load_state_dict(policy_net.state_dict())\noptimizer = optim.Adam(policy_net.parameters(), lr=base_lr)\nforward_model = ForwardModel(state_dim, action_dim).to(device)\noptimizer_fm = optim.Adam(forward_model.parameters(), lr=base_lr)",
         "detail": "geomaster_ai_challenge",
         "documentation": {}
     },
@@ -447,33 +491,6 @@
         "documentation": {}
     },
     {
-        "label": "optimize_model",
-        "kind": 2,
-        "importPath": "geomaster_ai_challenge",
-        "description": "geomaster_ai_challenge",
-        "peekOfCode": "def optimize_model():\n    if memory.n_entries < batch_size:\n        return\n    batch, idxs, is_weights = memory.sample(batch_size, alpha=alpha)\n    is_weights = torch.FloatTensor(is_weights).to(device)\n    try:\n        state_batch, action_batch, reward_batch, next_state_batch, done_batch = zip(*batch)\n    except Exception as e:\n        log_message(f\"Error unpacking batch: {repr(e)}\")\n        return",
-        "detail": "geomaster_ai_challenge",
-        "documentation": {}
-    },
-    {
-        "label": "store_transition",
-        "kind": 2,
-        "importPath": "geomaster_ai_challenge",
-        "description": "geomaster_ai_challenge",
-        "peekOfCode": "def store_transition(transition):\n    n_step_buffer.append(transition)\n    if len(n_step_buffer) < n_step:\n        return\n    cumulative_reward = sum([(gamma**i) * t[2] for i, t in enumerate(n_step_buffer)])\n    state, action = n_step_buffer[0][0], n_step_buffer[0][1]\n    next_state, done = n_step_buffer[-1][3], n_step_buffer[-1][4]\n    memory.add(1.0, (state, action, cumulative_reward, next_state, done))\n    n_step_buffer.pop(0)\ndef plan_actions(state_tensor, model, current_shape, target, task, world, steps=3):",
-        "detail": "geomaster_ai_challenge",
-        "documentation": {}
-    },
-    {
-        "label": "plan_actions",
-        "kind": 2,
-        "importPath": "geomaster_ai_challenge",
-        "description": "geomaster_ai_challenge",
-        "peekOfCode": "def plan_actions(state_tensor, model, current_shape, target, task, world, steps=3):\n    best_sequence = []\n    best_reward = -float(\"inf\")\n    state = state_tensor.squeeze(0).cpu().numpy()\n    for _ in range(10):\n        sequence = [np.random.randint(action_dim) for _ in range(steps)]\n        sim_state = state.copy()\n        sim_shape = current_shape.copy() if isinstance(current_shape, list) else []\n        total_reward = 0\n        for action in sequence:",
-        "detail": "geomaster_ai_challenge",
-        "documentation": {}
-    },
-    {
         "label": "adjust_learning_rate",
         "kind": 2,
         "importPath": "geomaster_ai_challenge",
@@ -496,7 +513,7 @@
         "kind": 2,
         "importPath": "geomaster_ai_challenge",
         "description": "geomaster_ai_challenge",
-        "peekOfCode": "def reset_episode():\n    global start_point, triangle_points, circle_center, pentagon_points, tessellation_points, current_shape\n    global game_state, ai_step, current_task, end_point, circle_radius, negative_reward_attempts, positive_reward_attempts\n    global curriculum_progress\n    if negative_reward_attempts >= NEGATIVE_REWARD_RETRY_LIMIT:\n        log_message(\"Max retries for negative rewards reached. Moving to next task.\")\n        negative_reward_attempts = 0  # Reset retry counter\n        positive_reward_attempts = 0  # Reset positive retry counter\n    elif sum(rewards) < 0:\n        log_message(f\"Negative reward detected. Retrying task. Attempt {negative_reward_attempts + 1}/{NEGATIVE_REWARD_RETRY_LIMIT}.\")",
+        "peekOfCode": "def reset_episode():\n    global start_point, triangle_points, circle_center, pentagon_points, tessellation_points, current_shape\n    global game_state, ai_step, current_task, end_point, circle_radius, negative_reward_attempts, positive_reward_attempts\n    global curriculum_progress\n    # Initialize circle_radius with a default value\n    circle_radius = 50\n    if negative_reward_attempts >= NEGATIVE_REWARD_RETRY_LIMIT:\n        log_message(\"Max retries for negative rewards reached. Moving to next task.\")\n        negative_reward_attempts = 0  # Reset retry counter\n        positive_reward_attempts = 0  # Reset positive retry counter",
         "detail": "geomaster_ai_challenge",
         "documentation": {}
     },
@@ -550,7 +567,7 @@
         "kind": 2,
         "importPath": "geomaster_ai_challenge",
         "description": "geomaster_ai_challenge",
-        "peekOfCode": "def fine_tune_model(task, world, fine_tune_steps=1000):\n    \"\"\"Fine-tune the model on a new task or environment.\"\"\"\n    log_message(f\"Starting fine-tuning for task: {task}, world: {world}\")\n    load_model_weights(task, world)  # Load pretrained weights if available\n    for step in range(fine_tune_steps):\n        reset_episode()  # Reset the environment for the task\n        for _ in range(max_steps):\n            state_tensor = torch.FloatTensor(state).unsqueeze(0).to(device)\n            action = select_action(state_tensor, epsilon, action_dim)\n            # Simulate the action",
+        "peekOfCode": "def fine_tune_model(task, world, fine_tune_steps=1000):\n    \"\"\"Fine-tune the model on a new task or environment.\"\"\"\n    global circle_radius  # Ensure circle_radius is accessible and initialized\n    circle_radius = 50  # Initialize circle_radius with a default value\n    log_message(f\"Starting fine-tuning for task: {task}, world: {world}\")\n    load_model_weights(task, world)  # Load pretrained weights if available\n    for step in range(fine_tune_steps):\n        reset_episode()  # Reset the environment for the task\n        for _ in range(max_steps):\n            state_tensor = torch.FloatTensor(state).unsqueeze(0).to(device)",
         "detail": "geomaster_ai_challenge",
         "documentation": {}
     },
@@ -559,16 +576,25 @@
         "kind": 2,
         "importPath": "geomaster_ai_challenge",
         "description": "geomaster_ai_challenge",
-        "peekOfCode": "def explain_decision(state_tensor):\n    with torch.no_grad():\n        q_values = policy_net(state_tensor).cpu().numpy().flatten()\n    # Numerically stable softmax\n    q_values_exp = np.exp(q_values - np.max(q_values))\n    action_probabilities = q_values_exp / np.sum(q_values_exp)\n    explanation = {\n        \"action_probabilities\": action_probabilities.tolist(),\n        \"q_values\": q_values.tolist(),\n    }",
+        "peekOfCode": "def explain_decision(state_tensor):\n    \"\"\"Provide insights into decision-making by analyzing Q-values and action probabilities.\"\"\"\n    with torch.no_grad():\n        q_values = policy_net(state_tensor).cpu().numpy().flatten()\n    # Numerically stable softmax for action probabilities\n    q_values_exp = np.exp(q_values - np.max(q_values))\n    action_probabilities = q_values_exp / np.sum(q_values_exp)\n    explanation = {\n        \"action_probabilities\": action_probabilities.tolist(),\n        \"q_values\": q_values.tolist(),",
         "detail": "geomaster_ai_challenge",
         "documentation": {}
     },
     {
-        "label": "visualize_explanation",
+        "label": "visualize_q_values",
         "kind": 2,
         "importPath": "geomaster_ai_challenge",
         "description": "geomaster_ai_challenge",
-        "peekOfCode": "def visualize_explanation(explanation):\n    plt.figure(figsize=(6, 4))\n    actions = [f\"Action {i}\" for i in range(len(explanation[\"action_probabilities\"]))]\n    plt.bar(actions, explanation[\"action_probabilities\"], color=\"cyan\")\n    plt.xlabel(\"Actions\")\n    plt.ylabel(\"Probability\")\n    plt.title(\"Action Probabilities\")\n    buf = BytesIO()\n    plt.savefig(buf, format=\"png\", bbox_inches=\"tight\")\n    buf.seek(0)",
+        "peekOfCode": "def visualize_q_values(q_values):\n    \"\"\"Visualize Q-values for each action.\"\"\"\n    plt.figure(figsize=(6, 4))\n    actions = [f\"Action {i}\" for i in range(len(q_values))]\n    plt.bar(actions, q_values, color=\"blue\")\n    plt.xlabel(\"Actions\")\n    plt.ylabel(\"Q-Values\")\n    plt.title(\"Q-Values for Actions\")\n    buf = BytesIO()\n    plt.savefig(buf, format=\"png\", bbox_inches=\"tight\")",
+        "detail": "geomaster_ai_challenge",
+        "documentation": {}
+    },
+    {
+        "label": "visualize_action_probabilities",
+        "kind": 2,
+        "importPath": "geomaster_ai_challenge",
+        "description": "geomaster_ai_challenge",
+        "peekOfCode": "def visualize_action_probabilities(action_probabilities):\n    \"\"\"Visualize action probabilities as a pie chart.\"\"\"\n    plt.figure(figsize=(6, 4))\n    actions = [f\"Action {i}\" for i in range(len(action_probabilities))]\n    plt.pie(action_probabilities, labels=actions, autopct='%1.1f%%', startangle=140, colors=plt.cm.Paired.colors)\n    plt.title(\"Action Probabilities\")\n    buf = BytesIO()\n    plt.savefig(buf, format=\"png\", bbox_inches=\"tight\")\n    buf.seek(0)\n    image = pygame.image.load(buf)",
         "detail": "geomaster_ai_challenge",
         "documentation": {}
     },
@@ -587,6 +613,24 @@
         "importPath": "geomaster_ai_challenge",
         "description": "geomaster_ai_challenge",
         "peekOfCode": "def tune_hyperparameters(avg_reward, fps):\n    \"\"\"Dynamically adjust hyperparameters based on performance.\"\"\"\n    global base_lr, epsilon_decay, REWARD_MIN, REWARD_MAX\n    # Adjust learning rate based on average reward\n    if avg_reward > 10:\n        base_lr = min(base_lr * 1.1, 0.01)  # Increase learning rate\n    elif avg_reward < -5:\n        base_lr = max(base_lr * 0.9, 0.0001)  # Decrease learning rate\n    # Adjust epsilon decay based on FPS\n    if fps < 20:",
+        "detail": "geomaster_ai_challenge",
+        "documentation": {}
+    },
+    {
+        "label": "store_transition",
+        "kind": 2,
+        "importPath": "geomaster_ai_challenge",
+        "description": "geomaster_ai_challenge",
+        "peekOfCode": "def store_transition(transition):\n    \"\"\"Store a transition in the replay memory.\"\"\"\n    n_step_buffer.append(transition)\n    if len(n_step_buffer) < n_step:\n        return\n    cumulative_reward = sum([(gamma**i) * t[2] for i, t in enumerate(n_step_buffer)])\n    state, action = n_step_buffer[0][0], n_step_buffer[0][1]\n    next_state, done = n_step_buffer[-1][3], n_step_buffer[-1][4]\n    memory.add(1.0, (state, action, cumulative_reward, next_state, done))\n    n_step_buffer.pop(0)",
+        "detail": "geomaster_ai_challenge",
+        "documentation": {}
+    },
+    {
+        "label": "plan_actions",
+        "kind": 2,
+        "importPath": "geomaster_ai_challenge",
+        "description": "geomaster_ai_challenge",
+        "peekOfCode": "def plan_actions(state_tensor, model, current_shape, target, task, world, steps=3):\n    \"\"\"Plan a sequence of actions using a simple simulation.\"\"\"\n    best_sequence = []\n    best_reward = -float(\"inf\")\n    for _ in range(10):  # Try 10 random sequences\n        sequence = [np.random.randint(action_dim) for _ in range(steps)]\n        sim_shape = current_shape.copy() if isinstance(current_shape, list) else []\n        total_reward = 0\n        for action in sequence:\n            # Simulate the action",
         "detail": "geomaster_ai_challenge",
         "documentation": {}
     },
@@ -1000,7 +1044,7 @@
         "kind": 5,
         "importPath": "geomaster_ai_challenge",
         "description": "geomaster_ai_challenge",
-        "peekOfCode": "epsilon = epsilon_start\nbatch_size = 64\nmemory_size = 10000\ntarget_update = 10\nn_step = 3\nalpha = 0.7\nbeta = 0.5\nbase_lr = 0.001\ndevice = torch.device(\"cuda\" if torch.cuda.is_available() else \"cpu\")\npolicy_net = DQN(state_dim, action_dim).to(device)",
+        "peekOfCode": "epsilon = epsilon_start\nbatch_size = 64\nmemory_size = 10000\ntarget_update = 10\nn_step = 3\nalpha = 0.7\nbeta = 0.5\nbase_lr = 0.001\ndevice = torch.device(\"cuda\" if torch.cuda.is_available() else \"cpu\")\n# PyTorch Lightning Model",
         "detail": "geomaster_ai_challenge",
         "documentation": {}
     },
@@ -1009,7 +1053,7 @@
         "kind": 5,
         "importPath": "geomaster_ai_challenge",
         "description": "geomaster_ai_challenge",
-        "peekOfCode": "batch_size = 64\nmemory_size = 10000\ntarget_update = 10\nn_step = 3\nalpha = 0.7\nbeta = 0.5\nbase_lr = 0.001\ndevice = torch.device(\"cuda\" if torch.cuda.is_available() else \"cpu\")\npolicy_net = DQN(state_dim, action_dim).to(device)\ntarget_net = DQN(state_dim, action_dim).to(device)",
+        "peekOfCode": "batch_size = 64\nmemory_size = 10000\ntarget_update = 10\nn_step = 3\nalpha = 0.7\nbeta = 0.5\nbase_lr = 0.001\ndevice = torch.device(\"cuda\" if torch.cuda.is_available() else \"cpu\")\n# PyTorch Lightning Model\nclass GeoMasterAIModel(pl.LightningModule):",
         "detail": "geomaster_ai_challenge",
         "documentation": {}
     },
@@ -1018,7 +1062,7 @@
         "kind": 5,
         "importPath": "geomaster_ai_challenge",
         "description": "geomaster_ai_challenge",
-        "peekOfCode": "memory_size = 10000\ntarget_update = 10\nn_step = 3\nalpha = 0.7\nbeta = 0.5\nbase_lr = 0.001\ndevice = torch.device(\"cuda\" if torch.cuda.is_available() else \"cpu\")\npolicy_net = DQN(state_dim, action_dim).to(device)\ntarget_net = DQN(state_dim, action_dim).to(device)\ntarget_net.load_state_dict(policy_net.state_dict())",
+        "peekOfCode": "memory_size = 10000\ntarget_update = 10\nn_step = 3\nalpha = 0.7\nbeta = 0.5\nbase_lr = 0.001\ndevice = torch.device(\"cuda\" if torch.cuda.is_available() else \"cpu\")\n# PyTorch Lightning Model\nclass GeoMasterAIModel(pl.LightningModule):\n    def __init__(self, state_dim, action_dim, gamma, base_lr):",
         "detail": "geomaster_ai_challenge",
         "documentation": {}
     },
@@ -1027,7 +1071,7 @@
         "kind": 5,
         "importPath": "geomaster_ai_challenge",
         "description": "geomaster_ai_challenge",
-        "peekOfCode": "target_update = 10\nn_step = 3\nalpha = 0.7\nbeta = 0.5\nbase_lr = 0.001\ndevice = torch.device(\"cuda\" if torch.cuda.is_available() else \"cpu\")\npolicy_net = DQN(state_dim, action_dim).to(device)\ntarget_net = DQN(state_dim, action_dim).to(device)\ntarget_net.load_state_dict(policy_net.state_dict())\noptimizer = optim.Adam(policy_net.parameters(), lr=base_lr)",
+        "peekOfCode": "target_update = 10\nn_step = 3\nalpha = 0.7\nbeta = 0.5\nbase_lr = 0.001\ndevice = torch.device(\"cuda\" if torch.cuda.is_available() else \"cpu\")\n# PyTorch Lightning Model\nclass GeoMasterAIModel(pl.LightningModule):\n    def __init__(self, state_dim, action_dim, gamma, base_lr):\n        super().__init__()",
         "detail": "geomaster_ai_challenge",
         "documentation": {}
     },
@@ -1036,7 +1080,7 @@
         "kind": 5,
         "importPath": "geomaster_ai_challenge",
         "description": "geomaster_ai_challenge",
-        "peekOfCode": "n_step = 3\nalpha = 0.7\nbeta = 0.5\nbase_lr = 0.001\ndevice = torch.device(\"cuda\" if torch.cuda.is_available() else \"cpu\")\npolicy_net = DQN(state_dim, action_dim).to(device)\ntarget_net = DQN(state_dim, action_dim).to(device)\ntarget_net.load_state_dict(policy_net.state_dict())\noptimizer = optim.Adam(policy_net.parameters(), lr=base_lr)\nforward_model = ForwardModel(state_dim, action_dim).to(device)",
+        "peekOfCode": "n_step = 3\nalpha = 0.7\nbeta = 0.5\nbase_lr = 0.001\ndevice = torch.device(\"cuda\" if torch.cuda.is_available() else \"cpu\")\n# PyTorch Lightning Model\nclass GeoMasterAIModel(pl.LightningModule):\n    def __init__(self, state_dim, action_dim, gamma, base_lr):\n        super().__init__()\n        self.policy_net = DQN(state_dim, action_dim)",
         "detail": "geomaster_ai_challenge",
         "documentation": {}
     },
@@ -1045,7 +1089,7 @@
         "kind": 5,
         "importPath": "geomaster_ai_challenge",
         "description": "geomaster_ai_challenge",
-        "peekOfCode": "alpha = 0.7\nbeta = 0.5\nbase_lr = 0.001\ndevice = torch.device(\"cuda\" if torch.cuda.is_available() else \"cpu\")\npolicy_net = DQN(state_dim, action_dim).to(device)\ntarget_net = DQN(state_dim, action_dim).to(device)\ntarget_net.load_state_dict(policy_net.state_dict())\noptimizer = optim.Adam(policy_net.parameters(), lr=base_lr)\nforward_model = ForwardModel(state_dim, action_dim).to(device)\noptimizer_fm = optim.Adam(forward_model.parameters(), lr=base_lr)",
+        "peekOfCode": "alpha = 0.7\nbeta = 0.5\nbase_lr = 0.001\ndevice = torch.device(\"cuda\" if torch.cuda.is_available() else \"cpu\")\n# PyTorch Lightning Model\nclass GeoMasterAIModel(pl.LightningModule):\n    def __init__(self, state_dim, action_dim, gamma, base_lr):\n        super().__init__()\n        self.policy_net = DQN(state_dim, action_dim)\n        self.target_net = DQN(state_dim, action_dim)",
         "detail": "geomaster_ai_challenge",
         "documentation": {}
     },
@@ -1054,7 +1098,7 @@
         "kind": 5,
         "importPath": "geomaster_ai_challenge",
         "description": "geomaster_ai_challenge",
-        "peekOfCode": "beta = 0.5\nbase_lr = 0.001\ndevice = torch.device(\"cuda\" if torch.cuda.is_available() else \"cpu\")\npolicy_net = DQN(state_dim, action_dim).to(device)\ntarget_net = DQN(state_dim, action_dim).to(device)\ntarget_net.load_state_dict(policy_net.state_dict())\noptimizer = optim.Adam(policy_net.parameters(), lr=base_lr)\nforward_model = ForwardModel(state_dim, action_dim).to(device)\noptimizer_fm = optim.Adam(forward_model.parameters(), lr=base_lr)\nworld_model = WorldModel(state_dim, action_dim).to(device)",
+        "peekOfCode": "beta = 0.5\nbase_lr = 0.001\ndevice = torch.device(\"cuda\" if torch.cuda.is_available() else \"cpu\")\n# PyTorch Lightning Model\nclass GeoMasterAIModel(pl.LightningModule):\n    def __init__(self, state_dim, action_dim, gamma, base_lr):\n        super().__init__()\n        self.policy_net = DQN(state_dim, action_dim)\n        self.target_net = DQN(state_dim, action_dim)\n        self.target_net.load_state_dict(self.policy_net.state_dict())",
         "detail": "geomaster_ai_challenge",
         "documentation": {}
     },
@@ -1063,7 +1107,7 @@
         "kind": 5,
         "importPath": "geomaster_ai_challenge",
         "description": "geomaster_ai_challenge",
-        "peekOfCode": "base_lr = 0.001\ndevice = torch.device(\"cuda\" if torch.cuda.is_available() else \"cpu\")\npolicy_net = DQN(state_dim, action_dim).to(device)\ntarget_net = DQN(state_dim, action_dim).to(device)\ntarget_net.load_state_dict(policy_net.state_dict())\noptimizer = optim.Adam(policy_net.parameters(), lr=base_lr)\nforward_model = ForwardModel(state_dim, action_dim).to(device)\noptimizer_fm = optim.Adam(forward_model.parameters(), lr=base_lr)\nworld_model = WorldModel(state_dim, action_dim).to(device)\noptimizer_wm = optim.Adam(world_model.parameters(), lr=base_lr)",
+        "peekOfCode": "base_lr = 0.001\ndevice = torch.device(\"cuda\" if torch.cuda.is_available() else \"cpu\")\n# PyTorch Lightning Model\nclass GeoMasterAIModel(pl.LightningModule):\n    def __init__(self, state_dim, action_dim, gamma, base_lr):\n        super().__init__()\n        self.policy_net = DQN(state_dim, action_dim)\n        self.target_net = DQN(state_dim, action_dim)\n        self.target_net.load_state_dict(self.policy_net.state_dict())\n        self.gamma = gamma",
         "detail": "geomaster_ai_challenge",
         "documentation": {}
     },
@@ -1072,88 +1116,16 @@
         "kind": 5,
         "importPath": "geomaster_ai_challenge",
         "description": "geomaster_ai_challenge",
-        "peekOfCode": "device = torch.device(\"cuda\" if torch.cuda.is_available() else \"cpu\")\npolicy_net = DQN(state_dim, action_dim).to(device)\ntarget_net = DQN(state_dim, action_dim).to(device)\ntarget_net.load_state_dict(policy_net.state_dict())\noptimizer = optim.Adam(policy_net.parameters(), lr=base_lr)\nforward_model = ForwardModel(state_dim, action_dim).to(device)\noptimizer_fm = optim.Adam(forward_model.parameters(), lr=base_lr)\nworld_model = WorldModel(state_dim, action_dim).to(device)\noptimizer_wm = optim.Adam(world_model.parameters(), lr=base_lr)\nshape_predictor = NextShapePredictor(predictor_input_dim, predictor_output_dim).to(device)",
+        "peekOfCode": "device = torch.device(\"cuda\" if torch.cuda.is_available() else \"cpu\")\n# PyTorch Lightning Model\nclass GeoMasterAIModel(pl.LightningModule):\n    def __init__(self, state_dim, action_dim, gamma, base_lr):\n        super().__init__()\n        self.policy_net = DQN(state_dim, action_dim)\n        self.target_net = DQN(state_dim, action_dim)\n        self.target_net.load_state_dict(self.policy_net.state_dict())\n        self.gamma = gamma\n        self.base_lr = base_lr",
         "detail": "geomaster_ai_challenge",
         "documentation": {}
     },
     {
-        "label": "policy_net",
+        "label": "geo_model",
         "kind": 5,
         "importPath": "geomaster_ai_challenge",
         "description": "geomaster_ai_challenge",
-        "peekOfCode": "policy_net = DQN(state_dim, action_dim).to(device)\ntarget_net = DQN(state_dim, action_dim).to(device)\ntarget_net.load_state_dict(policy_net.state_dict())\noptimizer = optim.Adam(policy_net.parameters(), lr=base_lr)\nforward_model = ForwardModel(state_dim, action_dim).to(device)\noptimizer_fm = optim.Adam(forward_model.parameters(), lr=base_lr)\nworld_model = WorldModel(state_dim, action_dim).to(device)\noptimizer_wm = optim.Adam(world_model.parameters(), lr=base_lr)\nshape_predictor = NextShapePredictor(predictor_input_dim, predictor_output_dim).to(device)\noptimizer_sp = optim.Adam(shape_predictor.parameters(), lr=0.001)",
-        "detail": "geomaster_ai_challenge",
-        "documentation": {}
-    },
-    {
-        "label": "target_net",
-        "kind": 5,
-        "importPath": "geomaster_ai_challenge",
-        "description": "geomaster_ai_challenge",
-        "peekOfCode": "target_net = DQN(state_dim, action_dim).to(device)\ntarget_net.load_state_dict(policy_net.state_dict())\noptimizer = optim.Adam(policy_net.parameters(), lr=base_lr)\nforward_model = ForwardModel(state_dim, action_dim).to(device)\noptimizer_fm = optim.Adam(forward_model.parameters(), lr=base_lr)\nworld_model = WorldModel(state_dim, action_dim).to(device)\noptimizer_wm = optim.Adam(world_model.parameters(), lr=base_lr)\nshape_predictor = NextShapePredictor(predictor_input_dim, predictor_output_dim).to(device)\noptimizer_sp = optim.Adam(shape_predictor.parameters(), lr=0.001)\nmemory = SumTree(memory_size)",
-        "detail": "geomaster_ai_challenge",
-        "documentation": {}
-    },
-    {
-        "label": "optimizer",
-        "kind": 5,
-        "importPath": "geomaster_ai_challenge",
-        "description": "geomaster_ai_challenge",
-        "peekOfCode": "optimizer = optim.Adam(policy_net.parameters(), lr=base_lr)\nforward_model = ForwardModel(state_dim, action_dim).to(device)\noptimizer_fm = optim.Adam(forward_model.parameters(), lr=base_lr)\nworld_model = WorldModel(state_dim, action_dim).to(device)\noptimizer_wm = optim.Adam(world_model.parameters(), lr=base_lr)\nshape_predictor = NextShapePredictor(predictor_input_dim, predictor_output_dim).to(device)\noptimizer_sp = optim.Adam(shape_predictor.parameters(), lr=0.001)\nmemory = SumTree(memory_size)\nn_step_buffer = []\n# Adaptive exploration parameters",
-        "detail": "geomaster_ai_challenge",
-        "documentation": {}
-    },
-    {
-        "label": "forward_model",
-        "kind": 5,
-        "importPath": "geomaster_ai_challenge",
-        "description": "geomaster_ai_challenge",
-        "peekOfCode": "forward_model = ForwardModel(state_dim, action_dim).to(device)\noptimizer_fm = optim.Adam(forward_model.parameters(), lr=base_lr)\nworld_model = WorldModel(state_dim, action_dim).to(device)\noptimizer_wm = optim.Adam(world_model.parameters(), lr=base_lr)\nshape_predictor = NextShapePredictor(predictor_input_dim, predictor_output_dim).to(device)\noptimizer_sp = optim.Adam(shape_predictor.parameters(), lr=0.001)\nmemory = SumTree(memory_size)\nn_step_buffer = []\n# Adaptive exploration parameters\nepsilon_noise_scale = 0.1  # Scale of noise added to actions during exploration",
-        "detail": "geomaster_ai_challenge",
-        "documentation": {}
-    },
-    {
-        "label": "optimizer_fm",
-        "kind": 5,
-        "importPath": "geomaster_ai_challenge",
-        "description": "geomaster_ai_challenge",
-        "peekOfCode": "optimizer_fm = optim.Adam(forward_model.parameters(), lr=base_lr)\nworld_model = WorldModel(state_dim, action_dim).to(device)\noptimizer_wm = optim.Adam(world_model.parameters(), lr=base_lr)\nshape_predictor = NextShapePredictor(predictor_input_dim, predictor_output_dim).to(device)\noptimizer_sp = optim.Adam(shape_predictor.parameters(), lr=0.001)\nmemory = SumTree(memory_size)\nn_step_buffer = []\n# Adaptive exploration parameters\nepsilon_noise_scale = 0.1  # Scale of noise added to actions during exploration\ndef select_action(state_tensor, epsilon, action_dim):",
-        "detail": "geomaster_ai_challenge",
-        "documentation": {}
-    },
-    {
-        "label": "world_model",
-        "kind": 5,
-        "importPath": "geomaster_ai_challenge",
-        "description": "geomaster_ai_challenge",
-        "peekOfCode": "world_model = WorldModel(state_dim, action_dim).to(device)\noptimizer_wm = optim.Adam(world_model.parameters(), lr=base_lr)\nshape_predictor = NextShapePredictor(predictor_input_dim, predictor_output_dim).to(device)\noptimizer_sp = optim.Adam(shape_predictor.parameters(), lr=0.001)\nmemory = SumTree(memory_size)\nn_step_buffer = []\n# Adaptive exploration parameters\nepsilon_noise_scale = 0.1  # Scale of noise added to actions during exploration\ndef select_action(state_tensor, epsilon, action_dim):\n    \"\"\"Select an action using epsilon-greedy with noise.\"\"\"",
-        "detail": "geomaster_ai_challenge",
-        "documentation": {}
-    },
-    {
-        "label": "optimizer_wm",
-        "kind": 5,
-        "importPath": "geomaster_ai_challenge",
-        "description": "geomaster_ai_challenge",
-        "peekOfCode": "optimizer_wm = optim.Adam(world_model.parameters(), lr=base_lr)\nshape_predictor = NextShapePredictor(predictor_input_dim, predictor_output_dim).to(device)\noptimizer_sp = optim.Adam(shape_predictor.parameters(), lr=0.001)\nmemory = SumTree(memory_size)\nn_step_buffer = []\n# Adaptive exploration parameters\nepsilon_noise_scale = 0.1  # Scale of noise added to actions during exploration\ndef select_action(state_tensor, epsilon, action_dim):\n    \"\"\"Select an action using epsilon-greedy with noise.\"\"\"\n    if random.random() < epsilon:",
-        "detail": "geomaster_ai_challenge",
-        "documentation": {}
-    },
-    {
-        "label": "shape_predictor",
-        "kind": 5,
-        "importPath": "geomaster_ai_challenge",
-        "description": "geomaster_ai_challenge",
-        "peekOfCode": "shape_predictor = NextShapePredictor(predictor_input_dim, predictor_output_dim).to(device)\noptimizer_sp = optim.Adam(shape_predictor.parameters(), lr=0.001)\nmemory = SumTree(memory_size)\nn_step_buffer = []\n# Adaptive exploration parameters\nepsilon_noise_scale = 0.1  # Scale of noise added to actions during exploration\ndef select_action(state_tensor, epsilon, action_dim):\n    \"\"\"Select an action using epsilon-greedy with noise.\"\"\"\n    if random.random() < epsilon:\n        # Exploration: Add noise to a random action",
-        "detail": "geomaster_ai_challenge",
-        "documentation": {}
-    },
-    {
-        "label": "optimizer_sp",
-        "kind": 5,
-        "importPath": "geomaster_ai_challenge",
-        "description": "geomaster_ai_challenge",
-        "peekOfCode": "optimizer_sp = optim.Adam(shape_predictor.parameters(), lr=0.001)\nmemory = SumTree(memory_size)\nn_step_buffer = []\n# Adaptive exploration parameters\nepsilon_noise_scale = 0.1  # Scale of noise added to actions during exploration\ndef select_action(state_tensor, epsilon, action_dim):\n    \"\"\"Select an action using epsilon-greedy with noise.\"\"\"\n    if random.random() < epsilon:\n        # Exploration: Add noise to a random action\n        action = random.randint(0, action_dim - 1)",
+        "peekOfCode": "geo_model = GeoMasterAIModel(state_dim, action_dim, gamma, base_lr)\nmemory = SumTree(memory_size)\ngeo_data = GeoMasterDataModule(memory, batch_size)\n# Replace the training loop with PyTorch Lightning Trainer\ntrainer = Trainer(max_epochs=100, gpus=1 if torch.cuda.is_available() else 0)\n# Train the model\ntrainer.fit(geo_model, geo_data)\n# Update the optimize_model function to use the Lightning module\ndef optimize_model():\n    \"\"\"Optimization is now handled by PyTorch Lightning.\"\"\"",
         "detail": "geomaster_ai_challenge",
         "documentation": {}
     },
@@ -1162,7 +1134,106 @@
         "kind": 5,
         "importPath": "geomaster_ai_challenge",
         "description": "geomaster_ai_challenge",
-        "peekOfCode": "memory = SumTree(memory_size)\nn_step_buffer = []\n# Adaptive exploration parameters\nepsilon_noise_scale = 0.1  # Scale of noise added to actions during exploration\ndef select_action(state_tensor, epsilon, action_dim):\n    \"\"\"Select an action using epsilon-greedy with noise.\"\"\"\n    if random.random() < epsilon:\n        # Exploration: Add noise to a random action\n        action = random.randint(0, action_dim - 1)\n        noise = np.random.normal(0, epsilon_noise_scale, size=action_dim)",
+        "peekOfCode": "memory = SumTree(memory_size)\ngeo_data = GeoMasterDataModule(memory, batch_size)\n# Replace the training loop with PyTorch Lightning Trainer\ntrainer = Trainer(max_epochs=100, gpus=1 if torch.cuda.is_available() else 0)\n# Train the model\ntrainer.fit(geo_model, geo_data)\n# Update the optimize_model function to use the Lightning module\ndef optimize_model():\n    \"\"\"Optimization is now handled by PyTorch Lightning.\"\"\"\n    trainer.fit(geo_model, geo_data)",
+        "detail": "geomaster_ai_challenge",
+        "documentation": {}
+    },
+    {
+        "label": "geo_data",
+        "kind": 5,
+        "importPath": "geomaster_ai_challenge",
+        "description": "geomaster_ai_challenge",
+        "peekOfCode": "geo_data = GeoMasterDataModule(memory, batch_size)\n# Replace the training loop with PyTorch Lightning Trainer\ntrainer = Trainer(max_epochs=100, gpus=1 if torch.cuda.is_available() else 0)\n# Train the model\ntrainer.fit(geo_model, geo_data)\n# Update the optimize_model function to use the Lightning module\ndef optimize_model():\n    \"\"\"Optimization is now handled by PyTorch Lightning.\"\"\"\n    trainer.fit(geo_model, geo_data)\n# Neural Networks",
+        "detail": "geomaster_ai_challenge",
+        "documentation": {}
+    },
+    {
+        "label": "trainer",
+        "kind": 5,
+        "importPath": "geomaster_ai_challenge",
+        "description": "geomaster_ai_challenge",
+        "peekOfCode": "trainer = Trainer(max_epochs=100, gpus=1 if torch.cuda.is_available() else 0)\n# Train the model\ntrainer.fit(geo_model, geo_data)\n# Update the optimize_model function to use the Lightning module\ndef optimize_model():\n    \"\"\"Optimization is now handled by PyTorch Lightning.\"\"\"\n    trainer.fit(geo_model, geo_data)\n# Neural Networks\npolicy_net = geo_model.policy_net.to(device)\ntarget_net = geo_model.target_net.to(device)",
+        "detail": "geomaster_ai_challenge",
+        "documentation": {}
+    },
+    {
+        "label": "policy_net",
+        "kind": 5,
+        "importPath": "geomaster_ai_challenge",
+        "description": "geomaster_ai_challenge",
+        "peekOfCode": "policy_net = geo_model.policy_net.to(device)\ntarget_net = geo_model.target_net.to(device)\ntarget_net.load_state_dict(policy_net.state_dict())\noptimizer = optim.Adam(policy_net.parameters(), lr=base_lr)\nforward_model = ForwardModel(state_dim, action_dim).to(device)\noptimizer_fm = optim.Adam(forward_model.parameters(), lr=base_lr)\nworld_model = WorldModel(state_dim, action_dim).to(device)\noptimizer_wm = optim.Adam(world_model.parameters(), lr=base_lr)\nshape_predictor = NextShapePredictor(predictor_input_dim, predictor_output_dim).to(device)\noptimizer_sp = optim.Adam(shape_predictor.parameters(), lr=0.001)",
+        "detail": "geomaster_ai_challenge",
+        "documentation": {}
+    },
+    {
+        "label": "target_net",
+        "kind": 5,
+        "importPath": "geomaster_ai_challenge",
+        "description": "geomaster_ai_challenge",
+        "peekOfCode": "target_net = geo_model.target_net.to(device)\ntarget_net.load_state_dict(policy_net.state_dict())\noptimizer = optim.Adam(policy_net.parameters(), lr=base_lr)\nforward_model = ForwardModel(state_dim, action_dim).to(device)\noptimizer_fm = optim.Adam(forward_model.parameters(), lr=base_lr)\nworld_model = WorldModel(state_dim, action_dim).to(device)\noptimizer_wm = optim.Adam(world_model.parameters(), lr=base_lr)\nshape_predictor = NextShapePredictor(predictor_input_dim, predictor_output_dim).to(device)\noptimizer_sp = optim.Adam(shape_predictor.parameters(), lr=0.001)\nn_step_buffer = []",
+        "detail": "geomaster_ai_challenge",
+        "documentation": {}
+    },
+    {
+        "label": "optimizer",
+        "kind": 5,
+        "importPath": "geomaster_ai_challenge",
+        "description": "geomaster_ai_challenge",
+        "peekOfCode": "optimizer = optim.Adam(policy_net.parameters(), lr=base_lr)\nforward_model = ForwardModel(state_dim, action_dim).to(device)\noptimizer_fm = optim.Adam(forward_model.parameters(), lr=base_lr)\nworld_model = WorldModel(state_dim, action_dim).to(device)\noptimizer_wm = optim.Adam(world_model.parameters(), lr=base_lr)\nshape_predictor = NextShapePredictor(predictor_input_dim, predictor_output_dim).to(device)\noptimizer_sp = optim.Adam(shape_predictor.parameters(), lr=0.001)\nn_step_buffer = []\n# Adaptive exploration parameters\nepsilon_noise_scale = 0.1  # Scale of noise added to actions during exploration",
+        "detail": "geomaster_ai_challenge",
+        "documentation": {}
+    },
+    {
+        "label": "forward_model",
+        "kind": 5,
+        "importPath": "geomaster_ai_challenge",
+        "description": "geomaster_ai_challenge",
+        "peekOfCode": "forward_model = ForwardModel(state_dim, action_dim).to(device)\noptimizer_fm = optim.Adam(forward_model.parameters(), lr=base_lr)\nworld_model = WorldModel(state_dim, action_dim).to(device)\noptimizer_wm = optim.Adam(world_model.parameters(), lr=base_lr)\nshape_predictor = NextShapePredictor(predictor_input_dim, predictor_output_dim).to(device)\noptimizer_sp = optim.Adam(shape_predictor.parameters(), lr=0.001)\nn_step_buffer = []\n# Adaptive exploration parameters\nepsilon_noise_scale = 0.1  # Scale of noise added to actions during exploration\ndef select_action(state_tensor, epsilon, action_dim):",
+        "detail": "geomaster_ai_challenge",
+        "documentation": {}
+    },
+    {
+        "label": "optimizer_fm",
+        "kind": 5,
+        "importPath": "geomaster_ai_challenge",
+        "description": "geomaster_ai_challenge",
+        "peekOfCode": "optimizer_fm = optim.Adam(forward_model.parameters(), lr=base_lr)\nworld_model = WorldModel(state_dim, action_dim).to(device)\noptimizer_wm = optim.Adam(world_model.parameters(), lr=base_lr)\nshape_predictor = NextShapePredictor(predictor_input_dim, predictor_output_dim).to(device)\noptimizer_sp = optim.Adam(shape_predictor.parameters(), lr=0.001)\nn_step_buffer = []\n# Adaptive exploration parameters\nepsilon_noise_scale = 0.1  # Scale of noise added to actions during exploration\ndef select_action(state_tensor, epsilon, action_dim):\n    \"\"\"Select an action using epsilon-greedy with noise.\"\"\"",
+        "detail": "geomaster_ai_challenge",
+        "documentation": {}
+    },
+    {
+        "label": "world_model",
+        "kind": 5,
+        "importPath": "geomaster_ai_challenge",
+        "description": "geomaster_ai_challenge",
+        "peekOfCode": "world_model = WorldModel(state_dim, action_dim).to(device)\noptimizer_wm = optim.Adam(world_model.parameters(), lr=base_lr)\nshape_predictor = NextShapePredictor(predictor_input_dim, predictor_output_dim).to(device)\noptimizer_sp = optim.Adam(shape_predictor.parameters(), lr=0.001)\nn_step_buffer = []\n# Adaptive exploration parameters\nepsilon_noise_scale = 0.1  # Scale of noise added to actions during exploration\ndef select_action(state_tensor, epsilon, action_dim):\n    \"\"\"Select an action using epsilon-greedy with noise.\"\"\"\n    if random.random() < epsilon:",
+        "detail": "geomaster_ai_challenge",
+        "documentation": {}
+    },
+    {
+        "label": "optimizer_wm",
+        "kind": 5,
+        "importPath": "geomaster_ai_challenge",
+        "description": "geomaster_ai_challenge",
+        "peekOfCode": "optimizer_wm = optim.Adam(world_model.parameters(), lr=base_lr)\nshape_predictor = NextShapePredictor(predictor_input_dim, predictor_output_dim).to(device)\noptimizer_sp = optim.Adam(shape_predictor.parameters(), lr=0.001)\nn_step_buffer = []\n# Adaptive exploration parameters\nepsilon_noise_scale = 0.1  # Scale of noise added to actions during exploration\ndef select_action(state_tensor, epsilon, action_dim):\n    \"\"\"Select an action using epsilon-greedy with noise.\"\"\"\n    if random.random() < epsilon:\n        # Exploration: Add noise to a random action",
+        "detail": "geomaster_ai_challenge",
+        "documentation": {}
+    },
+    {
+        "label": "shape_predictor",
+        "kind": 5,
+        "importPath": "geomaster_ai_challenge",
+        "description": "geomaster_ai_challenge",
+        "peekOfCode": "shape_predictor = NextShapePredictor(predictor_input_dim, predictor_output_dim).to(device)\noptimizer_sp = optim.Adam(shape_predictor.parameters(), lr=0.001)\nn_step_buffer = []\n# Adaptive exploration parameters\nepsilon_noise_scale = 0.1  # Scale of noise added to actions during exploration\ndef select_action(state_tensor, epsilon, action_dim):\n    \"\"\"Select an action using epsilon-greedy with noise.\"\"\"\n    if random.random() < epsilon:\n        # Exploration: Add noise to a random action\n        action = random.randint(0, action_dim - 1)",
+        "detail": "geomaster_ai_challenge",
+        "documentation": {}
+    },
+    {
+        "label": "optimizer_sp",
+        "kind": 5,
+        "importPath": "geomaster_ai_challenge",
+        "description": "geomaster_ai_challenge",
+        "peekOfCode": "optimizer_sp = optim.Adam(shape_predictor.parameters(), lr=0.001)\nn_step_buffer = []\n# Adaptive exploration parameters\nepsilon_noise_scale = 0.1  # Scale of noise added to actions during exploration\ndef select_action(state_tensor, epsilon, action_dim):\n    \"\"\"Select an action using epsilon-greedy with noise.\"\"\"\n    if random.random() < epsilon:\n        # Exploration: Add noise to a random action\n        action = random.randint(0, action_dim - 1)\n        noise = np.random.normal(0, epsilon_noise_scale, size=action_dim)",
         "detail": "geomaster_ai_challenge",
         "documentation": {}
     },
@@ -1189,7 +1260,7 @@
         "kind": 5,
         "importPath": "geomaster_ai_challenge",
         "description": "geomaster_ai_challenge",
-        "peekOfCode": "start_point = None\nend_point = (WIDTH - 50, HEIGHT - 50)\ntriangle_points = []\ncircle_center = None\ncircle_radius = 50\npentagon_points = []\ntessellation_points = []\ncurrent_shape = []\nai_step = 0\nmax_steps = 50",
+        "peekOfCode": "start_point = None\nend_point = (WIDTH - 50, HEIGHT - 50)\ntriangle_points = []\ncircle_center = None\n# Initialize circle_radius with a default value to avoid undefined reference\ncircle_radius = 50\npentagon_points = []\ntessellation_points = []\ncurrent_shape = []\nai_step = 0",
         "detail": "geomaster_ai_challenge",
         "documentation": {}
     },
@@ -1198,7 +1269,7 @@
         "kind": 5,
         "importPath": "geomaster_ai_challenge",
         "description": "geomaster_ai_challenge",
-        "peekOfCode": "end_point = (WIDTH - 50, HEIGHT - 50)\ntriangle_points = []\ncircle_center = None\ncircle_radius = 50\npentagon_points = []\ntessellation_points = []\ncurrent_shape = []\nai_step = 0\nmax_steps = 50\ngame_state = \"waiting\"",
+        "peekOfCode": "end_point = (WIDTH - 50, HEIGHT - 50)\ntriangle_points = []\ncircle_center = None\n# Initialize circle_radius with a default value to avoid undefined reference\ncircle_radius = 50\npentagon_points = []\ntessellation_points = []\ncurrent_shape = []\nai_step = 0\nmax_steps = 50",
         "detail": "geomaster_ai_challenge",
         "documentation": {}
     },
@@ -1207,7 +1278,7 @@
         "kind": 5,
         "importPath": "geomaster_ai_challenge",
         "description": "geomaster_ai_challenge",
-        "peekOfCode": "triangle_points = []\ncircle_center = None\ncircle_radius = 50\npentagon_points = []\ntessellation_points = []\ncurrent_shape = []\nai_step = 0\nmax_steps = 50\ngame_state = \"waiting\"\nrunning_state = \"stopped\"",
+        "peekOfCode": "triangle_points = []\ncircle_center = None\n# Initialize circle_radius with a default value to avoid undefined reference\ncircle_radius = 50\npentagon_points = []\ntessellation_points = []\ncurrent_shape = []\nai_step = 0\nmax_steps = 50\ngame_state = \"waiting\"",
         "detail": "geomaster_ai_challenge",
         "documentation": {}
     },
@@ -1216,7 +1287,7 @@
         "kind": 5,
         "importPath": "geomaster_ai_challenge",
         "description": "geomaster_ai_challenge",
-        "peekOfCode": "circle_center = None\ncircle_radius = 50\npentagon_points = []\ntessellation_points = []\ncurrent_shape = []\nai_step = 0\nmax_steps = 50\ngame_state = \"waiting\"\nrunning_state = \"stopped\"\nrewards = deque(maxlen=100)",
+        "peekOfCode": "circle_center = None\n# Initialize circle_radius with a default value to avoid undefined reference\ncircle_radius = 50\npentagon_points = []\ntessellation_points = []\ncurrent_shape = []\nai_step = 0\nmax_steps = 50\ngame_state = \"waiting\"\nrunning_state = \"stopped\"",
         "detail": "geomaster_ai_challenge",
         "documentation": {}
     },
