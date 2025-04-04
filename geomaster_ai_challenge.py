@@ -1311,11 +1311,13 @@ def update_dashboard():
 
 # Transfer Learning
 def save_model_weights(task, world):
+    """Save the model weights for a specific task and world."""
     filename = f"model_{task}_{world}.pth"
     torch.save(policy_net.state_dict(), filename)
     log_message(f"Model weights saved to {filename}")
 
 def load_model_weights(task, world):
+    """Load pretrained model weights for a specific task and world."""
     filename = f"model_{task}_{world}.pth"
     if os.path.exists(filename):
         policy_net.load_state_dict(torch.load(filename))
@@ -1323,6 +1325,68 @@ def load_model_weights(task, world):
         log_message(f"Model weights loaded from {filename}")
     else:
         log_message(f"No saved weights found for {task} in {world}")
+
+def fine_tune_model(task, world, fine_tune_steps=1000):
+    """Fine-tune the model on a new task or environment."""
+    log_message(f"Starting fine-tuning for task: {task}, world: {world}")
+    load_model_weights(task, world)  # Load pretrained weights if available
+
+    for step in range(fine_tune_steps):
+        reset_episode()  # Reset the environment for the task
+        for _ in range(max_steps):
+            state_tensor = torch.FloatTensor(state).unsqueeze(0).to(device)
+            action = select_action(state_tensor, epsilon, action_dim)
+
+            # Simulate the action
+            actions = [action]
+            for action in actions:
+                if current_task == TASK_LINE:
+                    curvature = 0
+                    next_segment = draw_line_segment(
+                        current_shape[-1], end_point, curvature, current_world
+                    )
+                    current_shape.extend([p for p in next_segment if p is not None])
+                elif current_task == TASK_TRIANGLE:
+                    angle_adjust = 0
+                    current_shape = draw_triangle(
+                        current_shape, angle_adjust, current_world
+                    )
+                elif current_task == TASK_CIRCLE:
+                    radius_adjust = 0
+                    current_shape, circle_radius = draw_circle(
+                        circle_center, circle_radius, radius_adjust, current_world
+                    )
+                elif current_task == TASK_PENTAGON:
+                    angle_adjust = 0
+                    current_shape = draw_pentagon(
+                        current_shape, angle_adjust, current_world
+                    )
+                elif current_task == TASK_TESSELLATION:
+                    base_points = current_shape[0] if current_shape else tessellation_points
+                    current_shape = draw_tessellation(base_points, current_world)
+
+            # Calculate reward
+            extrinsic_reward = calculate_advanced_reward(
+                current_shape, end_point, current_task, current_world
+            )
+            current_reward = extrinsic_reward
+            rewards.append(current_reward)
+
+            # Store transition and optimize model
+            next_state = state  # Assume state transition logic is handled elsewhere
+            done = 0  # Assume task completion logic is handled elsewhere
+            store_transition((state, action, current_reward, next_state, done))
+            optimize_model()
+
+            if done:
+                break
+
+        # Save fine-tuned weights periodically
+        if step % 100 == 0:
+            save_model_weights(task, world)
+            log_message(f"Fine-tuning progress: {step}/{fine_tune_steps} steps completed.")
+
+    log_message(f"Fine-tuning completed for task: {task}, world: {world}")
 
 # Explainable AI (XAI)
 def explain_decision(state_tensor):

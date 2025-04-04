@@ -532,7 +532,7 @@
         "kind": 2,
         "importPath": "geomaster_ai_challenge",
         "description": "geomaster_ai_challenge",
-        "peekOfCode": "def save_model_weights(task, world):\n    filename = f\"model_{task}_{world}.pth\"\n    torch.save(policy_net.state_dict(), filename)\n    log_message(f\"Model weights saved to {filename}\")\ndef load_model_weights(task, world):\n    filename = f\"model_{task}_{world}.pth\"\n    if os.path.exists(filename):\n        policy_net.load_state_dict(torch.load(filename))\n        target_net.load_state_dict(policy_net.state_dict())\n        log_message(f\"Model weights loaded from {filename}\")",
+        "peekOfCode": "def save_model_weights(task, world):\n    \"\"\"Save the model weights for a specific task and world.\"\"\"\n    filename = f\"model_{task}_{world}.pth\"\n    torch.save(policy_net.state_dict(), filename)\n    log_message(f\"Model weights saved to {filename}\")\ndef load_model_weights(task, world):\n    \"\"\"Load pretrained model weights for a specific task and world.\"\"\"\n    filename = f\"model_{task}_{world}.pth\"\n    if os.path.exists(filename):\n        policy_net.load_state_dict(torch.load(filename))",
         "detail": "geomaster_ai_challenge",
         "documentation": {}
     },
@@ -541,7 +541,16 @@
         "kind": 2,
         "importPath": "geomaster_ai_challenge",
         "description": "geomaster_ai_challenge",
-        "peekOfCode": "def load_model_weights(task, world):\n    filename = f\"model_{task}_{world}.pth\"\n    if os.path.exists(filename):\n        policy_net.load_state_dict(torch.load(filename))\n        target_net.load_state_dict(policy_net.state_dict())\n        log_message(f\"Model weights loaded from {filename}\")\n    else:\n        log_message(f\"No saved weights found for {task} in {world}\")\n# Explainable AI (XAI)\ndef explain_decision(state_tensor):",
+        "peekOfCode": "def load_model_weights(task, world):\n    \"\"\"Load pretrained model weights for a specific task and world.\"\"\"\n    filename = f\"model_{task}_{world}.pth\"\n    if os.path.exists(filename):\n        policy_net.load_state_dict(torch.load(filename))\n        target_net.load_state_dict(policy_net.state_dict())\n        log_message(f\"Model weights loaded from {filename}\")\n    else:\n        log_message(f\"No saved weights found for {task} in {world}\")\ndef fine_tune_model(task, world, fine_tune_steps=1000):",
+        "detail": "geomaster_ai_challenge",
+        "documentation": {}
+    },
+    {
+        "label": "fine_tune_model",
+        "kind": 2,
+        "importPath": "geomaster_ai_challenge",
+        "description": "geomaster_ai_challenge",
+        "peekOfCode": "def fine_tune_model(task, world, fine_tune_steps=1000):\n    \"\"\"Fine-tune the model on a new task or environment.\"\"\"\n    log_message(f\"Starting fine-tuning for task: {task}, world: {world}\")\n    load_model_weights(task, world)  # Load pretrained weights if available\n    for step in range(fine_tune_steps):\n        reset_episode()  # Reset the environment for the task\n        for _ in range(max_steps):\n            state_tensor = torch.FloatTensor(state).unsqueeze(0).to(device)\n            action = select_action(state_tensor, epsilon, action_dim)\n            # Simulate the action",
         "detail": "geomaster_ai_challenge",
         "documentation": {}
     },
