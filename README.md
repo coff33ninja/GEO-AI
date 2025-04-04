@@ -1,128 +1,144 @@
 # GeoMaster AI Challenge
 
 ## Purpose
-The **GeoMaster AI Challenge** is an interactive Python application designed to explore the intersection of artificial intelligence, reinforcement learning, and non-Euclidean geometry. The primary purpose of this project is to create an AI agent that learns to draw geometric shapes (e.g., lines, triangles, circles, pentagons, and tessellations) in various geometric worlds (Euclidean, Spherical, Hyperbolic, Elliptical, Projective, and Fractal) using a Deep Q-Network (DQN) enhanced with advanced techniques like Prioritized Experience Replay, N-Step Returns, and curiosity-driven exploration via a forward model. A ton of the code was AI assisted as I only started from an idea. Consider this to be always incomplete as I'm trying to see how much I can push everyday use AI like OpenAI (assisted crafting the basis after it told me I messed up), GROK (who introduced the multiple worlds and huge basis of the calculations) and lastly VSCode OpenAI o4 free tier (fixing and finetuning the code), then me (who just wants more functions and throw in more alterations and additions).
+The **GeoMaster AI Challenge** is an interactive Python application that explores the intersection of artificial intelligence, reinforcement learning, and non-Euclidean geometry. Its primary goal is to develop an AI agent that learns to draw geometric shapes—lines, triangles, circles, pentagons, and tessellations—across various geometric worlds: Euclidean, Spherical, Hyperbolic, Elliptical, Projective, and Fractal. The AI uses a Deep Q-Network (DQN) enhanced with techniques like Prioritized Experience Replay, N-Step Returns, and curiosity-driven exploration via a forward model. The project also includes a Next Shape Predictor to anticipate the next task based on performance history.
 
-This project serves as both an educational tool and a research platform:
-- **Educational Tool**: It visually demonstrates how AI can adapt to different geometric constraints and tasks, making it accessible for learning about reinforcement learning and geometry.
-- **Research Platform**: It provides a framework to experiment with advanced RL techniques, such as model-based planning, macro actions, and intrinsic motivation, in a visually engaging environment.
+This project began as an idea and was developed with significant AI assistance from tools like OpenAI, GROK, and VSCode’s OpenAI o4 free tier, with my role being to expand functionality and experiment with enhancements. It remains a work in progress as I push the boundaries of everyday AI capabilities.
 
-The AI can operate in two modes—**Autonomous** (fully AI-driven) and **Guidance** (player-assisted)—allowing users to either observe the AI's learning process or guide it interactively. The project logs the AI's performance to a CSV file for analysis, making it suitable for studying learning dynamics over time.
+It serves two main purposes:
+- **Educational Tool**: Visually demonstrates AI adaptation to geometric constraints, making it a resource for learning reinforcement learning and geometry.
+- **Research Platform**: Provides a testbed for experimenting with advanced RL techniques in a dynamic, visual environment.
+
+The AI currently operates in an **Autonomous** mode, with basic player interaction limited to starting, pausing, and adjusting parameters via keyboard commands. Performance is logged to a CSV file for analysis.
 
 ---
 
 ## Features
-- **Geometric Worlds**: Supports drawing in six distinct geometric spaces with unique projections (e.g., stereographic for Spherical, Poincaré disk for Hyperbolic).
-- **Tasks**: The AI can draw lines, triangles, circles, pentagons, and tessellations, each with world-specific reward functions.
+- **Geometric Worlds**: Supports six geometric spaces with unique projections:
+  - Euclidean: Standard 2D/3D coordinates.
+  - Spherical: Stereographic projection from a 3D sphere.
+  - Hyperbolic: Poincaré disk projection with geodesic paths (for lines).
+  - Elliptical: Scaled elliptical mapping.
+  - Projective: Perspective projection.
+  - Fractal: Iterative random transformations.
+- **Tasks**: The AI draws:
+  - Lines (to a fixed endpoint).
+  - Triangles (three points).
+  - Circles (around a center with adjustable radius).
+  - Pentagons (five points).
+  - Tessellations (multiple triangles from three base points).
 - **AI Techniques**:
   - Deep Q-Network (DQN) with a target network.
-  - Prioritized Experience Replay using a SumTree for efficient sampling.
-  - N-Step Returns for improved reward propagation.
-  - Curiosity-driven exploration with a forward model.
-  - Model-based planning for multi-step action sequences.
-  - Macro actions for complex tasks like triangles and circles.
-- **Visualization**: Animated wireframes with gradient colors to represent each geometric world.
-- **Modes**: Autonomous mode for pure AI operation and Guidance mode for player interaction.
-- **Logging**: Saves AI decisions, rewards, and learning progress to a CSV file (`ai_calculations.csv`).
+  - Prioritized Experience Replay using a `SumTree`.
+  - N-Step Returns (n=3) for improved reward propagation.
+  - Curiosity-driven exploration via a `ForwardModel`.
+  - Model-based planning with a `WorldModel` for multi-step action sequences.
+  - Macro actions for tasks like triangles and circles.
+  - Next Shape Predictor (`NextShapePredictor`) to forecast the next task.
+  - Adaptive learning rate based on FPS and average reward.
+- **Visualization**: Animated wireframes with gradient colors for each world, plus a real-time reward trend plot.
+- **Modes**: Autonomous AI drawing with basic control (start, pause, resume, speed adjustments).
+- **Logging**: Saves episode data (state, action, reward, etc.) to `ai_calculations.csv`.
+- **3D Mode**: Toggleable 2D/3D drawing with perspective or orthographic projections.
+- **Explainable AI (XAI)**: Visualizes action probabilities every 50 steps.
 
 ---
 
 ## Requirements
-To run this project, you need the following Python libraries:
-- `pygame` (>= 2.0.0): For rendering the game window and handling user input.
-- `numpy` (>= 1.19.0): For numerical computations and array operations.
-- `torch` (>= 1.9.0): For building and training neural networks (DQN, Forward Model, World Model).
-- `csv`: Standard library for logging data (included with Python).
-- `os`: Standard library for file operations (included with Python).
+To run this project, you need:
+- `pygame` (>= 2.0.0): For rendering and input handling.
+- `numpy` (>= 1.19.0): For numerical operations.
+- `torch` (>= 1.9.0): For neural network training.
+- `matplotlib` (>= 3.0.0): For reward plotting.
+- `csv` and `os`: Standard libraries (included with Python).
 
-Install the required packages using pip:
+Install dependencies with:
 ```bash
-pip install pygame numpy torch
+pip install pygame numpy torch matplotlib
 ```
 
 ---
 
 ## File Structure
-- `geomaster_ai_challenge.py`: The main script containing all game logic, AI models, and rendering code. It includes:
-  - **Game Logic**: Handles user input, task progression, and geometric world transitions.
-  - **AI Models**: Implements the DQN, Forward Model, and World Model for reinforcement learning and planning.
-  - **Rendering**: Visualizes geometric shapes and AI actions in real-time using `pygame`.
-- `ai_calculations.csv`: Generated log file storing AI steps, states, actions, rewards, and learning messages (created on first run).
+- `geomaster_ai_challenge.py`: Main script with game logic, AI models, and rendering.
+- `ai_calculations.csv`: Log file for AI performance data (created on first run).
+- Saved model files (e.g., `policy_net.pth`, `model_<task>_<world>.pth`): Generated during training.
 
 ---
 
 ## How to Run
-1. **Clone or Download**: Obtain the source code by cloning this repository or downloading the script.
-2. **Install Dependencies**: Ensure all required libraries are installed (see Requirements).
-3. **Run the Script**: Execute the Python script in your terminal or IDE:
+1. **Clone or Download**: Obtain the source code.
+2. **Install Dependencies**: Run the pip command above.
+3. **Run the Script**: Execute:
    ```bash
    python geomaster_ai_challenge.py
    ```
 4. **Interact with the Game**:
-   - **Set Points**: Click the mouse to define starting points based on the current task (e.g., 1 click for a line, 3 for a triangle).
-   - **Guidance Mode**: Use arrow keys (Left, Right, Up, Down), Space, or 'V' to provide hints to the AI.
-   - **Reset**: Press 'R' when the AI finishes a task to reset and cycle to the next task and world.
-   - **Quit**: Close the window or press the 'X' button to exit.
+   - **S**: Start the AI.
+   - **P**: Pause.
+   - **R**: Resume.
+   - **Q**: Quit.
+   - **F**: Increase tick rate (faster).
+   - **L**: Decrease tick rate (slower).
+   - **U**: Increase training iterations.
+   - **D**: Decrease training iterations.
+   - **B**: Toggle debug mode.
+   - **3**: Toggle 2D/3D mode.
+
+The AI automatically cycles through tasks and worlds upon completion.
 
 ---
 
 ## Usage
 ### Game Rules
-1. **Set Points**: Click to place points based on the task:
-   - Line: 1 point (AI draws to a fixed endpoint).
-   - Triangle: 3 points.
-   - Circle: 1 center point.
-   - Pentagon: 5 points.
-   - Tessellation: 3 points to start.
-2. **AI Drawing**: The AI attempts to complete the shape in the current geometric world.
-3. **Guidance Mode**: Use keyboard inputs to assist the AI:
-   - Left/Right Arrows: Adjust curvature.
-   - Up/Down Arrows: Adjust angles.
-   - Space: Adjust radius.
-   - V: Add a vertex.
-4. **Progress**: Monitor the AI's performance via on-screen reward metrics and the CSV log.
+1. **Tasks Begin**: The AI starts drawing based on randomly set points for the current task.
+2. **AI Drawing**: It attempts to complete the shape in the current world, adjusting curvature, angles, or radius as needed.
+3. **Progress**: Monitor performance via on-screen metrics (reward, FPS) and the CSV log.
 
 ---
 
 ## Technical Details
 ### AI Components
-- **DQN**: A neural network with three fully connected layers (input: 10 state features, output: 6 actions).
-- **State Space**: 10-dimensional vector including position, direction, task/world IDs, shape progress, vertices, angle, and distance to close.
+- **DQN**: Three-layer network (input: 10 for 2D, 11 for 3D; output: 6 actions).
+- **State Space**: 2D (10D) or 3D (11D) vector with position, direction, task/world IDs, shape progress, vertices, angle, and distance (or z-depth in 3D).
 - **Action Space**: 6 actions (curvature left/right, angle adjust left/right, radius adjust, add vertex).
-- **Reward Function**: Task-specific rewards encouraging accurate shape completion, adjusted for each geometric world.
-- **Forward Model**: Predicts the next state for curiosity-driven intrinsic rewards.
-- **World Model**: Used for planning multi-step action sequences.
+- **Reward Function**: Task-specific with efficiency and creativity factors, adjusted for world constraints.
+- **Forward Model**: Predicts next state for intrinsic rewards.
+- **World Model**: Plans multi-step actions.
+- **Next Shape Predictor**: Predicts the next task using a 13D input (task, world, rewards).
 
 ### Geometric Projections
-- **Euclidean**: Simple translation to screen coordinates.
-- **Spherical**: Stereographic projection from a 3D sphere.
-- **Hyperbolic**: Poincaré disk projection with geodesic paths.
-- **Elliptical**: Scaled elliptical mapping.
-- **Projective**: Perspective projection with a fixed focal point.
-- **Fractal**: Iterative random transformations for a fractal pattern.
+- **2D Projections**: As listed in Features.
+- **3D Projections**: Perspective (default) or orthographic, toggleable with key `3`.
 
 ---
 
 ## Limitations
-- **Performance**: Requires a decent CPU/GPU for smooth operation, especially with CUDA-enabled PyTorch.
-- **Complexity**: The AI may struggle with complex tasks (e.g., tessellations) without extensive training.
-- **User Input**: Limited to mouse clicks and basic keyboard controls in Guidance mode.
+- **Performance**: Requires a decent CPU/GPU, especially in 3D mode or with CUDA.
+- **Complexity**: Tessellations and 3D shapes may lack precision without extended training.
+- **User Input**: Limited to basic controls; full Guidance mode (e.g., arrow keys) is not implemented.
+- **Stability**: Some projections (e.g., Fractal) are simplistic and may produce unexpected results.
 
 ---
 
 ## Future Improvements
-- Add a menu to manually select tasks and worlds.
-- Implement a pre-trained model option for faster demonstration.
-- Enhance visualization with more detailed shape rendering or 3D views.
-- Expand the action space for finer control over shapes.
-- Integrate a GUI for real-time parameter tuning (e.g., learning rate, epsilon decay).
+- Implement full Guidance mode with interactive controls (e.g., arrow keys for curvature/angle).
+- Enhance 3D visualization with wireframe depth cues or shading.
+- Refine tessellation logic for more complex patterns.
+- Add a menu for task/world selection.
+- Integrate pre-trained models for instant demonstrations.
+- **Text-Based AI Enhancement**: Leverage text-based AI to provide real-time measurements (e.g., side lengths, angles, radii) or properties for shapes, tailored to the geometric world’s rules (e.g., geodesic distances in Hyperbolic space).
 
 ---
 
 ## License
-This project is open-source and available under the [MIT License](LICENSE). Feel free to modify and distribute it as needed.
+This project is open-source under the [MIT License](LICENSE).
 
 ---
 
 ## Acknowledgments
-- Built with inspiration from reinforcement learning research and geometric visualization techniques.
+- Inspired by RL research and geometric visualization techniques, with assistance from OpenAI, GROK, and VSCode AI tools.
+
+---
+
+“For future planning, I intend to integrate a text-based AI (e.g., a language model) to dynamically calculate and provide measurements—such as side lengths, angles, radii, or other geometric properties—for the shapes being drawn, customized to the specific geometric world (e.g., Euclidean distances, Hyperbolic geodesic lengths, or Spherical arc lengths). This would enhance user understanding and interaction.”
