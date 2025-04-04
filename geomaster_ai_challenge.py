@@ -140,6 +140,7 @@ class ForwardModel(nn.Module):
 
     def forward(self, state, action):
         try:
+            log_message(f"ForwardModel: state_dim={self.state_dim}, state.shape={state.shape}, action.shape={action.shape}")
             if state.dim() != 2 or action.dim() != 2:
                 raise ValueError(
                     f"Expected 2D tensors, got state shape {state.shape}, action shape {action.shape}"
@@ -170,7 +171,7 @@ class WorldModel(nn.Module):
                 )
             if state.shape[1] != state_dim or action.shape[1] != 1:
                 raise ValueError(
-                    f"Unexpected feature dimensions: state {state.shape}, action {action.shape}"
+                    f"Unexpected feature dimensions: state {state.shape}, action {state.shape}"
                 )
             action = action.view(-1, 1)
             x = torch.cat([state, action], dim=1)
@@ -393,6 +394,7 @@ projection_mode = "perspective"  # Options: "perspective", "orthographic"
 def update_network_dimensions():
     global policy_net, target_net, forward_model, world_model, state_dim
     state_dim = state_dim_3d if is_3d_mode else state_dim_2d
+    log_message(f"Updating network dimensions: state_dim={state_dim}, is_3d_mode={is_3d_mode}")
     policy_net = DQN(state_dim, action_dim).to(device)
     target_net = DQN(state_dim, action_dim).to(device)
     target_net.load_state_dict(policy_net.state_dict())
@@ -884,9 +886,17 @@ def optimize_model():
         return
 
     state_batch = torch.FloatTensor(np.array(state_batch)).to(device)
+    if state_batch.shape[1] != state_dim:
+        log_message(f"State batch dimension mismatch: expected {state_dim}, got {state_batch.shape[1]}")
+        state_batch = torch.cat([state_batch, torch.zeros(state_batch.size(0), state_dim - state_batch.shape[1]).to(device)], dim=1)
+
     action_batch = torch.LongTensor(np.array(action_batch)).to(device)
     reward_batch = torch.FloatTensor(np.array(reward_batch)).to(device)
     next_state_batch = torch.FloatTensor(np.array(next_state_batch)).to(device)
+    if next_state_batch.shape[1] != state_dim:
+        log_message(f"Next state batch dimension mismatch: expected {state_dim}, got {next_state_batch.shape[1]}")
+        next_state_batch = torch.cat([next_state_batch, torch.zeros(next_state_batch.size(0), state_dim - next_state_batch.shape[1]).to(device)], dim=1)
+
     done_batch = torch.FloatTensor(np.array(done_batch)).to(device)
 
     q_values = policy_net(state_batch).gather(1, action_batch.unsqueeze(1)).squeeze(1)
@@ -1018,9 +1028,12 @@ def plan_actions(state_tensor, model, current_shape, target, task, world, steps=
             total_reward += reward
 
             sim_state_tensor = torch.FloatTensor(sim_state).unsqueeze(0).to(device)
-            action_tensor = (
-                torch.tensor([action], dtype=torch.float).unsqueeze(0).to(device)
-            )
+            if sim_state_tensor.shape[1] != state_dim:
+                log_message(f"Simulated state tensor dimension mismatch: expected {state_dim}, got {sim_state_tensor.shape[1]}")
+                sim_state_tensor = torch.cat([sim_state_tensor, torch.zeros(1, state_dim - sim_state_tensor.shape[1]).to(device)], dim=1)
+
+            action_tensor = torch.tensor([action], dtype=torch.float).unsqueeze(0).to(device)
+            log_message(f"Passing to model: sim_state_tensor.shape={sim_state_tensor.shape}, action_tensor.shape={action_tensor.shape}")
             sim_state_tensor = model(sim_state_tensor, action_tensor)
             sim_state = sim_state_tensor.detach().squeeze(0).cpu().numpy()
 
@@ -1233,11 +1246,13 @@ while running:
         angle = 0
         dist_to_close = 0
         if is_3d_mode:
-            current_pos = current_shape[-1] if current_shape else (0, 0, 0)
+            current_pos = current_shape[-1] if current_shape else (0, 0, 0)  # Default to (0, 0, 0) if empty
+            if not isinstance(current_pos, (tuple, list)) or len(current_pos) < 2:
+                current_pos = (0, 0, 0)  # Ensure valid default for 3D
             if len(current_pos) == 2:
                 current_pos = (current_pos[0], current_pos[1], 0)
-            task_id = tasks.index(current_task)  # Define task_id
-            world_id = worlds.index(current_world)  # Define world_id
+            task_id = tasks.index(current_task)
+            world_id = worlds.index(current_world)
             if current_task == TASK_LINE:
                 dx = end_point[0] - current_pos[0]
                 dy = end_point[1] - current_pos[1]
@@ -1252,15 +1267,15 @@ while running:
                     world_id, shape_progress, num_vertices, angle, 0
                 ])
         else:
+            current_pos = current_shape[-1] if current_shape else (0, 0)  # Default to (0, 0) if empty
+            if not isinstance(current_pos, (tuple, list)) or len(current_pos) < 2:
+                current_pos = (0, 0)  # Ensure valid default for 2D
+            if isinstance(current_pos[0], (tuple, list)):
+                current_pos = (current_pos[0][0], current_pos[0][1])
             if current_task == TASK_LINE:
-                current_pos = current_shape[-1] if current_shape else (0, 0)
-                # Flatten current_pos if it contains nested tuples
-                if isinstance(current_pos[0], (tuple, list)):
-                    current_pos = (current_pos[0][0], current_pos[0][1])
                 dx = end_point[0] - current_pos[0]
                 dy = end_point[1] - current_pos[1]
             else:
-                current_pos = (0, 0)
                 dx = dy = 0
                 if current_task == TASK_TRIANGLE and len(current_shape) == 3:
                     angle = calculate_triangle_angle(current_shape)
@@ -1268,8 +1283,8 @@ while running:
                     dist_to_close = calculate_dist_to_close(current_shape)
                 elif current_task == TASK_TESSELLATION and current_shape:
                     angle = calculate_triangle_angle(current_shape[0])
-            task_id = tasks.index(current_task)  # Define task_id
-            world_id = worlds.index(current_world)  # Define world_id
+            task_id = tasks.index(current_task)
+            world_id = worlds.index(current_world)
             state = np.array(
                 [
                     current_pos[0],
@@ -1285,6 +1300,9 @@ while running:
                 ]
             )
         state_tensor = torch.FloatTensor(state).unsqueeze(0).to(device)
+        if state_tensor.shape[1] != state_dim:
+            log_message(f"State tensor dimension mismatch: expected {state_dim}, got {state_tensor.shape[1]}")
+            state_tensor = torch.cat([state_tensor, torch.zeros(1, state_dim - state_tensor.shape[1]).to(device)], dim=1)
 
         target = (
             end_point if current_task == TASK_LINE else (circle_center, circle_radius)
@@ -1421,6 +1439,9 @@ while running:
             )
             predicted_next_state = forward_model(state_tensor, action_tensor)
             next_state_tensor = torch.FloatTensor(next_state).unsqueeze(0).to(device)
+            if next_state_tensor.shape[1] != state_dim:
+                log_message(f"Next state tensor dimension mismatch: expected {state_dim}, got {next_state_tensor.shape[1]}")
+                next_state_tensor = torch.cat([next_state_tensor, torch.zeros(1, state_dim - next_state_tensor.shape[1]).to(device)], dim=1)
             intrinsic_reward = torch.norm(
                 predicted_next_state - next_state_tensor
             ).item()
@@ -1494,6 +1515,9 @@ while running:
 
             state = next_state
             state_tensor = torch.FloatTensor(state).unsqueeze(0).to(device)
+            if state_tensor.shape[1] != state_dim:
+                log_message(f"State tensor dimension mismatch: expected {state_dim}, got {state_tensor.shape[1]}")
+                state_tensor = torch.cat([state_tensor, torch.zeros(1, state_dim - state_tensor.shape[1]).to(device)], dim=1)
 
     # Drawing
     screen.fill(BLACK)
