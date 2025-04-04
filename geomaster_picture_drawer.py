@@ -1,9 +1,8 @@
 import pygame
 import numpy as np
 import torch
-import torch.nn as nn
 import cv2
-from geomaster_ai_challenge import DQN, project_point, WORLD_EUCLIDEAN, WORLD_HYPERBOLIC, WORLD_FRACTAL, GeoMasterAIModel
+from geomaster_ai_challenge import project_point, WORLD_EUCLIDEAN, WORLD_HYPERBOLIC, WORLD_FRACTAL, GeoMasterAIModel
 import os
 import csv
 import time

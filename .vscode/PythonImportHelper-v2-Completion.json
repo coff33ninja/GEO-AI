@@ -140,14 +140,6 @@
         "documentation": {}
     },
     {
-        "label": "DQN",
-        "importPath": "geomaster_ai_challenge",
-        "description": "geomaster_ai_challenge",
-        "isExtraImport": true,
-        "detail": "geomaster_ai_challenge",
-        "documentation": {}
-    },
-    {
         "label": "project_point",
         "importPath": "geomaster_ai_challenge",
         "description": "geomaster_ai_challenge",
