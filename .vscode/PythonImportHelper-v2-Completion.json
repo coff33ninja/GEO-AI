@@ -442,7 +442,7 @@
         "kind": 2,
         "importPath": "geomaster_ai_challenge",
         "description": "geomaster_ai_challenge",
-        "peekOfCode": "def optimize_model():\n    if memory.n_entries < batch_size:\n        return\n    total_priority = memory.tree[0]\n    batch = []\n    idxs = []\n    priorities = []\n    segment = total_priority / batch_size\n    for i in range(batch_size):\n        a = segment * i",
+        "peekOfCode": "def optimize_model():\n    if memory.n_entries < batch_size:\n        return\n    batch, idxs, is_weights = memory.sample(batch_size, alpha=alpha)\n    is_weights = torch.FloatTensor(is_weights).to(device)\n    try:\n        state_batch, action_batch, reward_batch, next_state_batch, done_batch = zip(*batch)\n    except Exception as e:\n        log_message(f\"Error unpacking batch: {repr(e)}\")\n        return",
         "detail": "geomaster_ai_challenge",
         "documentation": {}
     },

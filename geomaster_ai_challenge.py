@@ -153,6 +153,28 @@ class SumTree:
         data_idx = parent_idx - self.capacity + 1
         return parent_idx, self.tree[parent_idx], self.data[data_idx]
 
+    def sample(self, batch_size, alpha=0.6):
+        """Sample a batch of experiences with prioritization."""
+        batch = []
+        idxs = []
+        priorities = []
+        segment = self.tree[0] / batch_size  # Total priority divided into segments
+
+        for i in range(batch_size):
+            a = segment * i
+            b = segment * (i + 1)
+            s = random.uniform(a, b)  # Randomly sample within the segment
+            idx, priority, data = self.get_leaf(s)
+            batch.append(data)
+            idxs.append(idx)
+            priorities.append(priority)
+
+        sampling_probabilities = np.array(priorities) / self.tree[0]
+        is_weights = np.power(len(self.data) * sampling_probabilities, -alpha)
+        is_weights /= is_weights.max()  # Normalize importance-sampling weights
+
+        return batch, idxs, is_weights
+
 # Neural Networks
 class DQN(nn.Module):
     def __init__(self, input_dim, output_dim):
@@ -912,28 +934,8 @@ def optimize_model():
     if memory.n_entries < batch_size:
         return
 
-    total_priority = memory.tree[0]
-    batch = []
-    idxs = []
-    priorities = []
-    segment = total_priority / batch_size
-
-    for i in range(batch_size):
-        a = segment * i
-        b = segment * (i + 1)
-        s = random.uniform(a, b)
-        leaf = memory.get_leaf(s)
-        if not isinstance(leaf, tuple) or len(leaf) != 3:
-            log_message(f"Invalid leaf retrieved from memory: {repr(leaf)}")
-            continue
-        idx, priority, data = leaf
-        batch.append(data)
-        idxs.append(idx)
-        priorities.append(priority)
-
-    if not batch:
-        log_message("Batch is empty, skipping optimization.")
-        return
+    batch, idxs, is_weights = memory.sample(batch_size, alpha=alpha)
+    is_weights = torch.FloatTensor(is_weights).to(device)
 
     try:
         state_batch, action_batch, reward_batch, next_state_batch, done_batch = zip(*batch)
@@ -963,8 +965,7 @@ def optimize_model():
     for i, idx in enumerate(idxs):
         memory.update(idx, (td_errors[i] + 1e-5) ** alpha)
 
-    weights = torch.FloatTensor([(total_priority / p) ** -beta for p in priorities]).to(device)
-    loss = (weights * (q_values - expected_q_values) ** 2).mean()
+    loss = (is_weights * (q_values - expected_q_values) ** 2).mean()
 
     optimizer.zero_grad()
     loss.backward()
